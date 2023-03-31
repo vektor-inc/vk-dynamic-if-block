@@ -1,55 +1,22 @@
-=== Vk Dynamic Conditional Branch Block ===
-Contributors:      The WordPress Contributors
-Tags:              block
-Tested up to:      6.1
-Stable tag:        0.1.0
-License:           GPL-2.0-or-later
-License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+=== VK Dynamic If Block ===
+Author: Vektor, Inc.
+Requires at least: 6.0
+Tested up to: 6.2
+Version: 0.1.0
 
-Example block scaffolded with Create Block tool.
+A WordPress Gutenberg block plugin for conditionally displaying inner blocks based on selected conditions.
 
 == Description ==
 
-This is the long description. No limit, and you can use Markdown (as well as in the following sections).
-
-For backwards compatibility, if this section is missing, the full length of the short description will be used, and
-Markdown parsed.
+VK Dynamic If Block is a WordPress Gutenberg block plugin that allows you to conditionally display inner blocks based on selected conditions such as is_front_page() and is_single(). You can choose the condition from the block's settings in the editor sidebar.
 
 == Installation ==
 
-This section describes how to install the plugin and get it working.
-
-e.g.
-
-1. Upload the plugin files to the `/wp-content/plugins/vk-dynamic-conditional-branch-block` directory, or install the plugin through the WordPress plugins screen directly.
-1. Activate the plugin through the 'Plugins' screen in WordPress
-
-
-== Frequently Asked Questions ==
-
-= A question that someone might have =
-
-An answer to that question.
-
-= What about foo bar? =
-
-Answer to foo bar dilemma.
-
-== Screenshots ==
-
-1. This screen shot description corresponds to screenshot-1.(png|jpg|jpeg|gif). Note that the screenshot is taken from
-the /assets directory or the directory that contains the stable readme.txt (tags or trunk). Screenshots in the /assets
-directory take precedence. For example, `/assets/screenshot-1.png` would win over `/tags/4.3/screenshot-1.png`
-(or jpg, jpeg, gif).
-2. This is the second screen shot
+1. Upload the 'vk-dynamic-if-block' folder to the '/wp-content/plugins/' directory
+2. Activate the plugin through the 'Plugins' menu in WordPress
+3. Use the Dynamic If block in the Gutenberg editor
 
 == Changelog ==
 
 = 0.1.0 =
-* Release
-
-== Arbitrary section ==
-
-You may provide arbitrary sections, in the same format as the ones above. This may be of use for extremely complicated
-plugins where more information needs to be conveyed that doesn't fit into the categories of "description" or
-"installation." Arbitrary sections will be shown below the built-in sections outlined above.
+* Initial release

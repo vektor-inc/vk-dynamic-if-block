@@ -1,39 +1,40 @@
-/**
- * Registers a new block provided a unique name and an object defining its behavior.
- *
- * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/
- */
 import { registerBlockType } from '@wordpress/blocks';
+import { useBlockProps, InnerBlocks } from '@wordpress/block-editor';
+import { SelectControl } from '@wordpress/components';
+import { useSelect } from '@wordpress/data';
+import { __ } from '@wordpress/i18n';
 
-/**
- * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
- * All files containing `style` keyword are bundled together. The code used
- * gets applied both to the front of your site and to the editor.
- *
- * @see https://www.npmjs.com/package/@wordpress/scripts#using-css
- */
-import './style.scss';
+import './editor.scss';
 
-/**
- * Internal dependencies
- */
-import Edit from './edit';
-import save from './save';
-import metadata from './block.json';
+registerBlockType('vk-blocks/dynamic-if', {
+  apiVersion: 2,
 
-/**
- * Every block starts by registering a new block type definition.
- *
- * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/
- */
-registerBlockType( metadata.name, {
-	/**
-	 * @see ./edit.js
-	 */
-	edit: Edit,
+  edit({ attributes, setAttributes }) {
+    const blockProps = useBlockProps({
+      className: 'vk-dynamic-if-block',
+    });
 
-	/**
-	 * @see ./save.js
-	 */
-	save,
-} );
+    const onChangeCondition = (value) => {
+      setAttributes({ condition: value });
+    };
+
+    return (
+      <div {...blockProps}>
+        <SelectControl
+          label={__('Display condition', 'vk-dynamic-if-block')}
+          value={attributes.condition}
+          options={[
+            { label: __('Front page', 'vk-dynamic-if-block'), value: 'is_front_page' },
+            { label: __('Single post', 'vk-dynamic-if-block'), value: 'is_single' },
+          ]}
+          onChange={onChangeCondition}
+        />
+        <InnerBlocks />
+      </div>
+    );
+  },
+
+  save() {
+    return <InnerBlocks.Content />;
+  },
+});

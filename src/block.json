@@ -1,17 +1,20 @@
 {
-	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 2,
-	"name": "create-block/vk-dynamic-conditional-branch-block",
-	"version": "0.1.0",
-	"title": "Vk Dynamic Conditional Branch Block",
-	"category": "widgets",
-	"icon": "smiley",
-	"description": "Example block scaffolded with Create Block tool.",
-	"supports": {
-		"html": false
+	"name": "vk-blocks/dynamic-if",
+	"title": "Dynamic If",
+	"category": "common",
+	"icon": "visibility",
+	"attributes": {
+		"condition": {
+			"type": "string",
+			"default": "is_front_page"
+		}
 	},
-	"textdomain": "vk-dynamic-conditional-branch-block",
-	"editorScript": "file:./index.js",
-	"editorStyle": "file:./index.css",
-	"style": "file:./style-index.css"
+	"supports": {
+		"html": false,
+		"align": false,
+		"customClassName": false
+	},
+	"editorScript": "file:../build/index.js",
+	"editorStyle": "file:../build/editor.css"
 }
