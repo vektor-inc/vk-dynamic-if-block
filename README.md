@@ -42,9 +42,10 @@ Version 0.1.0
 * 非表示にする条件分岐は php の関数の if_front_page() と is_single() を使ってください。もし JavaScript で同様の処理をできるなら JapaScript で処理しても構いません。
 
 ### その他
+
 * プラグインとしてすぐ動くように、ディレクトリ直下にプラグイン情報を記載したPHPファイルも生成してください。
 * Dynamic If ブロックは編集画面では赤色の枠線が表示されるようにCSSで指定してください。
-* CSSは直接書き込むのではなく、別で src/editor.scss ファイルを用意して、そこに記載し、ビルド先は build/editor.css にしてください。
+* CSSは直接書き込むのではなく、別で src/editor.scss ファイルを用意してそこに記載し、ビルド先は build/editor.css にしてください。
 * build/editor.css は編集画面でだけ読み込み、公開画面では読み込まないようにしてください。
 * wp-script を使ってビルドする
 * npx @wordpress/create-block で作られるようなファイル構成、package.json に沿ったものにしたい
