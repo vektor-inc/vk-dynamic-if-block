@@ -1,10 +1,9 @@
 {
 	"name": "vk-dynamic-if-block",
 	"version": "0.1.0",
-	"description": "A WordPress plugin that provides a dynamic if block for the block editor, allowing content to be displayed based on selected conditions.",
-	"main": "src/index.js",
 	"author": "Vektor,Inc.",
 	"license": "GPL-2.0-or-later",
+	"private": true,
 	"scripts": {
 		"build": "wp-scripts build",
 		"format": "wp-scripts format",
@@ -14,7 +13,6 @@
 		"plugin-zip": "wp-scripts plugin-zip",
 		"start": "wp-scripts start"
 	},
-	"dependencies": {},
 	"devDependencies": {
 		"@wordpress/scripts": "^26.1.0"
 	}

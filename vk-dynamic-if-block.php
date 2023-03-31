@@ -1,33 +1,19 @@
 <?php
 /**
  * Plugin Name: VK Dynamic If Block
- * Author: Vektor, Inc.
- * Description: A WordPress Gutenberg block plugin for conditionally displaying inner blocks based on selected conditions.
+ * Plugin URI: https://example.com
+ * Description: A WordPress plugin that provides a dynamic if block for the block editor, allowing content to be displayed based on selected conditions.
+ * Author: Vektor,Inc.
  * Version: 0.1.0
+ * Requires at least: 6.0
+ * Tested up to: 6.2
+ * License: GPL-2.0-or-later
+ * Text Domain: vk-dynamic-if-block
  */
 
+defined( 'ABSPATH' ) || exit;
+
 function vk_dynamic_if_block_register() {
-	$asset_file = include plugin_dir_path( __FILE__ ) . 'build/index.asset.php';
-	wp_register_script(
-		'vk-dynamic-if-block-script',
-		plugins_url( 'build/index.js', __FILE__ ),
-		$asset_file['dependencies'],
-		$asset_file['version']
-	);
-
-	wp_register_style(
-		'vk-dynamic-if-block-editor-style',
-		plugins_url( 'build/editor.css', __FILE__ ),
-		array(),
-		filemtime( plugin_dir_path( __FILE__ ) . 'build/editor.css' )
-	);
-
-	register_block_type_from_metadata(
-		__DIR__ . '/src',
-		array(
-			'editor_script' => 'vk-dynamic-if-block-script',
-			'editor_style'  => 'vk-dynamic-if-block-editor-style',
-		)
-	);
+	require_once plugin_dir_path( __FILE__ ) . 'src/index.php';
 }
 add_action( 'init', 'vk_dynamic_if_block_register' );

@@ -1,18 +1,41 @@
 <?php
+function vk_dynamic_if_block_assets() {
+	wp_enqueue_style(
+		'vk-dynamic-if-block-editor',
+		plugins_url( 'build/editor.css', dirname( __FILE__ ) ),
+		[],
+		filemtime( plugin_dir_path( __DIR__ ) . 'build/editor.css' )
+	);
+}
+add_action( 'enqueue_block_editor_assets', 'vk_dynamic_if_block_assets' );
 
-function vk_dynamic_if_block_render( $attributes, $content ) {
-	$condition = isset( $attributes['condition'] ) ? $attributes['condition'] : 'is_front_page';
+function vk_dynamic_if_block_dynamic_render_callback( $attributes, $content ) {
+	$display_condition = isset( $attributes['displayCondition'] ) ? $attributes['displayCondition'] : 'none';
 
-	if ( ( $condition === 'is_front_page' && is_front_page() ) || ( $condition === 'is_single' && is_single() ) ) {
-		return $content;
+	switch ( $display_condition ) {
+		case 'is_front_page':
+			if ( is_front_page() ) {
+				return $content;
+			}
+			break;
+		case 'is_single':
+			if ( is_single() ) {
+				return $content;
+			}
+			break;
+		default:
+			return $content;
 	}
 
 	return '';
 }
 
-register_block_type_from_metadata(
-	__DIR__,
-	array(
-		'render_callback' => 'vk_dynamic_if_block_render',
-	)
-);
+function vk_dynamic_if_block_register_dynamic() {
+	register_block_type_from_metadata(
+		__DIR__,
+		[
+			'render_callback' => 'vk_dynamic_if_block_dynamic_render_callback',
+		]
+	);
+}
+add_action( 'init', 'vk_dynamic_if_block_register_dynamic' );
