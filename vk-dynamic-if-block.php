@@ -26,13 +26,6 @@ function vk_dynamic_if_block_enqueue_scripts() {
 		array(),
 		filemtime( plugin_dir_path( __FILE__ ) . 'build/editor.css' )
 	);
-
-	wp_enqueue_style(
-		'vk-dynamic-if-block-style',
-		plugins_url( 'build/style.css', __FILE__ ),
-		array(),
-		filemtime( plugin_dir_path( __FILE__ ) . 'build/style.css' )
-	);
 }
 
 add_action( 'enqueue_block_editor_assets', 'vk_dynamic_if_block_enqueue_scripts' );
