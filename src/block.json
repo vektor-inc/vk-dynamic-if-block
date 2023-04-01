@@ -1,20 +1,19 @@
 {
-	"apiVersion": 2,
 	"name": "vk-blocks/dynamic-if",
 	"title": "Dynamic If",
 	"category": "layout",
-	"textdomain": "vk-dynamic-if-block",
+	"parent": [],
+	"icon": "admin-comments",
+	"supports": {
+		"html": false
+	},
 	"attributes": {
 		"displayCondition": {
 			"type": "string",
-			"default": "none"
+			"default": "no-limit"
 		}
 	},
-	"supports": {
-		"html": false,
-		"align": false,
-		"anchor": false
-	},
 	"editorScript": "file:../build/index.js",
-	"editorStyle": "file:../build/editor.css"
+	"editorStyle": "file:../build/editor.css",
+	"style": "file:../build/style.css"
 }

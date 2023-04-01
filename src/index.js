@@ -1,59 +1,49 @@
 import { registerBlockType } from '@wordpress/blocks';
+import { InnerBlocks } from '@wordpress/block-editor';
+import { useSelect } from '@wordpress/data';
+import { Fragment } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { InnerBlocks, InspectorControls } from '@wordpress/block-editor';
+import { InspectorControls } from '@wordpress/block-editor';
 import { PanelBody, SelectControl } from '@wordpress/components';
-import './editor.scss';
+import blockAttributes from './block.json';
 
-const blockStyle = {
-    backgroundColor: 'transparent',
-    color: 'inherit',
-    padding: '1em',
-};
+registerBlockType( blockAttributes.name, {
+	title: __( 'Dynamic If', 'vk-dynamic-if-block' ),
+	icon: 'admin-comments',
+	category: 'layout',
+	attributes: blockAttributes.attributes,
 
-registerBlockType('vk-blocks/dynamic-if', {
-    apiVersion: 2,
-    title: __('Dynamic If', 'vk-dynamic-if-block'),
-    icon: 'visibility',
-    category: 'layout',
-    supports: {
-        html: false,
-    },
-    attributes: {
-        condition: {
-            type: 'string',
-            default: 'none',
-        },
-    },
-    edit: ({ attributes, setAttributes }) => {
-        const { condition } = attributes;
+	edit: ( { attributes, setAttributes } ) => {
+		const { displayCondition } = attributes;
 
-        return (
-            <div style={blockStyle}>
-                <InspectorControls>
-                    <PanelBody title={__('Display Condition', 'vk-dynamic-if-block')}>
-                        <SelectControl
-                            label={__('Condition', 'vk-dynamic-if-block')}
-                            value={condition}
-                            options={[
-                                { value: 'none', label: __('None (always display)', 'vk-dynamic-if-block') },
-                                { value: 'if_front_page', label: 'if_front_page()' },
-                                { value: 'is_single', label: 'is_single()' },
-                            ]}
-                            onChange={(selected) => setAttributes({ condition: selected })}
-                        />
-                    </PanelBody>
-                </InspectorControls>
-                <InnerBlocks />
-            </div>
-        );
-    },
-    save: ({ attributes }) => {
-        const { condition } = attributes;
+		const onChangeDisplayCondition = ( newDisplayCondition ) => {
+			setAttributes( { displayCondition: newDisplayCondition } );
+		};
 
-        return (
-            <div data-display-condition={condition}>
-                <InnerBlocks.Content />
-            </div>
-        );
-    },
-});
+		return (
+			<Fragment>
+				<InspectorControls>
+					<PanelBody title={ __( 'Display Condition', 'vk-dynamic-if-block' ) }>
+						<SelectControl
+							label={ __( 'Select condition', 'vk-dynamic-if-block' ) }
+							value={ displayCondition }
+							options={ [
+								{ value: 'no-limit', label: __( 'No Limit', 'vk-dynamic-if-block' ) },
+								{ value: 'is_front_page', label: __( 'Front Page', 'vk-dynamic-if-block' ) },
+								{ value: 'is_single', label: __( 'Single', 'vk-dynamic-if-block' ) },
+							] }
+							onChange={ onChangeDisplayCondition }
+						/>
+					</PanelBody>
+				</InspectorControls>
+				<div className="vk-dynamic-if-block">
+					<InnerBlocks />
+				</div>
+			</Fragment>
+		);
+	},
+
+	save: () => {
+		return <InnerBlocks.Content />;
+	},
+} );

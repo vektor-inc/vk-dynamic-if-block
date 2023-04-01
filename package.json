@@ -1,17 +1,36 @@
 {
 	"name": "vk-dynamic-if-block",
 	"version": "0.1.0",
-	"description": "Dynamic If Block for WordPress.",
+	"description": "A WordPress Gutenberg block plugin that allows users to conditionally display content based on a selected condition.",
+	"main": "src/index.js",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/vektor-inc/vk-dynamic-if-block.git"
+	},
+	"keywords": [
+		"dynamic",
+		"block",
+		"if",
+		"condition",
+		"wordpress",
+		"gutenberg"
+	],
 	"author": "Vektor,Inc.",
 	"license": "GPL-2.0-or-later",
+	"dependencies": {
+		"@wordpress/blocks": "^11.1.1",
+		"@wordpress/block-editor": "^7.0.0",
+		"@wordpress/data": "^6.1.1",
+		"@wordpress/element": "^4.1.1",
+		"@wordpress/i18n": "^4.1.1",
+		"@wordpress/components": "^19.1.0"
+	},
 	"devDependencies": {
 		"@wordpress/scripts": "^26.1.0",
-		"node-sass": "^8.0.0",
-		"sass": "^1.49.9"
+		"@wordpress/dependency-extraction-webpack-plugin": "^4.1.1"
 	},
 	"scripts": {
-		"build": "wp-scripts build && npm run build:scss",
-		"build:scss": "node-sass src/editor.scss build/editor.css",
+		"build": "wp-scripts build",
 		"format": "wp-scripts format",
 		"lint:css": "wp-scripts lint-style",
 		"lint:js": "wp-scripts lint-js",
