@@ -1,39 +1,49 @@
-/**
- * Registers a new block provided a unique name and an object defining its behavior.
- *
- * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/
- */
 import { registerBlockType } from '@wordpress/blocks';
+import { useBlockProps, InnerBlocks, InspectorControls } from '@wordpress/block-editor';
+import { PanelBody, SelectControl } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 
-/**
- * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
- * All files containing `style` keyword are bundled together. The code used
- * gets applied both to the front of your site and to the editor.
- *
- * @see https://www.npmjs.com/package/@wordpress/scripts#using-css
- */
-import './style.scss';
+registerBlockType('vk-blocks/dynamic-if', {
+  apiVersion: 2,
+  title: __('Dynamic If', 'vk-dynamic-if-block'),
+  category: 'layout',
+  attributes: {
+    displayCondition: {
+      type: 'string',
+      default: 'none',
+    },
+  },
+  supports: {
+    html: false,
+    innerBlocks: true,
+  },
+  edit({ attributes, setAttributes }) {
+    const { displayCondition } = attributes;
 
-/**
- * Internal dependencies
- */
-import Edit from './edit';
-import save from './save';
-import metadata from './block.json';
+    const displayConditions = [
+      { value: 'none', label: __('No restriction', 'vk-dynamic-if-block') },
+      { value: 'is_front_page', label: __('Front Page', 'vk-dynamic-if-block') },
+      { value: 'is_single', label: __('Single Post', 'vk-dynamic-if-block') },
+    ];
 
-/**
- * Every block starts by registering a new block type definition.
- *
- * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/
- */
-registerBlockType( metadata.name, {
-	/**
-	 * @see ./edit.js
-	 */
-	edit: Edit,
+    return (
+      <div {...useBlockProps()}>
+        <InspectorControls>
+          <PanelBody title={__('Display Conditions', 'vk-dynamic-if-block')}>
+            <SelectControl
+              label={__('Select a condition', 'vk-dynamic-if-block')}
+              value={displayCondition}
+              options={displayConditions}
+              onChange={(value) => setAttributes({ displayCondition: value })}
+            />
+          </PanelBody>
+        </InspectorControls>
+        <InnerBlocks />
+      </div>
+    );
+  },
 
-	/**
-	 * @see ./save.js
-	 */
-	save,
-} );
+  save() {
+    return <InnerBlocks.Content />;
+  },
+});

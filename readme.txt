@@ -1,55 +1,46 @@
-=== Vk Dynamic Conditional Branch Block ===
-Contributors:      The WordPress Contributors
-Tags:              block
-Tested up to:      6.1
-Stable tag:        0.1.0
-License:           GPL-2.0-or-later
-License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+=== VK Dynamic If Block ===
+Contributors: Vektor,Inc.
+Tags: dynamic, block, if, front page, single
+Requires at least: 6.0
+Tested up to: 6.2
+Requires PHP: 7.0
+Stable tag: 0.1.0
+License: GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Example block scaffolded with Create Block tool.
+A dynamic block that shows its inner blocks based on specified conditions, such as whether the current page is the front page or a single post.
 
 == Description ==
 
-This is the long description. No limit, and you can use Markdown (as well as in the following sections).
-
-For backwards compatibility, if this section is missing, the full length of the short description will be used, and
-Markdown parsed.
+VK Dynamic If Block is a custom WordPress block that allows users to display content based on specified conditions. With this block, you can show or hide content on your website depending on whether the current page is the front page, a single post, or other conditions.
 
 == Installation ==
 
-This section describes how to install the plugin and get it working.
-
-e.g.
-
-1. Upload the plugin files to the `/wp-content/plugins/vk-dynamic-conditional-branch-block` directory, or install the plugin through the WordPress plugins screen directly.
-1. Activate the plugin through the 'Plugins' screen in WordPress
-
+1. Upload the plugin files to the '/wp-content/plugins/vk-dynamic-if-block' directory, or install the plugin through the WordPress plugins screen directly.
+2. Activate the plugin through the 'Plugins' screen in WordPress.
+3. Use the block editor to add a "Dynamic If" block to your post or page.
 
 == Frequently Asked Questions ==
 
-= A question that someone might have =
+= Can I use multiple conditions? =
 
-An answer to that question.
+Currently, you can only choose one condition per block. However, you can use multiple blocks with different conditions on the same page.
 
-= What about foo bar? =
+= Can I use custom conditions? =
 
-Answer to foo bar dilemma.
+Currently, only the predefined conditions are supported: is_front_page() and is_single().
 
 == Screenshots ==
 
-1. This screen shot description corresponds to screenshot-1.(png|jpg|jpeg|gif). Note that the screenshot is taken from
-the /assets directory or the directory that contains the stable readme.txt (tags or trunk). Screenshots in the /assets
-directory take precedence. For example, `/assets/screenshot-1.png` would win over `/tags/4.3/screenshot-1.png`
-(or jpg, jpeg, gif).
-2. This is the second screen shot
+1. Dynamic If block in the block editor.
+2. Block settings in the editor sidebar.
 
 == Changelog ==
 
 = 0.1.0 =
-* Release
+* Initial release
 
-== Arbitrary section ==
+== Upgrade Notice ==
 
-You may provide arbitrary sections, in the same format as the ones above. This may be of use for extremely complicated
-plugins where more information needs to be conveyed that doesn't fit into the categories of "description" or
-"installation." Arbitrary sections will be shown below the built-in sections outlined above.
+= 0.1.0 =
+* Initial release
