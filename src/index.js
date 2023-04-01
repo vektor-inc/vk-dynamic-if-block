@@ -8,7 +8,7 @@ registerBlockType('vk-blocks/dynamic-if', {
   title: __('Dynamic If', 'vk-dynamic-if-block'),
   category: 'layout',
   attributes: {
-    displayCondition: {
+    pageType: {
       type: 'string',
       default: 'none',
     },
@@ -18,12 +18,18 @@ registerBlockType('vk-blocks/dynamic-if', {
     innerBlocks: true,
   },
   edit({ attributes, setAttributes }) {
-    const { displayCondition } = attributes;
+    const { pageType } = attributes;
 
-    const displayConditions = [
+    const pageTypes = [
       { value: 'none', label: __('No restriction', 'vk-dynamic-if-block') },
-      { value: 'is_front_page', label: __('Front Page', 'vk-dynamic-if-block') },
-      { value: 'is_single', label: __('Single Post', 'vk-dynamic-if-block') },
+      { value: 'is_front_page', label: __('Front Page', 'vk-dynamic-if-block') + ' : is_front_page()' },
+      { value: 'is_single', label: __('Single', 'vk-dynamic-if-block') + ' : is_single()' },
+      { value: 'is_page', label: __('Page', 'vk-dynamic-if-block') + ' : is_page()' },
+      { value: 'is_singular', label: __('Singular', 'vk-dynamic-if-block') + ' : is_singular()' },
+      { value: 'is_home', label: __('Post Top', 'vk-dynamic-if-block') + ' : is_home() && ! is_front_page()' },
+      { value: 'is_archive', label: __('Archive', 'vk-dynamic-if-block') + ' : is_archive()' },
+      { value: 'is_search', label: __('Search Result', 'vk-dynamic-if-block') + ' : is_search()' },
+      { value: 'is_404', label: __('404', 'vk-dynamic-if-block') + ' : is_404()' },
     ];
 
     return (
@@ -31,10 +37,10 @@ registerBlockType('vk-blocks/dynamic-if', {
         <InspectorControls>
           <PanelBody title={__('Display Conditions', 'vk-dynamic-if-block')}>
             <SelectControl
-              label={__('Select a condition', 'vk-dynamic-if-block')}
-              value={displayCondition}
-              options={displayConditions}
-              onChange={(value) => setAttributes({ displayCondition: value })}
+              label={__('Select a Page Type', 'vk-dynamic-if-block')}
+              value={pageType}
+              options={pageTypes}
+              onChange={(value) => setAttributes({ pageType: value })}
             />
           </PanelBody>
         </InspectorControls>
