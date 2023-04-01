@@ -2,12 +2,19 @@
 	"apiVersion": 2,
 	"name": "vk-blocks/dynamic-if",
 	"title": "Dynamic If",
-	"category": "design",
-	"parent": [],
+	"category": "layout",
+	"textdomain": "vk-dynamic-if-block",
 	"attributes": {
 		"displayCondition": {
 			"type": "string",
 			"default": "none"
 		}
-	}
+	},
+	"supports": {
+		"html": false,
+		"align": false,
+		"anchor": false
+	},
+	"editorScript": "file:../build/index.js",
+	"editorStyle": "file:../build/editor.css"
 }

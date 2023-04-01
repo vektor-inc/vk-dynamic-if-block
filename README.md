@@ -20,10 +20,13 @@ Author : Vektor,Inc.
 ## readme.txt について
 
 WordPress公式ディレクトリに登録したいので readme.txt も生成してください。
+以下は含めてください。
 
 Tested up to: 6.2
 Requires at least: 6.0
 Version 0.1.0
+
+WordPress公式プラグインディレクトリに登録するにあたって足りない記述は適当にダミーで入力してください。
 
 ## ブロックの仕様
 
@@ -37,27 +40,29 @@ Version 0.1.0
 制限なし（デフォルト） / if_front_page() / is_single()
 
 * 投稿編集画面での Dynamic If ブロックの設定項目は、プルダウン項目で、 is_front_page() と is_single() が選択できます。
-* 配置した Dynamic If ブロックに対して、is_front_page() が指定されていたら、そのブロックのインナーブロックに設置されたコンテンツはトップページでのみ表示します。
-* 逆に、if_front_page() が指定されている場合、トップページ以外では インナーブロックに配置したコンテンツは表示されないようにしてください。
-* 非表示にする条件分岐は php の関数の if_front_page() と is_single() を使ってください。もし JavaScript で同様の処理をできるなら JapaScript で処理しても構いません。
+* 配置した Dynamic If ブロックに対して、is_front_page() が指定されていたら、その Dynamic If ブロックのインナーブロックに設置されたコンテンツはトップページでのみ表示されるようにしてください。トップページ以外で表示されてはいけません。
+* if_single() が指定されている場合、その Dynamic If ブロックに配置されたインナーブロックのコンテンツは、個別投稿ページ以外では表示されないようにしてください（記事の編集画面では表示されているようにしてください）。
+* 非表示にする条件分岐は php の関数の if_front_page() と is_single() を使ってください。
 
 ### その他
 
 * プラグインとしてすぐ動くように、ディレクトリ直下にプラグイン情報を記載したPHPファイルも生成してください。
-* Dynamic If ブロックは編集画面では赤色の枠線が表示されるようにCSSで指定してください。
-* CSSは直接書き込むのではなく、別で src/editor.scss ファイルを用意してそこに記載し、ビルド先は build/editor.css にしてください。
-* build/editor.css は編集画面でだけ読み込み、公開画面では読み込まないようにしてください。
-* wp-script を使ってビルドする
-* npx @wordpress/create-block で作られるようなファイル構成、package.json に沿ったものにしたい
 * ブロックに関するファイルは src ディレクトリに配置し、ビルドすると build ディレクトリに出力されます
 * src/block.json ファイルも必要
 * ブロックに関する動的表示処理をする php は src/index.php に記載する
 * .gitignore ファイルは不要です。
 
+### CSSについて
+
+* CSSは直接書き込むのではなく、別で src/editor.scss ファイルを用意してそこに記載し、ビルド先は build/editor.css にしてください。
+* 投稿編集画面では Dynamic If ブロックは枠線（1px dotted #ccc）が表示されるようにCSSで指定してください。padding は 1px でよろしくお願いいたします。
+* build/editor.css は投稿編集画面や彩度エディターでは読み込みますが、公開画面では読み込まないようにしてください。
+
 ## package.json についての補足
 
-package.json も用意してください。
-
+* package.json も用意してください。
+* このプラグインは wp-script を使ってビルドします。
+* npx @wordpress/create-block で作られるようなファイル構成、package.json に沿ったものにしてください。
 * 開発でのみ必要なパッケージは devDependencies で指定してください。
 * package.json には以下も含めてください。
 * @wordpress/scripts のバージョンは ^26.1.0 で用意する
