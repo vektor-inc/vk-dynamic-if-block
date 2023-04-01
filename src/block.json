@@ -4,7 +4,7 @@
 	"title": "Dynamic If",
 	"category": "layout",
 	"attributes": {
-		"displayCondition": {
+		"pageType": {
 			"type": "string",
 			"default": "none"
 		}
