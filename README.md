@@ -3,7 +3,7 @@
 WordPress の ブロックエディタ用のブロックのプラグインを作りたいです。
 必要なファイル構成とファイルの中身を順に出力してください。
 
-* WordPressのコーディング規約に沿ったフォーマットでよろしくお願いいたします。
+* PHP や JavaScript を出力する再は WordPress のコーディング規約に沿ったフォーマットで整形した上で出力してください。
 
 ## このプラグインの役割
 
@@ -55,9 +55,8 @@ WordPress公式プラグインディレクトリに登録するにあたって�
 
 ### CSSについて
 
-* CSSは直接書き込むのではなく、別で src/editor.scss ファイルを用意してそこに記載し、ビルド先は build/editor.css にしてください。
-* 投稿編集画面では Dynamic If ブロックは枠線（1px dotted #ccc）が表示されるようにCSSで指定してください。padding は 1px でよろしくお願いいたします。
-* build/editor.css は投稿編集画面や彩度エディターでは読み込みますが、公開画面では読み込まないようにしてください。
+* CSSは直接書き込むのではなく、別で scss ファイルを用意してそこに記載し、ビルド先は build ディレクトリにしてください。
+* 投稿編集画面では Dynamic If ブロックは枠線（1px dotted #ccc）が表示されるようにCSSで指定してください。padding は 1px でよろしくお願いいたします。ただし、この枠線は公開画面では表示されないようによろしくお願いいたします。
 
 ### package.json についての補足
 
@@ -65,16 +64,14 @@ WordPress公式プラグインディレクトリに登録するにあたって�
 * このプラグインは wp-script を使ってビルドします。
 * npx @wordpress/create-block で作られるようなファイル構成、package.json に沿ったものにしてください。
 * 開発でのみ必要なパッケージは devDependencies で指定してください。
-* package.json には以下も含めてください。
 * @wordpress/scripts のバージョンは ^26.1.0 で用意する
 * package.json の中に keywords は含めなくてもかまいません。
+
+package.json には以下も含めてください。不足分は必要に応じて追加してください。
 
 ```
 	"author": "Vektor,Inc.",
 	"license": "GPL-2.0-or-later",
-```
-
-```
 	"scripts": {
 		"build": "wp-scripts build",
 		"format": "wp-scripts format",

@@ -1,34 +1,9 @@
 {
 	"name": "vk-dynamic-if-block",
 	"version": "0.1.0",
-	"description": "A WordPress Gutenberg block plugin that allows users to conditionally display content based on a selected condition.",
-	"main": "src/index.js",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/vektor-inc/vk-dynamic-if-block.git"
-	},
-	"keywords": [
-		"dynamic",
-		"block",
-		"if",
-		"condition",
-		"wordpress",
-		"gutenberg"
-	],
+	"description": "A dynamic block that shows its inner blocks based on specified conditions, such as whether the current page is the front page or a single post.",
 	"author": "Vektor,Inc.",
 	"license": "GPL-2.0-or-later",
-	"dependencies": {
-		"@wordpress/blocks": "^11.1.1",
-		"@wordpress/block-editor": "^7.0.0",
-		"@wordpress/data": "^6.1.1",
-		"@wordpress/element": "^4.1.1",
-		"@wordpress/i18n": "^4.1.1",
-		"@wordpress/components": "^19.1.0"
-	},
-	"devDependencies": {
-		"@wordpress/scripts": "^26.1.0",
-		"@wordpress/dependency-extraction-webpack-plugin": "^4.1.1"
-	},
 	"scripts": {
 		"build": "wp-scripts build",
 		"format": "wp-scripts format",
@@ -37,5 +12,14 @@
 		"packages-update": "wp-scripts packages-update",
 		"plugin-zip": "wp-scripts plugin-zip",
 		"start": "wp-scripts start"
+	},
+	"dependencies": {
+		"@wordpress/blocks": "^11.0.0",
+		"@wordpress/block-editor": "^7.0.0",
+		"@wordpress/components": "^19.0.0",
+		"@wordpress/i18n": "^4.1.0"
+	},
+	"devDependencies": {
+		"@wordpress/scripts": "^26.1.0"
 	}
 }

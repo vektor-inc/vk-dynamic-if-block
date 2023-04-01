@@ -1,60 +1,40 @@
 <?php
 /**
  * Plugin Name: VK Dynamic If Block
- * Plugin URI: https://example.com/vk-dynamic-if-block
- * Description: A WordPress Gutenberg block plugin that allows users to conditionally display content based on a selected condition.
+ * Description: A dynamic block that shows its inner blocks based on specified conditions, such as whether the current page is the front page or a single post.
  * Author: Vektor,Inc.
- * Author URI: https://www.vektor-inc.co.jp
  * Version: 0.1.0
  * License: GPL-2.0-or-later
- * License URI: http://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: vk-dynamic-if-block
- * Domain Path: /languages
+ *
+ * @package VK Dynamic If Block
  */
 
-function vk_dynamic_if_block_register() {
-	// Register the main plugin file for the build process.
-	wp_register_script(
+defined( 'ABSPATH' ) || exit;
+
+function vk_dynamic_if_block_enqueue_scripts() {
+	wp_enqueue_script(
 		'vk-dynamic-if-block',
 		plugins_url( 'build/index.js', __FILE__ ),
-		array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-editor' ),
+		array( 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-i18n', 'wp-components' ),
 		filemtime( plugin_dir_path( __FILE__ ) . 'build/index.js' )
 	);
 
-	// Register the editor stylesheet.
-	wp_register_style(
+	wp_enqueue_style(
 		'vk-dynamic-if-block-editor',
 		plugins_url( 'build/editor.css', __FILE__ ),
 		array(),
 		filemtime( plugin_dir_path( __FILE__ ) . 'build/editor.css' )
 	);
 
-	// Register the dynamic block.
-	register_block_type(
-		'vk-blocks/dynamic-if',
-		array(
-			'editor_script'   => 'vk-dynamic-if-block',
-			'editor_style'    => 'vk-dynamic-if-block-editor',
-			'render_callback' => 'vk_dynamic_if_block_render_callback',
-			'attributes'      => array(
-				'displayCondition' => array(
-					'type'    => 'string',
-					'default' => 'no-limit',
-				),
-			),
-		)
+	wp_enqueue_style(
+		'vk-dynamic-if-block-style',
+		plugins_url( 'build/style.css', __FILE__ ),
+		array(),
+		filemtime( plugin_dir_path( __FILE__ ) . 'build/style.css' )
 	);
 }
-add_action( 'init', 'vk_dynamic_if_block_register' );
 
-function vk_dynamic_if_block_render_callback( $attributes, $content ) {
-	$condition = $attributes['displayCondition'];
+add_action( 'enqueue_block_editor_assets', 'vk_dynamic_if_block_enqueue_scripts' );
 
-	if ( ( $condition === 'is_front_page' && is_front_page() ) ||
-		( $condition === 'is_single' && is_single() ) ||
-		$condition === 'no-limit' ) {
-		return $content;
-	}
-
-	return '';
-}
+require_once plugin_dir_path( __FILE__ ) . 'src/index.php';
