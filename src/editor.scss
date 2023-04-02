@@ -1,4 +1,14 @@
 .wp-block-vk-blocks-dynamic-if {
 	border: 1px dotted #ccc;
 	padding: 0.5rem;
+	position: relative;
   }
+.vk-dynamic-if-block__label {
+	position: absolute;
+	padding:1px 5px;
+	top:0;
+	right:0;
+	font-size:9px;
+	text-align: right;
+	background-color: #e5e5e5;
+}
