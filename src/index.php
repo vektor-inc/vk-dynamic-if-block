@@ -1,24 +1,43 @@
 <?php
+/**
+ * Dynamic If Block
+ *
+ * @package vektor-inc/vk-dynamic-if-block
+ */
+
+use VektorInc\VK_Helpers\VkHelpers;
+
 function vk_dynamic_if_block_render( $attributes, $content ) {
-	$display_condition = isset( $attributes['pageType'] ) ? $attributes['pageType'] : 'none';
+	$page_type = isset( $attributes['pageType'] ) ? $attributes['pageType'] : 'none';
+	$post_type = isset( $attributes['selectedPostType'] ) ? $attributes['selectedPostType'] : 'none';
+
+	$return = '';
 
 	if (
-		is_front_page() && 'is_front_page' === $display_condition ||
-		is_single() && 'is_single' === $display_condition ||
-		is_page() && 'is_page' === $display_condition ||
-		is_singular() && 'is_singular' === $display_condition ||
-		is_home() && ! is_front_page() && 'is_home' === $display_condition ||
-		is_archive() && 'is_archive' === $display_condition ||
-		is_search() && 'is_search' === $display_condition ||
-		is_404() && 'is_404' === $display_condition ||
-		'none' === $display_condition
+		is_front_page() && 'is_front_page' === $page_type ||
+		is_single() && 'is_single' === $page_type ||
+		is_page() && 'is_page' === $page_type ||
+		is_singular() && 'is_singular' === $page_type ||
+		is_home() && ! is_front_page() && 'is_home' === $page_type ||
+		is_archive() && 'is_archive' === $page_type ||
+		is_search() && 'is_search' === $page_type ||
+		is_404() && 'is_404' === $page_type ||
+		'none' === $page_type
 	) {
-		return $content;
-	} else {
-		return '';
+		$return         = $content;
+		$post_type_info = VkHelpers::get_post_type_info();
+		$post_type_slug = $post_type_info['slug'];
+
+		if ( 'none' === $post_type ) {
+			$return = $content;
+		} elseif ( $post_type_slug === $post_type ) {
+			$return = $content;
+		} else {
+			$return = '';
+		}
 	}
 
-	return '';
+	return $return;
 }
 
 function vk_dynamic_if_block_register_dynamic() {
@@ -30,3 +49,46 @@ function vk_dynamic_if_block_register_dynamic() {
 	);
 }
 add_action( 'init', 'vk_dynamic_if_block_register_dynamic' );
+
+function vk_dynamic_if_block_set_localize_script() {
+	// データを初期化
+	$post_type_select_options = array();
+
+	// Default Post Type
+	$post_types_all = array(
+		'post' => 'post',
+		'page' => 'page',
+	);
+	$post_types_all = array_merge(
+		$post_types_all,
+		get_post_types(
+			array(
+				'public'   => true,
+				'show_ui'  => true,
+				'_builtin' => false,
+			),
+			'names',
+			'and'
+		)
+	);
+	foreach ( $post_types_all as $post_type ) {
+
+		$post_type_object = get_post_type_object( $post_type );
+
+		$post_type_select_options[] = array(
+			'label' => $post_type_object->labels->singular_name,
+			'value' => $post_type_object->name,
+		);
+	}
+
+	// The wp_localize_script() function is used to add custom JavaScript data to a script handle.
+	wp_localize_script(
+		'vk-dynamic-if-block', // Script handle.
+		'vk_dynamic_if_block_localize_data', // JS object name.
+		array(
+			'postTypeSelectOptions' => $post_type_select_options,
+		)
+	);
+}
+
+add_action( 'enqueue_block_editor_assets', 'vk_dynamic_if_block_set_localize_script' );

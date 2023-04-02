@@ -7,6 +7,10 @@
 		"pageType": {
 			"type": "string",
 			"default": "none"
+		},
+		"selectedPostType": {
+			"type": "string",
+			"default": "none"
 		}
 	},
 	"supports": {
