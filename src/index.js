@@ -1,7 +1,6 @@
 import { registerBlockType } from '@wordpress/blocks';
 import { useBlockProps, InnerBlocks, InspectorControls } from '@wordpress/block-editor';
 import { PanelBody, SelectControl } from '@wordpress/components';
-// import { useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 
 registerBlockType('vk-blocks/dynamic-if', {
@@ -24,22 +23,6 @@ registerBlockType('vk-blocks/dynamic-if', {
 	},
 	edit({ attributes, setAttributes }) {
 		const { pageType, selectedPostType } = attributes;
-
-		// const postTypes = useSelect((select) => {
-		// 	return select('core').getPostTypes({ per_page: -1, public: true });
-		// }, []);
-
-		// if (!postTypes) {
-		// 	return __('Loading...', 'vk-dynamic-if-block');
-		// }
-
-		// const postTypeOptions = postTypes.map((postType) => {
-		// 	return { value: postType.slug, label: postType.name };
-		// });
-
-		// postTypeOptions.unshift({ value: 'none', label: __('No restriction', 'vk-dynamic-if-block') });
-
-		
 
 		const pageTypes = [
 			{ value: 'none', label: __('No restriction', 'vk-dynamic-if-block') },
