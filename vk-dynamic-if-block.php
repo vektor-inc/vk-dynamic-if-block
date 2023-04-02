@@ -32,4 +32,4 @@ function vk_dynamic_if_block_enqueue_scripts() {
 
 add_action( 'enqueue_block_editor_assets', 'vk_dynamic_if_block_enqueue_scripts' );
 
-require_once plugin_dir_path( __FILE__ ) . 'src/index.php';
+require_once plugin_dir_path( __FILE__ ) . 'build/index.php';
