@@ -8,11 +8,11 @@ registerBlockType('vk-blocks/dynamic-if', {
 	title: __('Dynamic If', 'vk-dynamic-if-block'),
 	category: 'layout',
 	attributes: {
-		pageType: {
+		ifPageType: {
 			type: 'string',
 			default: 'none',
 		},
-		selectedPostType: {
+		ifPostType: {
 			type: 'string',
 			default: 'none',
 		},
@@ -22,9 +22,9 @@ registerBlockType('vk-blocks/dynamic-if', {
 		innerBlocks: true,
 	},
 	edit({ attributes, setAttributes }) {
-		const { pageType, selectedPostType } = attributes;
+		const { ifPageType, ifPostType } = attributes;
 
-		const pageTypes = [
+		const ifPageTypes = [
 			{ value: 'none', label: __('No restriction', 'vk-dynamic-if-block') },
 			{ value: 'is_front_page', label: __('Front Page', 'vk-dynamic-if-block') + ' : is_front_page()' },
 			{ value: 'is_single', label: __('Single', 'vk-dynamic-if-block') + ' : is_single()' },
@@ -42,15 +42,15 @@ registerBlockType('vk-blocks/dynamic-if', {
 					<PanelBody title={__('Display Conditions', 'vk-dynamic-if-block')}>
 						<SelectControl
 							label={__('Select a Page Type', 'vk-dynamic-if-block')}
-							value={pageType}
-							options={pageTypes}
-							onChange={(value) => setAttributes({ pageType: value })}
+							value={ifPageType}
+							options={ifPageTypes}
+							onChange={(value) => setAttributes({ ifPageType: value })}
 						/>
 						<SelectControl
 							label={__('Select a Post Type', 'vk-dynamic-if-block')}
-							value={selectedPostType}
+							value={ifPostType}
 							options={vk_dynamic_if_block_localize_data.postTypeSelectOptions}
-							onChange={(value) => setAttributes({ selectedPostType: value })}
+							onChange={(value) => setAttributes({ ifPostType: value })}
 						/>
 					</PanelBody>
 				</InspectorControls>

@@ -4,11 +4,11 @@
 	"title": "Dynamic If",
 	"category": "layout",
 	"attributes": {
-		"pageType": {
+		"ifPageType": {
 			"type": "string",
 			"default": "none"
 		},
-		"selectedPostType": {
+		"ifPostType": {
 			"type": "string",
 			"default": "none"
 		}

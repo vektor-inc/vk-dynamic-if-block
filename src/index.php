@@ -7,9 +7,14 @@
 
 use VektorInc\VK_Helpers\VkHelpers;
 
+/**
+ * Block Render function
+ *
+ * @return string $return : Return HTML.
+ */
 function vk_dynamic_if_block_render( $attributes, $content ) {
-	$page_type = isset( $attributes['pageType'] ) ? $attributes['pageType'] : 'none';
-	$post_type = isset( $attributes['selectedPostType'] ) ? $attributes['selectedPostType'] : 'none';
+	$page_type = isset( $attributes['ifPageType'] ) ? $attributes['ifPageType'] : 'none';
+	$post_type = isset( $attributes['ifPostType'] ) ? $attributes['ifPostType'] : 'none';
 
 	$return = '';
 
@@ -51,10 +56,15 @@ function vk_dynamic_if_block_register_dynamic() {
 add_action( 'init', 'vk_dynamic_if_block_register_dynamic' );
 
 function vk_dynamic_if_block_set_localize_script() {
-	// データを初期化
-	$post_type_select_options = array();
 
-	// Default Post Type
+	$post_type_select_options = array(
+		array(
+			'label' => __( 'No restriction', 'vk-dynamic-if-block' ),
+			'value' => 'none',
+		),
+	);
+
+	// Default Post Type.
 	$post_types_all = array(
 		'post' => 'post',
 		'page' => 'page',
