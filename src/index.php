@@ -49,3 +49,58 @@ function vk_dynamic_if_block_register_dynamic() {
 	);
 }
 add_action( 'init', 'vk_dynamic_if_block_register_dynamic' );
+
+function vk_dynamic_if_block_set_localize_script() {
+	// データを初期化
+	$post_type_select_options = array();
+
+	// 投稿タイプのリスト
+	$post_types_all = array(
+		'post' => 'post',
+		'page' => 'page',
+	);
+	$post_types_all = array_merge(
+		$post_types_all,
+		get_post_types(
+			array(
+				'public'   => true,
+				'show_ui'  => true,
+				'_builtin' => false,
+			),
+			'names',
+			'and'
+		)
+	);
+	foreach ( $post_types_all as $post_type ) {
+
+		// 投稿タイプのオブジェクトを取得
+		$post_type_object = get_post_type_object( $post_type );
+
+		// 投稿があるかないか判定
+		// $get_posts = get_posts(
+		// array(
+		// 'post_type'        => $post_type_object->name,
+		// 'suppress_filters' => false,
+		// )
+		// );
+
+		// 投稿があれば配列に追加
+		// if ( ! empty( $get_posts ) ) {
+		// 投稿タイプの選択肢に投稿タイプを追加
+		$post_type_select_options[] = array(
+			'label' => $post_type_object->labels->singular_name,
+			'value' => $post_type_object->name,
+		);
+	}
+
+	// The wp_localize_script() function is used to add custom JavaScript data to a script handle.
+	wp_localize_script(
+		'vk-dynamic-if-block', // Script handle
+		'vk_dynamic_if_block_localize_data', // JS object name
+		array(
+			'postTypeSelectOptions' => $post_type_select_options,
+		)
+	);
+}
+
+add_action( 'enqueue_block_editor_assets', 'vk_dynamic_if_block_set_localize_script' );

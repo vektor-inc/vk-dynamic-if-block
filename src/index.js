@@ -1,6 +1,7 @@
 import { registerBlockType } from '@wordpress/blocks';
 import { useBlockProps, InnerBlocks, InspectorControls } from '@wordpress/block-editor';
 import { PanelBody, SelectControl } from '@wordpress/components';
+// import { useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 
 registerBlockType('vk-blocks/dynamic-if', {
@@ -24,6 +25,22 @@ registerBlockType('vk-blocks/dynamic-if', {
 	edit({ attributes, setAttributes }) {
 		const { pageType, selectedPostType } = attributes;
 
+		// const postTypes = useSelect((select) => {
+		// 	return select('core').getPostTypes({ per_page: -1, public: true });
+		// }, []);
+
+		// if (!postTypes) {
+		// 	return __('Loading...', 'vk-dynamic-if-block');
+		// }
+
+		// const postTypeOptions = postTypes.map((postType) => {
+		// 	return { value: postType.slug, label: postType.name };
+		// });
+
+		// postTypeOptions.unshift({ value: 'none', label: __('No restriction', 'vk-dynamic-if-block') });
+
+		
+
 		const pageTypes = [
 			{ value: 'none', label: __('No restriction', 'vk-dynamic-if-block') },
 			{ value: 'is_front_page', label: __('Front Page', 'vk-dynamic-if-block') + ' : is_front_page()' },
@@ -34,12 +51,6 @@ registerBlockType('vk-blocks/dynamic-if', {
 			{ value: 'is_archive', label: __('Archive', 'vk-dynamic-if-block') + ' : is_archive()' },
 			{ value: 'is_search', label: __('Search Result', 'vk-dynamic-if-block') + ' : is_search()' },
 			{ value: 'is_404', label: __('404', 'vk-dynamic-if-block') + ' : is_404()' },
-		];
-
-		const postTypeOptions = [
-			{ value: 'none', label: __('No restriction', 'vk-dynamic-if-block') },
-			{ value: 'post', label: 'Post' },
-			{ value: 'page', label: 'Page' },
 		];
 
 		return (
@@ -55,7 +66,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 						<SelectControl
 							label={__('Select a Post Type', 'vk-dynamic-if-block')}
 							value={selectedPostType}
-							options={postTypeOptions}
+							options={vk_dynamic_if_block_localize_data.postTypeSelectOptions}
 							onChange={(value) => setAttributes({ selectedPostType: value })}
 						/>
 					</PanelBody>
