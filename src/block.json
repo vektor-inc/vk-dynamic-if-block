@@ -18,6 +18,5 @@
 		"innerBlocks": true
 	},
 	"editorScript": "url:./build/index.js",
-	"style": "url:./build/style.css",
 	"editorStyle": "url:./build/editor.css"
 }
