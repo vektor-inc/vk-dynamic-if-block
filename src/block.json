@@ -2,7 +2,7 @@
 	"apiVersion": 2,
 	"name": "vk-blocks/dynamic-if",
 	"title": "Dynamic If",
-	"category": "layout",
+	"category": "theme",
 	"attributes": {
 		"ifPageType": {
 			"type": "string",

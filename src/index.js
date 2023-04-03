@@ -8,7 +8,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 	apiVersion: 2,
 	title: __('Dynamic If', 'vk-dynamic-if-block'),
 	icon: <Icon />,
-	category: 'layout',
+	category: 'theme',
 	attributes: {
 		ifPageType: {
 			type: 'string',
