@@ -22,7 +22,7 @@
 		"copy": "mkdir -p dist/vk-dynamic-if-block && cp -r build dist/vk-dynamic-if-block && cp -r vendor dist/vk-dynamic-if-block && find . -maxdepth 1 '(' -name '*.php' -o -name '*.txt' ')' -exec cp '{}' dist/vk-dynamic-if-block/ ';'",
 		"zip": "cd dist && zip -r vk-dynamic-if-block.zip vk-dynamic-if-block && cd ..",
 		"wp-env": "wp-env",
-		"phpunit": "wp-env run phpunit 'phpunit -c /var/www/html/wp-content/plugins/vk-dynamic-if-block/phpunit.xml --verbose'"
+		"phpunit": "npm run build && wp-env run phpunit 'phpunit -c /var/www/html/wp-content/plugins/vk-dynamic-if-block/phpunit.xml --verbose'"
 	},
 	"dependencies": {
 		"@wordpress/blocks": "^11.0.0",

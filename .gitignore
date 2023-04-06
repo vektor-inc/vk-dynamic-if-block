@@ -32,3 +32,4 @@ node_modules/
 build
 vendor
 dist
+.wp-env.override.json
