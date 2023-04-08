@@ -9,3 +9,9 @@ npm install
 composer install
 npm run build
 ```
+
+Make zip
+```
+npm run build
+npm run zip
+```
