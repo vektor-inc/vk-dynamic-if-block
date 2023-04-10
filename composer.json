@@ -1,5 +1,10 @@
 {
-    "require": {
-        "vektor-inc/vk-helpers": "^0.0.4"
-    }
+	"require": {
+		"vektor-inc/vk-helpers": "^0.0.4"
+	},
+	"require-dev": {
+		"wp-phpunit/wp-phpunit": "^5.4",
+		"yoast/phpunit-polyfills": "^1.0",
+		"vektor-inc/vk-wp-unit-test-tools": "^0.10.0"
+	}
 }
