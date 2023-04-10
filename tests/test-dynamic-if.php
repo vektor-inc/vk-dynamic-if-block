@@ -25,6 +25,8 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 		$test_posts = VkWpUnitTestHelpers::create_test_posts();
 
 		$tests = array(
+			/******************************************
+			 * Front Page */
 			array(
 				'name'      => 'Front Page',
 				'go_to'     => home_url(),
@@ -36,7 +38,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'expected'  => 'Front Page',
 			),
 			array(
-				'name'      => 'Front Page Home',
+				'name'      => 'Front Post Home',
 				'options'   => array(
 					'show_on_front' => 'posts',
 				),
@@ -45,48 +47,51 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'ifPageType' => 'is_front_page',
 					'ifPostType' => 'none',
 				),
-				'content'   => 'Front Page',
-				'expected'  => 'Front Page',
+				'content'   => 'Front Post Home',
+				'expected'  => 'Front Post Home',
 			),
 			array(
-				'name'      => 'Front Page Home',
+				'name'      => 'Front Post If Home',
 				'go_to'     => home_url(),
 				'attribute' => array(
 					'ifPageType' => 'is_home',
 					'ifPostType' => 'none',
 				),
-				'content'   => 'Front Page',
-				'expected'  => 'Front Page',
+				'content'   => 'Front Post If Home',
+				'expected'  => 'Front Post If Home',
 			),
-			// array(
-			// 'name'      => 'Home',
-			// 'options'   => array(
-			// 'page_on_front'  => $test_posts['front_page_id'],
-			// 'show_on_front'  => 'page',
-			// 'page_for_posts' => $test_posts['home_page_id'],
-			// ),
-			// 'go_to'     => home_url() . '/?page_id=' . $test_posts['home_page_id'],
-			// 'attribute' => array(
-			// 'ifPageType' => 'is_home',
-			// 'ifPostType' => 'post',
-			// ),
-			// 'content'   => 'Home',
-			// 'expected'  => 'Home',
-			// ),
-
+			/******************************************
+			 *Home */
 			array(
-				'name'      => 'Post Type Archive pag',
+				'name'      => 'Home',
+				'options'   => array(
+					'page_on_front'  => $test_posts['front_page_id'],
+					'show_on_front'  => 'page',
+					'page_for_posts' => $test_posts['home_page_id'],
+				),
+				'go_to'     => get_permalink( $test_posts['home_page_id'] ),
+				'attribute' => array(
+					'ifPageType' => 'is_home',
+				),
+				'content'   => 'Home',
+				'expected'  => 'Home',
+			),
+			/******************************************
+			 * Archive Page */
+			array(
+				'name'      => 'Post Type Archive page',
 				'go_to'     => get_post_type_archive_link( 'event' ),
 				'attribute' => array(
 					'ifPageType' => 'is_archive',
-					'ifPostType' => 'event',
 				),
-				'content'   => 'Post Type Archive pag',
-				'expected'  => 'Post Type Archive pag',
+				'content'   => 'Post Type Archive page',
+				'expected'  => 'Post Type Archive page',
 			),
+			/******************************************
+			* Category archive page */
 			array(
 				'name'      => 'Category archive page',
-				'go_to'     => get_category_link( 1 ),
+				'go_to'     => get_category_link( $test_posts['parent_category_id'] ),
 				'attribute' => array(
 					'ifPageType' => 'is_archive',
 					'ifPostType' => 'post',
@@ -94,17 +99,73 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'content'   => 'Category Archive page',
 				'expected'  => 'Category Archive page',
 			),
-			// array(
-			// 'name'      => 'Custom taxonomy archive page',
-			// 'go_to'     => get_term_link( 'Sci-fi', 'genre' ),
-			// 'attribute' => array(
-			// 'ifPageType' => 'is_archive',
-			// 'ifPostType' => 'book',
-			// ),
-			// 'content'   => 'Custom Taxonomy Archive page',
-			// 'expected'  => 'Custom Taxonomy Archive page',
-			// ),
-
+			/******************************************
+			* Term archive page */
+			array(
+				'name'      => 'Term archive page',
+				'go_to'     => get_term_link( $test_posts['event_term_id'] ),
+				'attribute' => array(
+					'ifPageType' => 'is_archive',
+				),
+				'content'   => 'Term Archive page',
+				'expected'  => 'Term Archive page',
+			),
+			/******************************************
+			* Page */
+			array(
+				'name'      => 'Page',
+				'go_to'     => get_permalink( $test_posts['parent_page_id'] ),
+				'attribute' => array(
+					'ifPageType' => 'is_page',
+				),
+				'content'   => 'Page',
+				'expected'  => 'Page',
+			),
+			/******************************************
+			* Single */
+			array(
+				'name'      => 'Single',
+				'go_to'     => get_permalink( $test_posts['post_id'] ),
+				'attribute' => array(
+					'ifPageType' => 'is_single',
+				),
+				'content'   => 'Single',
+				'expected'  => 'Single',
+			),
+			/******************************************
+			* Post Type Event */
+			// Post Type Archive page.
+			array(
+				'name'      => 'Post Type Archive page',
+				'go_to'     => get_post_type_archive_link( 'event' ),
+				'attribute' => array(
+					'ifPostType' => 'event',
+				),
+				'content'   => 'Post Type Archive page',
+				'expected'  => 'Post Type Archive page',
+			),
+			// Term archive page.
+			array(
+				'name'      => 'Term archive page',
+				'go_to'     => get_term_link( $test_posts['event_term_id'] ),
+				'attribute' => array(
+					'ifPostType' => 'event',
+				),
+				'content'   => 'Term Archive page',
+				'expected'  => 'Term Archive page',
+			),
+			// single.
+			array(
+				'name'      => 'Post Type Event',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'ifPostType' => 'event',
+				),
+				'content'   => 'Post Type Event',
+				'expected'  => 'Post Type Event',
+			),
+			/******************************************
+			* 404 Page */
 			// URLで home_url() . /non-exist-page/ にアクセスしてもサーバー側で Not Found にされてしまい WordPressの 404 にならないため
 			// home_url() . '/?cat=999999' で指定している
 			array(
@@ -120,7 +181,6 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 		);
 
 		foreach ( $tests as $test ) {
-			$this->go_to( $test['go_to'] );
 
 			if ( isset( $test['options'] ) ) {
 				foreach ( $test['options'] as $option => $value ) {
@@ -129,10 +189,8 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 			}
 
 			print PHP_EOL;
-
+			$this->go_to( $test['go_to'] );
 			$actual = vk_dynamic_if_block_render( $test['attribute'], $test['content'] );
-
-
 			print 'Page : ' . esc_html( $test['name'] ) . PHP_EOL;
 			print 'go_to : ' . esc_html( $test['go_to'] ) . PHP_EOL;
 			$this->assertSame( $test['expected'], $actual, $test['name'] );

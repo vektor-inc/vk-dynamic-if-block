@@ -29,6 +29,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		is_404() && 'is_404' === $page_type ||
 		'none' === $page_type
 	) {
+
 		$return         = $content;
 		$post_type_info = VkHelpers::get_post_type_info();
 		$post_type_slug = $post_type_info['slug'];
