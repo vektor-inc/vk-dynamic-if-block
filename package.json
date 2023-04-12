@@ -18,25 +18,24 @@
 		"packages-update": "wp-scripts packages-update",
 		"plugin-zip": "wp-scripts plugin-zip",
 		"start": "wp-scripts start",
-		"dist": "composer install --optimize-autoloader --prefer-dist --no-dev && npm run copy && npm run zip",
+		"dist": "composer install --optimize-autoloader --prefer-dist --no-dev && npm run copy",
 		"copy": "mkdir -p dist/vk-dynamic-if-block && cp -r build dist/vk-dynamic-if-block && cp -r vendor dist/vk-dynamic-if-block && find . -maxdepth 1 '(' -name '*.php' -o -name '*.txt' ')' -exec cp '{}' dist/vk-dynamic-if-block/ ';'",
-		"zip": "cd dist && zip -r vk-dynamic-if-block.zip vk-dynamic-if-block && cd ..",
+		"zip": "npm run dist && cd dist && zip -r vk-dynamic-if-block.zip vk-dynamic-if-block && cd ..",
 		"wp-env": "wp-env",
 		"phpunit": "npm run build && wp-env run phpunit 'phpunit -c /var/www/html/wp-content/plugins/vk-dynamic-if-block/phpunit.xml --verbose'"
 	},
 	"dependencies": {
-		"@wordpress/blocks": "^11.0.0",
-		"@wordpress/block-editor": "^7.0.0",
-		"@wordpress/components": "^19.0.0",
-		"@wordpress/i18n": "^4.1.0"
+		"@wordpress/env": "^5.15.0"
 	},
 	"devDependencies": {
 		"@wordpress/scripts": "^26.1.0",
 		"npm-run-all": "^4.1.5",
-		"postcss": "^8.3.6",
 		"postcss-cli": "^8.3.1",
 		"postcss-minify": "^1.1.0",
-		"rimraf": "^3.0.2",
-		"sass": "^1.39.2"
+		"rimraf": "^3.0.2"
+	},
+	"volta": {
+		"node": "16.15.1",
+		"npm": "8.12.1"
 	}
 }
