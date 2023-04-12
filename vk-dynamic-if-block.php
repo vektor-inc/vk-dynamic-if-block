@@ -23,6 +23,16 @@ if ( file_exists( $autoload_path ) ) {
 	require_once $autoload_path;
 }
 
+// Update Checker.
+if ( class_exists( 'YahnisElsts\PluginUpdateChecker\v5\PucFactory' ) ) {
+	$my_update_checker = YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
+		'https://github.com/vektor-inc/vk-dynamic-if-block',
+		__FILE__,
+		'vk-dynamic-if-block'
+	);
+	$my_update_checker->getVcsApi()->enableReleaseAssets();
+}
+
 function vk_dynamic_if_block_enqueue_scripts() {
 	wp_enqueue_script(
 		'vk-dynamic-if-block',
