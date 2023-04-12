@@ -48,6 +48,8 @@ jobs:
               run: npm install
             - name: Install Composer Packages
               run: composer install
+            - name: Build
+              run: npm run build
             - name: Install several WordPress version by wp-env.override.json
               run: WP_ENV_PHP_VERSION=${{ matrix.php-versions }} WP_ENV_CORE=WordPress/WordPress#${{ matrix.wp-versions }} npm run wp-env start --update
             - name: Check WordPress Version
