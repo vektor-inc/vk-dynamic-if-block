@@ -14,7 +14,14 @@
 
 defined( 'ABSPATH' ) || exit;
 
-require_once plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
+/**
+ * Composer Autoload
+ */
+$autoload_path = plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
+// Deploy failure countermeasure for Vendor directory
+if ( file_exists( $autoload_path ) ) {
+	require_once $autoload_path;
+}
 
 function vk_dynamic_if_block_enqueue_scripts() {
 	wp_enqueue_script(
