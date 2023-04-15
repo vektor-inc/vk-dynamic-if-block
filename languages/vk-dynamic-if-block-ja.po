@@ -1,0 +1,102 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/vk-dynamic-if-"
+"block\n"
+"POT-Creation-Date: 2023-04-15T18:41:22+00:00\n"
+"PO-Revision-Date: 2023-04-16 03:41+0900\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Poedit 3.2.2\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-KeywordsList: __\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: node_modules\n"
+"X-Poedit-SearchPathExcluded-1: dist\n"
+
+#. Plugin Name of the plugin
+msgid "VK Dynamic If Block"
+msgstr "VK Dynamic If Block"
+
+#. Plugin URI of the plugin
+msgid "https://github.com/vektor-inc/vk-dynamic-if-block"
+msgstr "https://github.com/vektor-inc/vk-dynamic-if-block"
+
+#. Description of the plugin
+msgid ""
+"A dynamic block that shows its inner blocks based on specified conditions, "
+"such as whether the current page is the front page or a single post."
+msgstr ""
+"現在のページがフロント ページか単一の投稿かなど、指定された条件に基づいて内"
+"部ブロックを表示する動的ブロック。"
+
+#. Author of the plugin
+msgid "Vektor,Inc."
+msgstr "Vektor,Inc."
+
+#. Author URI of the plugin
+msgid "https://vektor-inc.co.jp"
+msgstr "https://vektor-inc.co.jp"
+
+#: dist/vk-dynamic-if-block/build/index.php:63 src/index.php:63
+#: build/index.js:1 dist/vk-dynamic-if-block/build/index.js:1 src/index.js:30
+msgid "No restriction"
+msgstr "No restriction"
+
+#: build/index.js:1 dist/vk-dynamic-if-block/build/index.js:1 src/index.js:9
+msgid "Dynamic If"
+msgstr "Dynamic If"
+
+#: build/index.js:1 dist/vk-dynamic-if-block/build/index.js:1 src/index.js:31
+msgid "Front Page"
+msgstr "フロントページ"
+
+#: build/index.js:1 dist/vk-dynamic-if-block/build/index.js:1 src/index.js:32
+msgid "Single"
+msgstr "個別ページ"
+
+#: build/index.js:1 dist/vk-dynamic-if-block/build/index.js:1 src/index.js:33
+msgid "Page"
+msgstr "固定ページ"
+
+#: build/index.js:1 dist/vk-dynamic-if-block/build/index.js:1 src/index.js:34
+msgid "Singular"
+msgstr "Singular"
+
+#: build/index.js:1 dist/vk-dynamic-if-block/build/index.js:1 src/index.js:35
+msgid "Post Top"
+msgstr "投稿トップ"
+
+#: build/index.js:1 dist/vk-dynamic-if-block/build/index.js:1 src/index.js:36
+msgid "Archive"
+msgstr "アーカイブ"
+
+#: build/index.js:1 dist/vk-dynamic-if-block/build/index.js:1 src/index.js:37
+msgid "Search Result"
+msgstr "検索結果"
+
+#: build/index.js:1 dist/vk-dynamic-if-block/build/index.js:1 src/index.js:38
+msgid "404"
+msgstr "404"
+
+#: build/index.js:1 dist/vk-dynamic-if-block/build/index.js:1 src/index.js:46
+msgid "Display Conditions"
+msgstr "表示条件"
+
+#: build/index.js:1 dist/vk-dynamic-if-block/build/index.js:1 src/index.js:48
+msgid "Select a Page Type"
+msgstr ""
+
+#: build/index.js:1 dist/vk-dynamic-if-block/build/index.js:1 src/index.js:54
+msgid "Select a Post Type"
+msgstr ""
+
+#: build/block.json dist/vk-dynamic-if-block/build/block.json src/block.json
+msgctxt "block title"
+msgid "Dynamic If"
+msgstr ""

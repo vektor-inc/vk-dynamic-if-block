@@ -33,9 +33,19 @@ if ( class_exists( 'YahnisElsts\PluginUpdateChecker\v5\PucFactory' ) ) {
 	$my_update_checker->getVcsApi()->enableReleaseAssets();
 }
 
+/**
+ * Load textdomain.
+ */
+function vk_dynamic_if_block_load_textdomain() {
+	load_plugin_textdomain( 'vk-dynamic-if-block', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+}
+add_action( 'init', 'vk_dynamic_if_block_load_textdomain' );
+
 function vk_dynamic_if_block_enqueue_scripts() {
+
+	$handle      = 'vk-dynamic-if-block';
 	wp_enqueue_script(
-		'vk-dynamic-if-block',
+		$handle,
 		plugins_url( 'build/index.js', __FILE__ ),
 		array( 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-i18n', 'wp-components' ),
 		filemtime( plugin_dir_path( __FILE__ ) . 'build/index.js' )
@@ -47,6 +57,10 @@ function vk_dynamic_if_block_enqueue_scripts() {
 		array(),
 		filemtime( plugin_dir_path( __FILE__ ) . 'build/editor.css' )
 	);
+
+	// JSON翻訳ファイルを読み込む.
+	$textdomain = 'vk-dynamic-if-block';
+	wp_set_script_translations( $handle, $textdomain, plugin_dir_path( __FILE__ ) . 'languages' );
 }
 
 add_action( 'enqueue_block_editor_assets', 'vk_dynamic_if_block_enqueue_scripts' );
