@@ -3,6 +3,7 @@
 	"name": "vk-blocks/dynamic-if",
 	"title": "Dynamic If",
 	"category": "theme",
+	"textdomain": "vk-dynamic-if-block",
 	"attributes": {
 		"ifPageType": {
 			"type": "string",
