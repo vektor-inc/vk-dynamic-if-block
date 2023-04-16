@@ -1,10 +1,10 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
+"Project-Id-Version: VK Dynamic If Block\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/vk-dynamic-if-"
 "block\n"
 "POT-Creation-Date: 2023-04-16T03:29:43+00:00\n"
-"PO-Revision-Date: 2023-04-16 12:35+0900\n"
+"PO-Revision-Date: 2023-04-16 18:26+0900\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -15,6 +15,7 @@ msgstr ""
 "X-Generator: Poedit 3.2.2\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-KeywordsList: __\n"
+"X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: node_modules\n"
 "X-Poedit-SearchPathExcluded-1: dist\n"
@@ -90,11 +91,11 @@ msgstr "表示条件"
 
 #: build/index.js:1 dist/vk-dynamic-if-block/build/index.js:1 src/index.js:48
 msgid "Select a Page Type"
-msgstr ""
+msgstr "ページタイプを選択"
 
 #: build/index.js:1 dist/vk-dynamic-if-block/build/index.js:1 src/index.js:54
 msgid "Select a Post Type"
-msgstr ""
+msgstr "投稿タイプを選択"
 
 #: build/block.json dist/vk-dynamic-if-block/build/block.json src/block.json
 msgctxt "block title"
