@@ -14,6 +14,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
+// Define Plugin  Root Path.
+define( 'VKDIF_PLUGIN_ROOT_PATH', plugin_dir_path( __FILE__ ) );
+
 /**
  * Composer Autoload
  */
@@ -36,10 +39,7 @@ if ( class_exists( 'YahnisElsts\PluginUpdateChecker\v5\PucFactory' ) ) {
 /**
  * Load textdomain.
  */
-function vk_dynamic_if_block_load_textdomain() {
-	load_plugin_textdomain( 'vk-dynamic-if-block', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
-}
-add_action( 'init', 'vk_dynamic_if_block_load_textdomain' );
+load_plugin_textdomain( 'vk-dynamic-if-block', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 
 /**
  * Load translation file.
@@ -48,10 +48,9 @@ function vk_dynamic_if_block_load_translation_file() {
 	// JSON翻訳ファイルを読み込む.
 	$handle     = 'vk-dynamic-if-block';
 	$textdomain = 'vk-dynamic-if-block';
-	wp_set_script_translations( $handle, $textdomain, plugin_dir_path( __FILE__ ) . 'languages' );
+	wp_set_script_translations( $handle, $textdomain, VKDIF_PLUGIN_ROOT_PATH . 'languages/' );
 }
 add_action( 'enqueue_block_editor_assets', 'vk_dynamic_if_block_load_translation_file' );
-add_action( 'init', 'vk_dynamic_if_block_load_translation_file', 11 );
 
 function vk_dynamic_if_block_enqueue_scripts() {
 
@@ -71,6 +70,7 @@ function vk_dynamic_if_block_enqueue_scripts() {
 	);
 }
 
+add_action( 'init', 'vk_dynamic_if_block_enqueue_scripts' );
 add_action( 'enqueue_block_editor_assets', 'vk_dynamic_if_block_enqueue_scripts' );
 
 require_once plugin_dir_path( __FILE__ ) . 'build/index.php';
