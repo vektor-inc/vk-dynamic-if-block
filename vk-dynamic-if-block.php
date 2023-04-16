@@ -41,9 +41,20 @@ function vk_dynamic_if_block_load_textdomain() {
 }
 add_action( 'init', 'vk_dynamic_if_block_load_textdomain' );
 
+/**
+ * Load translation file.
+ */
+function vk_dynamic_if_block_load_translation_file() {
+	// JSON翻訳ファイルを読み込む.
+	$handle     = 'vk-dynamic-if-block';
+	$textdomain = 'vk-dynamic-if-block';
+	wp_set_script_translations( $handle, $textdomain, plugin_dir_path( __FILE__ ) . 'languages' );
+}
+add_action( 'enqueue_block_editor_assets', 'vk_dynamic_if_block_load_translation_file' );
+
 function vk_dynamic_if_block_enqueue_scripts() {
 
-	$handle      = 'vk-dynamic-if-block';
+	$handle = 'vk-dynamic-if-block';
 	wp_enqueue_script(
 		$handle,
 		plugins_url( 'build/index.js', __FILE__ ),
@@ -57,10 +68,6 @@ function vk_dynamic_if_block_enqueue_scripts() {
 		array(),
 		filemtime( plugin_dir_path( __FILE__ ) . 'build/editor.css' )
 	);
-
-	// JSON翻訳ファイルを読み込む.
-	$textdomain = 'vk-dynamic-if-block';
-	wp_set_script_translations( $handle, $textdomain, plugin_dir_path( __FILE__ ) . 'languages' );
 }
 
 add_action( 'enqueue_block_editor_assets', 'vk_dynamic_if_block_enqueue_scripts' );
