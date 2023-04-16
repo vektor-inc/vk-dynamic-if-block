@@ -1,7 +1,7 @@
+import { __ } from '@wordpress/i18n';
 import { registerBlockType } from '@wordpress/blocks';
 import { useBlockProps, InnerBlocks, InspectorControls } from '@wordpress/block-editor';
 import { PanelBody, SelectControl } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
 import { ReactComponent as Icon } from './icon.svg';
 
 registerBlockType('vk-blocks/dynamic-if', {

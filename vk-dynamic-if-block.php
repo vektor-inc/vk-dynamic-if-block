@@ -51,6 +51,7 @@ function vk_dynamic_if_block_load_translation_file() {
 	wp_set_script_translations( $handle, $textdomain, plugin_dir_path( __FILE__ ) . 'languages' );
 }
 add_action( 'enqueue_block_editor_assets', 'vk_dynamic_if_block_load_translation_file' );
+add_action( 'init', 'vk_dynamic_if_block_load_translation_file', 11 );
 
 function vk_dynamic_if_block_enqueue_scripts() {
 
