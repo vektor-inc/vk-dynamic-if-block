@@ -3,8 +3,8 @@ msgstr ""
 "Project-Id-Version: VK Dynamic If Block\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/vk-dynamic-if-"
 "block\n"
-"POT-Creation-Date: 2023-04-16T03:29:43+00:00\n"
-"PO-Revision-Date: 2023-04-16 18:26+0900\n"
+"POT-Creation-Date: 2023-04-17T01:30:38+00:00\n"
+"PO-Revision-Date: 2023-04-17 10:32+0900\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -89,11 +89,19 @@ msgstr "404"
 msgid "Display Conditions"
 msgstr "表示条件"
 
-#: build/index.js:1 dist/vk-dynamic-if-block/build/index.js:1 src/index.js:48
+#: build/index.js:1 src/index.js:48
+msgid "Page Type"
+msgstr "ページタイプ"
+
+#: build/index.js:1 src/index.js:54
+msgid "Post Type"
+msgstr "投稿タイプ"
+
+#: dist/vk-dynamic-if-block/build/index.js:1
 msgid "Select a Page Type"
 msgstr "ページタイプを選択"
 
-#: build/index.js:1 dist/vk-dynamic-if-block/build/index.js:1 src/index.js:54
+#: dist/vk-dynamic-if-block/build/index.js:1
 msgid "Select a Post Type"
 msgstr "投稿タイプを選択"
 
