@@ -93,6 +93,15 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Category archive page',
 				'go_to'     => get_category_link( $test_posts['parent_category_id'] ),
 				'attribute' => array(
+					'ifPageType' => 'is_category',
+				),
+				'content'   => 'Category Archive page',
+				'expected'  => 'Category Archive page',
+			),
+			array(
+				'name'      => 'Category archive page',
+				'go_to'     => get_category_link( $test_posts['parent_category_id'] ),
+				'attribute' => array(
 					'ifPageType' => 'is_archive',
 					'ifPostType' => 'post',
 				),
