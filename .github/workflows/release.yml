@@ -44,11 +44,15 @@ jobs:
               uses: shivammathur/setup-php@v2
               with:
                   php-version: ${{ matrix.php-versions }}
-                  tools: wp-cli
             - name: install npm scripts
               run: npm install
             - name: Install Composer Packages
               run: composer install
+            - name: Install WP-CLI
+              run: |
+                  curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+                  chmod +x wp-cli.phar
+                  mv wp-cli.phar /usr/local/bin/wp
             - name: Build
               run: npm run build
             - name: Install several WordPress version by wp-env.override.json
