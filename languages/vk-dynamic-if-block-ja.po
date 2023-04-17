@@ -3,8 +3,8 @@ msgstr ""
 "Project-Id-Version: VK Dynamic If Block\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/vk-dynamic-if-"
 "block\n"
-"POT-Creation-Date: 2023-04-17T01:30:38+00:00\n"
-"PO-Revision-Date: 2023-04-17 10:32+0900\n"
+"POT-Creation-Date: 2023-04-17T09:11:18+00:00\n"
+"PO-Revision-Date: 2023-04-17 18:12+0900\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -44,7 +44,7 @@ msgstr "Vektor,Inc."
 msgid "https://vektor-inc.co.jp"
 msgstr "https://vektor-inc.co.jp"
 
-#: dist/vk-dynamic-if-block/build/index.php:63 src/index.php:63
+#: dist/vk-dynamic-if-block/build/index.php:63 src/index.php:71
 #: build/index.js:1 dist/vk-dynamic-if-block/build/index.js:1 src/index.js:30
 msgid "No restriction"
 msgstr "指定なし"
@@ -73,27 +73,59 @@ msgstr "Singular"
 msgid "Post Top"
 msgstr "投稿トップ"
 
-#: build/index.js:1 dist/vk-dynamic-if-block/build/index.js:1 src/index.js:36
+#: build/index.js:1 src/index.js:36
+msgid "Post Type Archive"
+msgstr "投稿タイプアーカイブ"
+
+#: build/index.js:1 src/index.js:37
+msgid "Category Archive"
+msgstr "カテゴリーアーカイブ"
+
+#: build/index.js:1 src/index.js:38
+msgid "Tag Archive"
+msgstr "タグアーカイブ"
+
+#: build/index.js:1 src/index.js:39
+msgid "Taxonomy Archive"
+msgstr "タクソノミーアーカイブ"
+
+#: build/index.js:1 src/index.js:40
+msgid "Yearly Archive"
+msgstr "年別アーカイブ"
+
+#: build/index.js:1 src/index.js:41
+msgid "Monthly Archive"
+msgstr "月別アーカイブ"
+
+#: build/index.js:1 src/index.js:42
+msgid "Daily Archive"
+msgstr "日別アーカイブ"
+
+#: build/index.js:1 src/index.js:43
+msgid "Author Archive"
+msgstr "投稿者アーカイブ"
+
+#: build/index.js:1 dist/vk-dynamic-if-block/build/index.js:1 src/index.js:44
 msgid "Archive"
 msgstr "アーカイブ"
 
-#: build/index.js:1 dist/vk-dynamic-if-block/build/index.js:1 src/index.js:37
+#: build/index.js:1 dist/vk-dynamic-if-block/build/index.js:1 src/index.js:45
 msgid "Search Result"
 msgstr "検索結果"
 
-#: build/index.js:1 dist/vk-dynamic-if-block/build/index.js:1 src/index.js:38
+#: build/index.js:1 dist/vk-dynamic-if-block/build/index.js:1 src/index.js:46
 msgid "404"
 msgstr "404"
 
-#: build/index.js:1 dist/vk-dynamic-if-block/build/index.js:1 src/index.js:46
+#: build/index.js:1 dist/vk-dynamic-if-block/build/index.js:1 src/index.js:54
 msgid "Display Conditions"
 msgstr "表示条件"
 
-#: build/index.js:1 src/index.js:48
+#: build/index.js:1 src/index.js:56
 msgid "Page Type"
 msgstr "ページタイプ"
 
-#: build/index.js:1 src/index.js:54
+#: build/index.js:1 src/index.js:62
 msgid "Post Type"
 msgstr "投稿タイプ"
 

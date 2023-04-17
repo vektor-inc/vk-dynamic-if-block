@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cf0a13a01557b0aedaab08bafc413fa2",
+    "content-hash": "1e418e3468591903c6999d2855587dda",
     "packages": [
         {
             "name": "vektor-inc/vk-helpers",
@@ -715,16 +715,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "9.6.6",
+            "version": "9.6.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "b65d59a059d3004a040c16a82e07bbdf6cfdd115"
+                "reference": "c993f0d3b0489ffc42ee2fe0bd645af1538a63b2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/b65d59a059d3004a040c16a82e07bbdf6cfdd115",
-                "reference": "b65d59a059d3004a040c16a82e07bbdf6cfdd115",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/c993f0d3b0489ffc42ee2fe0bd645af1538a63b2",
+                "reference": "c993f0d3b0489ffc42ee2fe0bd645af1538a63b2",
                 "shasum": ""
             },
             "require": {
@@ -798,7 +798,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/9.6.6"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/9.6.7"
             },
             "funding": [
                 {
@@ -814,7 +814,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-03-27T11:43:46+00:00"
+            "time": "2023-04-14T08:58:40+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -1832,16 +1832,16 @@
         },
         {
             "name": "vektor-inc/vk-wp-unit-test-tools",
-            "version": "0.10.0",
+            "version": "0.12.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/vektor-inc/vk-wp-unit-test-tools.git",
-                "reference": "5ce9eb397ba1ec76193664e6877288ffa22b9422"
+                "reference": "bc5e2859cb955464995ece829f7770ee9377de56"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/vektor-inc/vk-wp-unit-test-tools/zipball/5ce9eb397ba1ec76193664e6877288ffa22b9422",
-                "reference": "5ce9eb397ba1ec76193664e6877288ffa22b9422",
+                "url": "https://api.github.com/repos/vektor-inc/vk-wp-unit-test-tools/zipball/bc5e2859cb955464995ece829f7770ee9377de56",
+                "reference": "bc5e2859cb955464995ece829f7770ee9377de56",
                 "shasum": ""
             },
             "type": "library",
@@ -1863,9 +1863,9 @@
             "description": "WordPress PHPUnit test tools",
             "support": {
                 "issues": "https://github.com/vektor-inc/vk-wp-unit-test-tools/issues",
-                "source": "https://github.com/vektor-inc/vk-wp-unit-test-tools/tree/0.10.0"
+                "source": "https://github.com/vektor-inc/vk-wp-unit-test-tools/tree/0.12.0"
             },
-            "time": "2021-09-03T10:14:12+00:00"
+            "time": "2023-04-17T06:46:48+00:00"
         },
         {
             "name": "wp-phpunit/wp-phpunit",

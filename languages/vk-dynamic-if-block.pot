@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2023-04-17T01:32:11+00:00\n"
+"POT-Creation-Date: 2023-04-17T09:13:22+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.6.0\n"
 "X-Domain: vk-dynamic-if-block\n"
@@ -35,7 +35,7 @@ msgid "https://vektor-inc.co.jp"
 msgstr ""
 
 #: dist/vk-dynamic-if-block/build/index.php:63
-#: src/index.php:63
+#: src/index.php:71
 #: build/index.js:1
 #: dist/vk-dynamic-if-block/build/index.js:1
 #: src/index.js:30
@@ -79,36 +79,76 @@ msgid "Post Top"
 msgstr ""
 
 #: build/index.js:1
-#: dist/vk-dynamic-if-block/build/index.js:1
 #: src/index.js:36
+msgid "Post Type Archive"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:37
+msgid "Category Archive"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:38
+msgid "Tag Archive"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:39
+msgid "Taxonomy Archive"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:40
+msgid "Yearly Archive"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:41
+msgid "Monthly Archive"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:42
+msgid "Daily Archive"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:43
+msgid "Author Archive"
+msgstr ""
+
+#: build/index.js:1
+#: dist/vk-dynamic-if-block/build/index.js:1
+#: src/index.js:44
 msgid "Archive"
 msgstr ""
 
 #: build/index.js:1
 #: dist/vk-dynamic-if-block/build/index.js:1
-#: src/index.js:37
+#: src/index.js:45
 msgid "Search Result"
 msgstr ""
 
 #: build/index.js:1
 #: dist/vk-dynamic-if-block/build/index.js:1
-#: src/index.js:38
+#: src/index.js:46
 msgid "404"
 msgstr ""
 
 #: build/index.js:1
 #: dist/vk-dynamic-if-block/build/index.js:1
-#: src/index.js:46
+#: src/index.js:54
 msgid "Display Conditions"
 msgstr ""
 
 #: build/index.js:1
-#: src/index.js:48
+#: src/index.js:56
 msgid "Page Type"
 msgstr ""
 
 #: build/index.js:1
-#: src/index.js:54
+#: src/index.js:62
 msgid "Post Type"
 msgstr ""
 
