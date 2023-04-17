@@ -3,8 +3,8 @@ Contributors: vektor-inc,kurudrive
 Tags: dynamic, block, if, front page, single
 Requires at least: 6.0
 Tested up to: 6.2
-Requires PHP: 7.0
-Stable tag: 0.1.0
+Requires PHP: 7.4
+Stable tag: 0.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -37,6 +37,9 @@ Currently, only the predefined conditions are supported: is_front_page() and is_
 3. Dynamic If block in the site editor.
 
 == Changelog ==
+
+= 0.2.0 =
+* Add conditions
 
 = 0.1.0 =
 * Initial release
