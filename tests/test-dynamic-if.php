@@ -163,6 +163,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'content'   => 'Term Archive page',
 				'expected'  => 'Term Archive page',
 			),
+			// Term archive page.
+			array(
+				'name'      => 'Author archive page',
+				'go_to'     => get_author_posts_url( 1 ),
+				'attribute' => array(
+					'ifPageType' => 'is_author',
+				),
+				'content'   => 'Author Archive page',
+				'expected'  => 'Author Archive page',
+			),
 			// single.
 			array(
 				'name'      => 'Post Type Event',
