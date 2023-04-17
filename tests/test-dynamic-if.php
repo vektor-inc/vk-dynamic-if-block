@@ -61,7 +61,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'expected'  => 'Front Post If Home',
 			),
 			/******************************************
-			 *Home */
+			 * Home */
 			array(
 				'name'      => 'Home',
 				'options'   => array(
@@ -107,6 +107,17 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				),
 				'content'   => 'Category Archive page',
 				'expected'  => 'Category Archive page',
+			),
+			/******************************************
+			* Tag archive page */
+			array(
+				'name'      => 'Tag archive page',
+				'go_to'     => get_term_link( $test_posts['test_tag_id'] ),
+				'attribute' => array(
+					'ifPageType' => 'is_tag',
+				),
+				'content'   => 'Tag Archive page',
+				'expected'  => 'Tag Archive page',
 			),
 			/******************************************
 			* Term archive page */
