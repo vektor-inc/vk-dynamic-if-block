@@ -88,6 +88,39 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'expected'  => 'Post Type Archive page',
 			),
 			/******************************************
+			 * Yearly Archive page */
+			array(
+				'name'      => 'Yearly Archive page',
+				'go_to'     => get_year_link( gmdate( 'Y' ) ),
+				'attribute' => array(
+					'ifPageType' => 'is_year',
+				),
+				'content'   => 'Yearly Archive page',
+				'expected'  => 'Yearly Archive page',
+			),
+			/******************************************
+			* Monthly Archive page */
+			array(
+				'name'      => 'Monthly Archive page',
+				'go_to'     => get_month_link( gmdate( 'Y' ), gmdate( 'm' ) ),
+				'attribute' => array(
+					'ifPageType' => 'is_month',
+				),
+				'content'   => 'Monthly Archive page',
+				'expected'  => 'Monthly Archive page',
+			),
+			/******************************************
+			* Daily Archive page */
+			array(
+				'name'      => 'Daily Archive page',
+				'go_to'     => get_day_link( gmdate( 'Y' ), gmdate( 'm' ), gmdate( 'd' ) ),
+				'attribute' => array(
+					'ifPageType' => 'is_date',
+				),
+				'content'   => 'Daily Archive page',
+				'expected'  => 'Daily Archive page',
+			),
+			/******************************************
 			* Category archive page */
 			array(
 				'name'      => 'Category archive page',

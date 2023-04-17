@@ -28,10 +28,13 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		is_category() && 'is_category' === $page_type ||
 		is_tag() && 'is_tag' === $page_type ||
 		is_tax() && 'is_tax' === $page_type ||
+		is_year() && 'is_year' === $page_type ||
+		is_month() && 'is_month' === $page_type ||
+		is_date() && 'is_date' === $page_type ||
 		is_author() && 'is_author' === $page_type ||
-		is_archive() && 'is_archive' === $page_type ||
 		is_search() && 'is_search' === $page_type ||
 		is_404() && 'is_404' === $page_type ||
+		is_archive() && 'is_archive' === $page_type ||
 		'none' === $page_type
 	) {
 
