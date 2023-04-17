@@ -105,6 +105,15 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Term archive page',
 				'go_to'     => get_term_link( $test_posts['event_term_id'] ),
 				'attribute' => array(
+					'ifPageType' => 'is_tax',
+				),
+				'content'   => 'Term Archive page',
+				'expected'  => 'Term Archive page',
+			),
+			array(
+				'name'      => 'Term archive page',
+				'go_to'     => get_term_link( $test_posts['event_term_id'] ),
+				'attribute' => array(
 					'ifPageType' => 'is_archive',
 				),
 				'content'   => 'Term Archive page',
@@ -163,7 +172,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'content'   => 'Term Archive page',
 				'expected'  => 'Term Archive page',
 			),
-			// Term archive page.
+			// Author archive page.
 			array(
 				'name'      => 'Author archive page',
 				'go_to'     => get_author_posts_url( 1 ),
