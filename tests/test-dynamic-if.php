@@ -61,7 +61,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'expected'  => 'Front Post If Home',
 			),
 			/******************************************
-			 *Home */
+			 * Home */
 			array(
 				'name'      => 'Home',
 				'options'   => array(
@@ -88,7 +88,49 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'expected'  => 'Post Type Archive page',
 			),
 			/******************************************
+			 * Yearly Archive page */
+			array(
+				'name'      => 'Yearly Archive page',
+				'go_to'     => get_year_link( gmdate( 'Y' ) ),
+				'attribute' => array(
+					'ifPageType' => 'is_year',
+				),
+				'content'   => 'Yearly Archive page',
+				'expected'  => 'Yearly Archive page',
+			),
+			/******************************************
+			* Monthly Archive page */
+			array(
+				'name'      => 'Monthly Archive page',
+				'go_to'     => get_month_link( gmdate( 'Y' ), gmdate( 'm' ) ),
+				'attribute' => array(
+					'ifPageType' => 'is_month',
+				),
+				'content'   => 'Monthly Archive page',
+				'expected'  => 'Monthly Archive page',
+			),
+			/******************************************
+			* Daily Archive page */
+			array(
+				'name'      => 'Daily Archive page',
+				'go_to'     => get_day_link( gmdate( 'Y' ), gmdate( 'm' ), gmdate( 'd' ) ),
+				'attribute' => array(
+					'ifPageType' => 'is_date',
+				),
+				'content'   => 'Daily Archive page',
+				'expected'  => 'Daily Archive page',
+			),
+			/******************************************
 			* Category archive page */
+			array(
+				'name'      => 'Category archive page',
+				'go_to'     => get_category_link( $test_posts['parent_category_id'] ),
+				'attribute' => array(
+					'ifPageType' => 'is_category',
+				),
+				'content'   => 'Category Archive page',
+				'expected'  => 'Category Archive page',
+			),
 			array(
 				'name'      => 'Category archive page',
 				'go_to'     => get_category_link( $test_posts['parent_category_id'] ),
@@ -100,7 +142,27 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'expected'  => 'Category Archive page',
 			),
 			/******************************************
+			* Tag archive page */
+			array(
+				'name'      => 'Tag archive page',
+				'go_to'     => get_term_link( $test_posts['test_tag_id'] ),
+				'attribute' => array(
+					'ifPageType' => 'is_tag',
+				),
+				'content'   => 'Tag Archive page',
+				'expected'  => 'Tag Archive page',
+			),
+			/******************************************
 			* Term archive page */
+			array(
+				'name'      => 'Term archive page',
+				'go_to'     => get_term_link( $test_posts['event_term_id'] ),
+				'attribute' => array(
+					'ifPageType' => 'is_tax',
+				),
+				'content'   => 'Term Archive page',
+				'expected'  => 'Term Archive page',
+			),
 			array(
 				'name'      => 'Term archive page',
 				'go_to'     => get_term_link( $test_posts['event_term_id'] ),
@@ -139,6 +201,15 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Post Type Archive page',
 				'go_to'     => get_post_type_archive_link( 'event' ),
 				'attribute' => array(
+					'ifPageType' => 'is_post_type_archive',
+				),
+				'content'   => 'Post Type Archive page',
+				'expected'  => 'Post Type Archive page',
+			),
+			array(
+				'name'      => 'Post Type Archive page',
+				'go_to'     => get_post_type_archive_link( 'event' ),
+				'attribute' => array(
 					'ifPostType' => 'event',
 				),
 				'content'   => 'Post Type Archive page',
@@ -153,6 +224,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				),
 				'content'   => 'Term Archive page',
 				'expected'  => 'Term Archive page',
+			),
+			// Author archive page.
+			array(
+				'name'      => 'Author archive page',
+				'go_to'     => get_author_posts_url( 1 ),
+				'attribute' => array(
+					'ifPageType' => 'is_author',
+				),
+				'content'   => 'Author Archive page',
+				'expected'  => 'Author Archive page',
 			),
 			// single.
 			array(
