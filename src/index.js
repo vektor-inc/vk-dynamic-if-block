@@ -45,13 +45,13 @@ registerBlockType('vk-blocks/dynamic-if', {
 				<InspectorControls>
 					<PanelBody title={__('Display Conditions', 'vk-dynamic-if-block')}>
 						<SelectControl
-							label={__('Select a Page Type', 'vk-dynamic-if-block')}
+							label={__('Page Type', 'vk-dynamic-if-block')}
 							value={ifPageType}
 							options={ifPageTypes}
 							onChange={(value) => setAttributes({ ifPageType: value })}
 						/>
 						<SelectControl
-							label={__('Select a Post Type', 'vk-dynamic-if-block')}
+							label={__('Post Type', 'vk-dynamic-if-block')}
 							value={ifPostType}
 							options={vk_dynamic_if_block_localize_data.postTypeSelectOptions}
 							onChange={(value) => setAttributes({ ifPostType: value })}
