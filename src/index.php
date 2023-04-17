@@ -24,6 +24,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		is_page() && 'is_page' === $page_type ||
 		is_singular() && 'is_singular' === $page_type ||
 		is_home() && ! is_front_page() && 'is_home' === $page_type ||
+		is_post_type_archive() && 'is_post_type_archive' === $page_type ||
 		is_archive() && 'is_archive' === $page_type ||
 		is_search() && 'is_search' === $page_type ||
 		is_404() && 'is_404' === $page_type ||

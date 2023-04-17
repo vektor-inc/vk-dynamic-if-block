@@ -139,6 +139,15 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Post Type Archive page',
 				'go_to'     => get_post_type_archive_link( 'event' ),
 				'attribute' => array(
+					'ifPageType' => 'is_post_type_archive',
+				),
+				'content'   => 'Post Type Archive page',
+				'expected'  => 'Post Type Archive page',
+			),
+			array(
+				'name'      => 'Post Type Archive page',
+				'go_to'     => get_post_type_archive_link( 'event' ),
+				'attribute' => array(
 					'ifPostType' => 'event',
 				),
 				'content'   => 'Post Type Archive page',
