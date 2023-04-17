@@ -40,7 +40,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 			{ value: 'is_year', label: __('Yearly Archive', 'vk-dynamic-if-block') + ' ( is_year() )' },
 			{ value: 'is_month', label: __('Monthly Archive', 'vk-dynamic-if-block') + ' ( is_month() )' },
 			{ value: 'is_date', label: __('Daily Archive', 'vk-dynamic-if-block') + ' ( is_date() )' },
-			{ value: 'is_author', label: __('Author', 'vk-dynamic-if-block') + ' ( is_author() )' },
+			{ value: 'is_author', label: __('Author Archive', 'vk-dynamic-if-block') + ' ( is_author() )' },
 			{ value: 'is_archive', label: __('Archive', 'vk-dynamic-if-block') + ' ( is_archive() )' },
 			{ value: 'is_search', label: __('Search Result', 'vk-dynamic-if-block') + ' ( is_search() )' },
 			{ value: 'is_404', label: __('404', 'vk-dynamic-if-block') + ' ( is_404() )' },
