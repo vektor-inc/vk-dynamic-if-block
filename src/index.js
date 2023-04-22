@@ -1,7 +1,7 @@
+import { __ } from '@wordpress/i18n';
 import { registerBlockType } from '@wordpress/blocks';
 import { useBlockProps, InnerBlocks, InspectorControls } from '@wordpress/block-editor';
 import { PanelBody, SelectControl } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
 import { ReactComponent as Icon } from './icon.svg';
 
 registerBlockType('vk-blocks/dynamic-if', {
@@ -47,7 +47,9 @@ registerBlockType('vk-blocks/dynamic-if', {
 		];
 
 		const blockClassName = `vk-dynamic-if-block ifPageType-${ifPageType} ifPostType-${ifPostType}`;
-
+		const MY_TEMPLATE = [
+			[ 'core/paragraph', {} ],
+		];
 		return (
 			<div {...useBlockProps({ className: blockClassName })}>
 				<InspectorControls>
@@ -67,7 +69,10 @@ registerBlockType('vk-blocks/dynamic-if', {
 					</PanelBody>
 				</InspectorControls>
 				<div className="vk-dynamic-if-block__label">{ifPageType} / {ifPostType}</div>
-				<InnerBlocks />
+
+				<InnerBlocks
+					template={ MY_TEMPLATE }
+				 />
 			</div>
 		);
 	},
