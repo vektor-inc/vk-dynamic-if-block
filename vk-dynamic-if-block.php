@@ -19,14 +19,16 @@ defined( 'ABSPATH' ) || exit;
  * Composer Autoload
  */
 $autoload_path = plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
-// Deploy failure countermeasure for Vendor directory
+// Deploy failure countermeasure for Vendor directory.
 if ( file_exists( $autoload_path ) ) {
 	require_once $autoload_path;
 }
 
 function vk_dynamic_if_block_enqueue_scripts() {
+
+	$handle = 'vk-dynamic-if-block';
 	wp_enqueue_script(
-		'vk-dynamic-if-block',
+		$handle,
 		plugins_url( 'build/index.js', __FILE__ ),
 		array( 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-i18n', 'wp-components' ),
 		filemtime( plugin_dir_path( __FILE__ ) . 'build/index.js' )
