@@ -38,9 +38,16 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		'none' === $page_type
 	) {
 
-		$return         = $content;
-		$post_type_info = VkHelpers::get_post_type_info();
-		$post_type_slug = $post_type_info['slug'];
+		$return = $content;
+
+		// vendorファイルの配信・読み込みミス時のフォールバック
+		// Fallback for vendor files failed to deliver or load.
+		if ( class_exists( 'VkHelpers' ) ) {
+			$post_type_info = VkHelpers::get_post_type_info();
+			$post_type_slug = $post_type_info['slug'];
+		} else {
+			$post_type_slug = get_post_type();
+		}
 
 		if ( 'none' === $post_type ) {
 			$return = $content;

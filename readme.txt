@@ -38,6 +38,8 @@ Currently, only the predefined conditions are supported: is_front_page() and is_
 
 == Changelog ==
 
+* Add fallback for vendor files failed to deliver or load.
+
 = 0.2.1 =
 * Add default paragraph block
 
