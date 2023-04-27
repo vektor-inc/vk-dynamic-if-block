@@ -2,6 +2,7 @@
 /.git
 /.github
 /node_modules
+/dist
 
 .distignore
 .gitignore
@@ -26,3 +27,4 @@ src/
 node_modules/
 tests/
 bin/
+dist/
