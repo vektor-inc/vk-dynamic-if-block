@@ -5,7 +5,8 @@
  * Description: A dynamic block that shows its inner blocks based on specified conditions, such as whether the current page is the front page or a single post.
  * Author: Vektor,Inc.
  * Author URI: https://vektor-inc.co.jp/en/
- * Version: 0.2.1
+ * Version: 0.2.4
+ * Stable tag: 0.2.3
  * License: GPL-2.0-or-later
  * Text Domain: vk-dynamic-if-block
  *
