@@ -1,10 +1,10 @@
 <?php
 /**
  * Plugin Name: VK Dynamic If Block
- * Plugin URI: https://github.com/vektor-inc/vk-dynamic-if-block
+ * Plugin URI: https://vektor-inc.co.jp/en/plugins/vk-dynamic-if-block/
  * Description: A dynamic block that shows its inner blocks based on specified conditions, such as whether the current page is the front page or a single post.
  * Author: Vektor,Inc.
- * Author URI: https://vektor-inc.co.jp
+ * Author URI: https://vektor-inc.co.jp/en/
  * Version: 0.2.1
  * License: GPL-2.0-or-later
  * Text Domain: vk-dynamic-if-block
