@@ -24,11 +24,8 @@ VK Dynamic If Block is a custom WordPress block, primarily designed for FSE, tha
 
 = Can I use multiple conditions? =
 
-Currently, you can only choose one condition per block. However, you can use multiple blocks with different conditions on the same page.
-
-= Can I use custom conditions? =
-
-Currently, only the predefined conditions are supported: is_front_page() and is_single().
+You cannot specify too many conditions.
+However, by nesting Dynamic If Blocks, various conditional branching can be handled.
 
 == Screenshots ==
 
