@@ -4,7 +4,7 @@ Tags: dynamic, block, if, front page, single
 Requires at least: 6.0
 Tested up to: 6.2
 Requires PHP: 7.4
-Stable tag: 0.2.3
+Stable tag: 0.2.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -35,6 +35,10 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+= 0.2.4 =
+* Fix readme
+
+= 0.2.3 =
 * Add fallback for vendor files failed to deliver or load.
 
 = 0.2.1 =
