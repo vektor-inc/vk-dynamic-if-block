@@ -27,21 +27,6 @@ if ( file_exists( $autoload_path ) ) {
 	require_once $autoload_path;
 }
 
-// Update Checker.
-if ( class_exists( 'YahnisElsts\PluginUpdateChecker\v5\PucFactory' ) ) {
-	$my_update_checker = YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
-		'https://github.com/vektor-inc/vk-dynamic-if-block',
-		__FILE__,
-		'vk-dynamic-if-block'
-	);
-	$my_update_checker->getVcsApi()->enableReleaseAssets();
-}
-
-/**
- * Load textdomain.
- */
-load_plugin_textdomain( 'vk-dynamic-if-block', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
-
 function vk_dynamic_if_block_enqueue_scripts() {
 
 	$handle = 'vk-dynamic-if-block';
