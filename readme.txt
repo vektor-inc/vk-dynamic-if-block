@@ -4,7 +4,7 @@ Tags: dynamic, block, if, front page, single
 Requires at least: 6.1
 Tested up to: 6.2
 Requires PHP: 7.4
-Stable tag: 0.2.1
+Stable tag: 0.2.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,11 +24,8 @@ VK Dynamic If Block is a custom WordPress block, primarily designed for FSE, tha
 
 = Can I use multiple conditions? =
 
-Currently, you can only choose one condition per block. However, you can use multiple blocks with different conditions on the same page.
-
-= Can I use custom conditions? =
-
-Currently, only the predefined conditions are supported: is_front_page() and is_single().
+You cannot specify too many conditions.
+However, by nesting Dynamic If Blocks, various conditional branching can be handled.
 
 == Screenshots ==
 
@@ -37,6 +34,12 @@ Currently, only the predefined conditions are supported: is_front_page() and is_
 3. Dynamic If block in the site editor.
 
 == Changelog ==
+
+= 0.2.4 =
+* Fix readme
+
+= 0.2.3 =
+* Add fallback for vendor files failed to deliver or load.
 
 = 0.2.1 =
 * Add default paragraph block
