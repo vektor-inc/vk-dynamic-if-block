@@ -5,8 +5,8 @@
  * Description: A dynamic block that shows its inner blocks based on specified conditions, such as whether the current page is the front page or a single post.
  * Author: Vektor,Inc.
  * Author URI: https://vektor-inc.co.jp/en/
- * Version: 0.2.5
- * Stable tag: 0.2.5
+ * Version: 0.2.6
+ * Stable tag: 0.2.6
  * License: GPL-2.0-or-later
  * Text Domain: vk-dynamic-if-block
  *
@@ -45,3 +45,15 @@ function vk_dynamic_if_block_enqueue_scripts() {
 add_action( 'enqueue_block_editor_assets', 'vk_dynamic_if_block_enqueue_scripts' );
 
 require_once plugin_dir_path( __FILE__ ) . 'build/index.php';
+
+if ( ! function_exists( 'vk_dynamic_if_block_set_script_translations' ) ) {
+	/**
+	 * Set text domain for translations.
+	 */
+	function vk_dynamic_if_block_set_script_translations() {
+		if ( function_exists( 'wp_set_script_translations' ) ) {
+			wp_set_script_translations( 'vk-dynamic-if-block', 'vk-dynamic-if-block' );
+		}
+	}
+	add_action( 'init', 'vk_dynamic_if_block_set_script_translations', 11 );
+}
