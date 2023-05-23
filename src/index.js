@@ -71,7 +71,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 							onChange={(value) => setAttributes({ ifPostType: value })}
 						/>
 						<ToggleControl
-							label={__('Exclusion designation', 'vk-blocks')}
+							label={__('Exclusion designation', 'vk-dynamic-if-block')}
 							checked={exclusion}
 							onChange={(checked) => setAttributes({ exclusion: checked })}
 						/>
