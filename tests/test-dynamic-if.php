@@ -60,6 +60,38 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'content'   => 'Front Post If Home',
 				'expected'  => 'Front Post If Home',
 			),
+
+			array(
+				'name'      => 'Front exclusion ( Front-page: page, Posts page: page )',
+				'options'   => array(
+					'page_on_front'  => $test_posts['front_page_id'],
+					'show_on_front'  => 'page',
+					'page_for_posts' => $test_posts['home_page_id'],
+				),
+				'go_to'     => home_url(),
+				'attribute' => array(
+					'ifPageType' => 'is_front_page',
+					'ifPostType' => 'none',
+					'exclusion'  => true,
+				),
+				'content'   => 'Front excluded',
+				'expected'  => '',
+			),
+			array(
+				'name'      => 'Front exclusion ( Front-page: posts )',
+				'options'   => array(
+					'show_on_front' => 'posts',
+				),
+				'go_to'     => home_url(),
+				'attribute' => array(
+					'ifPageType' => 'is_front_page',
+					'ifPostType' => 'none',
+					'exclusion'  => true,
+				),
+				'content'   => 'Front excluded',
+				'expected'  => '',
+			),
+
 			/******************************************
 			 * Home */
 			array(
@@ -225,6 +257,17 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'content'   => 'Term Archive page',
 				'expected'  => 'Term Archive page',
 			),
+			array(
+				'name'      => 'Term archive page',
+				'go_to'     => get_term_link( $test_posts['event_term_id'] ),
+				'attribute' => array(
+					'ifPageType' => 'is_single',
+					'ifPostType' => 'event',
+					'exclusion'  => true,
+				),
+				'content'   => 'Term Archive page',
+				'expected'  => 'Term Archive page',
+			),
 			// Author archive page.
 			array(
 				'name'      => 'Author archive page',
@@ -244,6 +287,17 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				),
 				'content'   => 'Post Type Event',
 				'expected'  => 'Post Type Event',
+			),
+			// single exclusion.
+			array(
+				'name'      => '! Post Type Event',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'ifPostType' => 'event',
+					'exclusion'  => true,
+				),
+				'content'   => 'Post Type Event',
+				'expected'  => '',
 			),
 			/******************************************
 			* 404 Page */
