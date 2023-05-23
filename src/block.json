@@ -12,6 +12,10 @@
 		"ifPostType": {
 			"type": "string",
 			"default": "none"
+		},
+		"exclusion": {
+			"type": "boolean",
+			"default": false
 		}
 	},
 	"supports": {

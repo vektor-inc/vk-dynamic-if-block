@@ -35,6 +35,8 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+* Add exclusion setting
+
 = 0.2.7 =
 * Set text domain for translations
 

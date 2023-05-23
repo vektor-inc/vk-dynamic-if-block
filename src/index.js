@@ -1,7 +1,7 @@
 import { __ } from '@wordpress/i18n';
 import { registerBlockType } from '@wordpress/blocks';
 import { useBlockProps, InnerBlocks, InspectorControls } from '@wordpress/block-editor';
-import { PanelBody, SelectControl } from '@wordpress/components';
+import { PanelBody, SelectControl, ToggleControl } from '@wordpress/components';
 import { ReactComponent as Icon } from './icon.svg';
 
 registerBlockType('vk-blocks/dynamic-if', {
@@ -18,13 +18,17 @@ registerBlockType('vk-blocks/dynamic-if', {
 			type: 'string',
 			default: 'none',
 		},
+		exclusion: {
+			type: 'boolian',
+			default: false,
+		},
 	},
 	supports: {
 		html: false,
 		innerBlocks: true,
 	},
 	edit({ attributes, setAttributes }) {
-		const { ifPageType, ifPostType } = attributes;
+		const { ifPageType, ifPostType, exclusion } = attributes;
 
 		const ifPageTypes = [
 			{ value: 'none', label: __('No restriction', 'vk-dynamic-if-block') },
@@ -65,6 +69,11 @@ registerBlockType('vk-blocks/dynamic-if', {
 							value={ifPostType}
 							options={vk_dynamic_if_block_localize_data.postTypeSelectOptions}
 							onChange={(value) => setAttributes({ ifPostType: value })}
+						/>
+						<ToggleControl
+							label={__('Exclusion designation', 'vk-blocks')}
+							checked={exclusion}
+							onChange={(checked) => setAttributes({ exclusion: checked })}
 						/>
 					</PanelBody>
 				</InspectorControls>

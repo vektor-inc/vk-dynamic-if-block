@@ -15,8 +15,9 @@ use VektorInc\VK_Helpers\VkHelpers;
 function vk_dynamic_if_block_render( $attributes, $content ) {
 	$page_type = isset( $attributes['ifPageType'] ) ? $attributes['ifPageType'] : 'none';
 	$post_type = isset( $attributes['ifPostType'] ) ? $attributes['ifPostType'] : 'none';
+	$exclusion = isset( $attributes['exclusion'] ) ? $attributes['exclusion'] : false;
 
-	$return = '';
+	$display = '';
 
 	if (
 		is_front_page() && 'is_front_page' === $page_type ||
@@ -38,7 +39,9 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		'none' === $page_type
 	) {
 
-		$return = $content;
+		$display = true;
+
+		// Post Type Condition Check //////////////////////////////////.
 
 		// vendorファイルの配信・読み込みミス時のフォールバック
 		// Fallback for vendor files failed to deliver or load.
@@ -50,15 +53,26 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		}
 
 		if ( 'none' === $post_type ) {
-			$return = $content;
+			$display = true;
 		} elseif ( $post_type_slug === $post_type ) {
-			$return = $content;
+			$display = true;
 		} else {
-			$return = '';
+			$display = false;
 		}
 	}
 
-	return $return;
+	print '<pre style="text-align:left">display : ';print_r($display);print '</pre>';
+
+	if ( $exclusion ) {
+		$display = ! $display;
+	}
+
+	if ( $display ) {
+		return $content;
+	} else {
+		return '';
+	}
+
 }
 
 function vk_dynamic_if_block_register_dynamic() {
