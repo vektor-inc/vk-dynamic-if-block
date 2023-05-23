@@ -61,8 +61,11 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		}
 	}
 
-	print '<pre style="text-align:left">display : ';print_r($display);print '</pre>';
-
+	/**
+	 * Exclusion
+	 *
+	 * @since 0.3.0
+	 */
 	if ( $exclusion ) {
 		$display = ! $display;
 	}
