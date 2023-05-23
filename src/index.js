@@ -44,6 +44,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 			{ value: 'is_archive', label: __('Archive', 'vk-dynamic-if-block') + ' ( is_archive() )' },
 			{ value: 'is_search', label: __('Search Result', 'vk-dynamic-if-block') + ' ( is_search() )' },
 			{ value: 'is_404', label: __('404', 'vk-dynamic-if-block') + ' ( is_404() )' },
+			{ value: 'wp_is_mobile', label: __('Mobile(including tablet)', 'vk-dynamic-if-block') + ' ( wp_is_mobile() )' },
 		];
 
 		const blockClassName = `vk-dynamic-if-block ifPageType-${ifPageType} ifPostType-${ifPostType}`;
