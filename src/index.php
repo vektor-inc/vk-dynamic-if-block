@@ -15,16 +15,16 @@ use VektorInc\VK_Helpers\VkHelpers;
 function vk_dynamic_if_block_render( $attributes, $content ) {
 	$page_type = isset( $attributes['ifPageType'] ) ? $attributes['ifPageType'] : 'none';
 	$post_type = isset( $attributes['ifPostType'] ) ? $attributes['ifPostType'] : 'none';
-	$post_type = isset( $attributes['customFieldName'] ) ? $attributes['customFieldName'] : '';
-	$post_type = isset( $attributes['customFieldRule'] ) ? $attributes['customFieldRule'] : '';
-	$post_type = isset( $attributes['customFieldValue'] ) ? $attributes['customFieldValue'] : '';
+	$cf_name   = isset( $attributes['customFieldName'] ) ? $attributes['customFieldName'] : '';
+	$cf_rule   = ! empty( $attributes['customFieldRule'] ) ? $attributes['customFieldRule'] : 'valueExists';
+	$cf_value  = isset( $attributes['customFieldValue'] ) ? $attributes['customFieldValue'] : '';
 	$exclusion = isset( $attributes['exclusion'] ) ? $attributes['exclusion'] : false;
 
-	$display           = '';
+	$display = false;
 
 	// Page Type Condition Check //////////////////////////////////.
 
-	$display_page_type = '';
+	$display_by_page_type = false;
 
 	if (
 		is_front_page() && 'is_front_page' === $page_type ||
@@ -45,12 +45,12 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		is_archive() && 'is_archive' === $page_type ||
 		'none' === $page_type
 	) {
-		$display_page_type = true;
+		$display_by_page_type = true;
 	}
 
 	// Post Type Condition Check //////////////////////////////////.
 
-	$display_post_type = '';
+	$display_by_post_type = false;
 
 	// vendorファイルの配信・読み込みミス時のフォールバック
 	// Fallback for vendor files failed to deliver or load.
@@ -62,16 +62,42 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 	}
 
 	if ( 'none' === $post_type ) {
-		$display_post_type = true;
+		$display_by_post_type = true;
 	} elseif ( $post_type_slug === $post_type ) {
-		$display_post_type = true;
+		$display_by_post_type = true;
 	} else {
-		$display_post_type = false;
+		$display_by_post_type = false;
+	}
+
+	// Custom Field Condition Check //////////////////////////////////.
+
+	$display_by_custom_field = false;
+
+	if ( ! $cf_name ) {
+		$display_by_custom_field = true;
+	} elseif ( $cf_name ) {
+
+		if ( get_the_ID() ) {
+			$get_value = get_post_meta( get_the_ID(), $cf_name, true );
+			if ( 'valueExists' === $cf_rule ) {
+				if ( $get_value || '0' === $get_value ) {
+					$display_by_custom_field = true;
+				} else {
+					$display_by_custom_field = false;
+				}
+			} elseif ( 'valueEquals' === $cf_rule ) {
+				if ( $get_value === $cf_value ) {
+					$display_by_custom_field = true;
+				} else {
+					$display_by_custom_field = false;
+				}
+			}
+		}
 	}
 
 	// Merge Condition Check //////////////////////////////////.
 
-	if ( $display_post_type && $display_page_type ) {
+	if ( $display_by_post_type && $display_by_page_type && $display_by_custom_field ) {
 		$display = true;
 	}
 

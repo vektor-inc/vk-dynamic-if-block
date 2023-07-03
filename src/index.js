@@ -104,7 +104,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 							onChange={(value) => setAttributes({ customFieldRule: value })}
 						/>
 						<TextControl
-							label={__('Custom Field Name', 'vk-dynamic-if-block')}
+							label={__('Custom Field Value', 'vk-dynamic-if-block')}
 							value={customFieldValue}
 							onChange={(value) =>
 								setAttributes({ customFieldValue: value })
