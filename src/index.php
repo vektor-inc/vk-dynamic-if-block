@@ -17,7 +17,11 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 	$post_type = isset( $attributes['ifPostType'] ) ? $attributes['ifPostType'] : 'none';
 	$exclusion = isset( $attributes['exclusion'] ) ? $attributes['exclusion'] : false;
 
-	$display = '';
+	$display           = '';
+
+	// Page Type Condition Check //////////////////////////////////.
+
+	$display_page_type = '';
 
 	if (
 		is_front_page() && 'is_front_page' === $page_type ||
@@ -38,27 +42,34 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		is_archive() && 'is_archive' === $page_type ||
 		'none' === $page_type
 	) {
+		$display_page_type = true;
+	}
 
+	// Post Type Condition Check //////////////////////////////////.
+
+	$display_post_type = '';
+
+	// vendorファイルの配信・読み込みミス時のフォールバック
+	// Fallback for vendor files failed to deliver or load.
+	if ( class_exists( 'VkHelpers' ) ) {
+		$post_type_info = VkHelpers::get_post_type_info();
+		$post_type_slug = $post_type_info['slug'];
+	} else {
+		$post_type_slug = get_post_type();
+	}
+
+	if ( 'none' === $post_type ) {
+		$display_post_type = true;
+	} elseif ( $post_type_slug === $post_type ) {
+		$display_post_type = true;
+	} else {
+		$display_post_type = false;
+	}
+
+	// Merge Condition Check //////////////////////////////////.
+
+	if ( $display_post_type && $display_page_type ) {
 		$display = true;
-
-		// Post Type Condition Check //////////////////////////////////.
-
-		// vendorファイルの配信・読み込みミス時のフォールバック
-		// Fallback for vendor files failed to deliver or load.
-		if ( class_exists( 'VkHelpers' ) ) {
-			$post_type_info = VkHelpers::get_post_type_info();
-			$post_type_slug = $post_type_info['slug'];
-		} else {
-			$post_type_slug = get_post_type();
-		}
-
-		if ( 'none' === $post_type ) {
-			$display = true;
-		} elseif ( $post_type_slug === $post_type ) {
-			$display = true;
-		} else {
-			$display = false;
-		}
 	}
 
 	/**
