@@ -71,6 +71,23 @@ registerBlockType('vk-blocks/dynamic-if', {
 		const MY_TEMPLATE = [
 			['core/paragraph', {}],
 		];
+
+		let labels = [];
+
+		if (ifPageType !== "none") {
+			labels.push(ifPageType);
+		}
+
+		if (ifPostType !== "none") {
+			labels.push(ifPostType);
+		}
+
+		if (customFieldName) {
+			labels.push(customFieldName);
+		}
+
+		let labels_string = labels.join(" / ");
+
 		return (
 			<div {...useBlockProps({ className: blockClassName })}>
 				<InspectorControls>
@@ -126,7 +143,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 						/>
 					</PanelBody>
 				</InspectorControls>
-				<div className="vk-dynamic-if-block__label">{ifPageType} / {ifPostType}</div>
+				<div className="vk-dynamic-if-block__label">{labels_string}</div>
 
 				<InnerBlocks
 					template={MY_TEMPLATE}
