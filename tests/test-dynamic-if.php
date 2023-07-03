@@ -485,20 +485,113 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 			 *
 			 * @since 0.4.0 */
 
-			// URLで home_url() . /non-exist-page/ にアクセスしてもサーバー側で Not Found にされてしまい WordPressの 404 にならないため
-			// home_url() . '/?cat=999999' で指定している
 			array(
 				'name'      => 'Custom Field Exist',
-				'go_to'     => home_url() . '/?cat=999999',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
 					'ifPageType'       => 'none',
 					'ifPostType'       => 'none',
 					'CustomFieldName'  => 'price',
-					'customFieldRule'  => '',
+					'customFieldRule'  => 'valueExists',
 					'customFieldValue' => '',
 				),
-				'content'   => '100',
-				'expected'  => '100',
+				'test_meta' => array(
+					'post_id'    => $test_posts['event_post_id'],
+					'meta_key'   => 'price',
+					'meta_value' => '100',
+				),
+				'content'   => 'Custom Field Exist',
+				'expected'  => 'Custom Field Exist',
+			),
+			array(
+				'name'      => 'Custom Field no value',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'ifPageType'       => 'none',
+					'ifPostType'       => 'none',
+					'customFieldName'  => 'price',
+					'customFieldRule'  => 'valueExists',
+					'customFieldValue' => '',
+				),
+				'test_meta' => array(
+					'post_id'    => $test_posts['event_post_id'],
+					'meta_key'   => 'price',
+					'meta_value' => '',
+				),
+				'content'   => 'Custom Field Exist',
+				'expected'  => '',
+			),
+			array(
+				'name'      => 'Custom Field value exist string 0',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'ifPageType'       => 'none',
+					'ifPostType'       => 'none',
+					'customFieldName'  => 'price',
+					'customFieldRule'  => 'valueExists',
+					'customFieldValue' => '',
+				),
+				'test_meta' => array(
+					'post_id'    => $test_posts['event_post_id'],
+					'meta_key'   => 'price',
+					'meta_value' => '0',
+				),
+				'content'   => '0',
+				'expected'  => '0',
+			),
+			array(
+				'name'      => 'Custom Field value exist number 0',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'ifPageType'       => 'none',
+					'ifPostType'       => 'none',
+					'customFieldName'  => 'price',
+					'customFieldRule'  => 'valueExists',
+					'customFieldValue' => '',
+				),
+				'test_meta' => array(
+					'post_id'    => $test_posts['event_post_id'],
+					'meta_key'   => 'price',
+					'meta_value' => 0,
+				),
+				'content'   => '0',
+				'expected'  => '0',
+			),
+			array(
+				'name'      => 'Custom Field value match',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'ifPageType'       => 'none',
+					'ifPostType'       => 'none',
+					'customFieldName'  => 'price',
+					'customFieldRule'  => 'valueEquals',
+					'customFieldValue' => '100',
+				),
+				'test_meta' => array(
+					'post_id'    => $test_posts['event_post_id'],
+					'meta_key'   => 'price',
+					'meta_value' => '100',
+				),
+				'content'   => 'Custom Field value match',
+				'expected'  => 'Custom Field value match',
+			),
+			array(
+				'name'      => 'Custom Field value not match',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'ifPageType'       => 'none',
+					'ifPostType'       => 'none',
+					'customFieldName'  => 'price',
+					'customFieldRule'  => 'valueEquals',
+					'customFieldValue' => '100',
+				),
+				'test_meta' => array(
+					'post_id'    => $test_posts['event_post_id'],
+					'meta_key'   => 'price',
+					'meta_value' => '',
+				),
+				'content'   => 'Custom Field value not match',
+				'expected'  => '',
 			),
 		);
 
@@ -510,11 +603,23 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				}
 			}
 
+			if ( isset( $test['test_meta'] ) && isset( $test['test_meta']['post_id'] ) ) {
+				update_post_meta(
+					$test['test_meta']['post_id'],
+					$test['test_meta']['meta_key'],
+					$test['test_meta']['meta_value']
+				);
+			}
+
 			print PHP_EOL;
 			$this->go_to( $test['go_to'] );
 			$actual = vk_dynamic_if_block_render( $test['attribute'], $test['content'] );
+
 			print 'Page : ' . esc_html( $test['name'] ) . PHP_EOL;
 			print 'go_to : ' . esc_html( $test['go_to'] ) . PHP_EOL;
+			if ( isset( $test['test_meta'] ) && isset( $test['test_meta']['post_id'] ) ) {
+				print 'meta : ' . esc_html( get_post_meta( $test['test_meta']['post_id'], $test['test_meta']['meta_key'], true ) ) . PHP_EOL;
+			}
 			$this->assertSame( $test['expected'], $actual, $test['name'] );
 
 			if ( isset( $test['options'] ) ) {
