@@ -15,6 +15,9 @@ use VektorInc\VK_Helpers\VkHelpers;
 function vk_dynamic_if_block_render( $attributes, $content ) {
 	$page_type = isset( $attributes['ifPageType'] ) ? $attributes['ifPageType'] : 'none';
 	$post_type = isset( $attributes['ifPostType'] ) ? $attributes['ifPostType'] : 'none';
+	$post_type = isset( $attributes['customFieldName'] ) ? $attributes['customFieldName'] : '';
+	$post_type = isset( $attributes['customFieldRule'] ) ? $attributes['customFieldRule'] : '';
+	$post_type = isset( $attributes['customFieldValue'] ) ? $attributes['customFieldValue'] : '';
 	$exclusion = isset( $attributes['exclusion'] ) ? $attributes['exclusion'] : false;
 
 	$display = '';
