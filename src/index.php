@@ -13,41 +13,47 @@ use VektorInc\VK_Helpers\VkHelpers;
  * @return string $return : Return HTML.
  */
 function vk_dynamic_if_block_render( $attributes, $content ) {
-	$page_type = isset( $attributes['ifPageType'] ) ? $attributes['ifPageType'] : 'none';
-	$post_type = isset( $attributes['ifPostType'] ) ? $attributes['ifPostType'] : 'none';
-	$exclusion = isset( $attributes['exclusion'] ) ? $attributes['exclusion'] : false;
+	$attributes_default = array(
+		'ifPageType'       => 'none',
+		'ifPostType'       => 'none',
+		'customFieldName'  => '',
+		'customFieldRule'  => 'valueExists',
+		'customFieldValue' => '',
+		'exclusion'        => false,
+	);
+	$attributes         = array_merge( $attributes_default, $attributes );
 
-	$display           = '';
+	$display = false;
 
 	// Page Type Condition Check //////////////////////////////////.
 
-	$display_page_type = '';
+	$display_by_page_type = false;
 
 	if (
-		is_front_page() && 'is_front_page' === $page_type ||
-		is_single() && 'is_single' === $page_type ||
-		is_page() && 'is_page' === $page_type ||
-		is_singular() && 'is_singular' === $page_type ||
-		is_home() && ! is_front_page() && 'is_home' === $page_type ||
-		is_post_type_archive() && 'is_post_type_archive' === $page_type ||
-		is_category() && 'is_category' === $page_type ||
-		is_tag() && 'is_tag' === $page_type ||
-		is_tax() && 'is_tax' === $page_type ||
-		is_year() && 'is_year' === $page_type ||
-		is_month() && 'is_month' === $page_type ||
-		is_date() && 'is_date' === $page_type ||
-		is_author() && 'is_author' === $page_type ||
-		is_search() && 'is_search' === $page_type ||
-		is_404() && 'is_404' === $page_type ||
-		is_archive() && 'is_archive' === $page_type ||
-		'none' === $page_type
+		is_front_page() && 'is_front_page' === $attributes['ifPageType'] ||
+		is_single() && 'is_single' === $attributes['ifPageType'] ||
+		is_page() && 'is_page' === $attributes['ifPageType'] ||
+		is_singular() && 'is_singular' === $attributes['ifPageType'] ||
+		is_home() && ! is_front_page() && 'is_home' === $attributes['ifPageType'] ||
+		is_post_type_archive() && 'is_post_type_archive' === $attributes['ifPageType'] ||
+		is_category() && 'is_category' === $attributes['ifPageType'] ||
+		is_tag() && 'is_tag' === $attributes['ifPageType'] ||
+		is_tax() && 'is_tax' === $attributes['ifPageType'] ||
+		is_year() && 'is_year' === $attributes['ifPageType'] ||
+		is_month() && 'is_month' === $attributes['ifPageType'] ||
+		is_date() && 'is_date' === $attributes['ifPageType'] ||
+		is_author() && 'is_author' === $attributes['ifPageType'] ||
+		is_search() && 'is_search' === $attributes['ifPageType'] ||
+		is_404() && 'is_404' === $attributes['ifPageType'] ||
+		is_archive() && 'is_archive' === $attributes['ifPageType'] ||
+		'none' === $attributes['ifPageType']
 	) {
-		$display_page_type = true;
+		$display_by_page_type = true;
 	}
 
 	// Post Type Condition Check //////////////////////////////////.
 
-	$display_post_type = '';
+	$display_by_post_type = false;
 
 	// vendorファイルの配信・読み込みミス時のフォールバック
 	// Fallback for vendor files failed to deliver or load.
@@ -58,17 +64,43 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		$post_type_slug = get_post_type();
 	}
 
-	if ( 'none' === $post_type ) {
-		$display_post_type = true;
-	} elseif ( $post_type_slug === $post_type ) {
-		$display_post_type = true;
+	if ( 'none' === $attributes['ifPostType'] ) {
+		$display_by_post_type = true;
+	} elseif ( $post_type_slug === $attributes['ifPostType'] ) {
+		$display_by_post_type = true;
 	} else {
-		$display_post_type = false;
+		$display_by_post_type = false;
+	}
+
+	// Custom Field Condition Check //////////////////////////////////.
+
+	$display_by_custom_field = false;
+
+	if ( ! $attributes['customFieldName'] ) {
+		$display_by_custom_field = true;
+	} elseif ( $attributes['customFieldName'] ) {
+
+		if ( get_the_ID() ) {
+			$get_value = get_post_meta( get_the_ID(), $attributes['customFieldName'], true );
+			if ( 'valueExists' === $attributes['customFieldRule'] ) {
+				if ( $get_value || '0' === $get_value ) {
+					$display_by_custom_field = true;
+				} else {
+					$display_by_custom_field = false;
+				}
+			} elseif ( 'valueEquals' === $attributes['customFieldRule'] ) {
+				if ( $get_value === $attributes['customFieldValue'] ) {
+					$display_by_custom_field = true;
+				} else {
+					$display_by_custom_field = false;
+				}
+			}
+		}
 	}
 
 	// Merge Condition Check //////////////////////////////////.
 
-	if ( $display_post_type && $display_page_type ) {
+	if ( $display_by_post_type && $display_by_page_type && $display_by_custom_field ) {
 		$display = true;
 	}
 
@@ -77,7 +109,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 	 *
 	 * @since 0.3.0
 	 */
-	if ( $exclusion ) {
+	if ( $attributes['exclusion'] ) {
 		$display = ! $display;
 	}
 

@@ -13,6 +13,18 @@
 			"type": "string",
 			"default": "none"
 		},
+		"customFieldName": {
+			"type": "string",
+			"default": ""
+		},
+		"customFieldRule": {
+			"type": "string",
+			"default": ""
+		},
+		"customFieldValue": {
+			"type": "string",
+			"default": ""
+		},
 		"exclusion": {
 			"type": "boolean",
 			"default": false

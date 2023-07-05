@@ -1,7 +1,12 @@
 import { __ } from '@wordpress/i18n';
 import { registerBlockType } from '@wordpress/blocks';
 import { useBlockProps, InnerBlocks, InspectorControls } from '@wordpress/block-editor';
-import { PanelBody, SelectControl, ToggleControl } from '@wordpress/components';
+import {
+	PanelBody,
+	SelectControl,
+	TextControl,
+	ToggleControl
+} from '@wordpress/components';
 import { ReactComponent as Icon } from './icon.svg';
 
 registerBlockType('vk-blocks/dynamic-if', {
@@ -18,6 +23,18 @@ registerBlockType('vk-blocks/dynamic-if', {
 			type: 'string',
 			default: 'none',
 		},
+		customFieldName: {
+			type: 'string',
+			"default": ""
+		},
+		customFieldRule: {
+			type: 'string',
+			"default": ""
+		},
+		customFieldValue: {
+			type: 'string',
+			"default": ""
+		},
 		exclusion: {
 			type: 'boolian',
 			default: false,
@@ -28,7 +45,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 		innerBlocks: true,
 	},
 	edit({ attributes, setAttributes }) {
-		const { ifPageType, ifPostType, exclusion } = attributes;
+		const { ifPageType, ifPostType, customFieldName, customFieldRule, customFieldValue, exclusion } = attributes;
 
 		const ifPageTypes = [
 			{ value: 'none', label: __('No restriction', 'vk-dynamic-if-block') },
@@ -52,8 +69,25 @@ registerBlockType('vk-blocks/dynamic-if', {
 
 		const blockClassName = `vk-dynamic-if-block ifPageType-${ifPageType} ifPostType-${ifPostType}`;
 		const MY_TEMPLATE = [
-			[ 'core/paragraph', {} ],
+			['core/paragraph', {}],
 		];
+
+		let labels = [];
+
+		if (ifPageType !== "none") {
+			labels.push(ifPageType);
+		}
+
+		if (ifPostType !== "none") {
+			labels.push(ifPostType);
+		}
+
+		if (customFieldName) {
+			labels.push(customFieldName);
+		}
+
+		let labels_string = labels.join(" / ");
+
 		return (
 			<div {...useBlockProps({ className: blockClassName })}>
 				<InspectorControls>
@@ -70,6 +104,38 @@ registerBlockType('vk-blocks/dynamic-if', {
 							options={vk_dynamic_if_block_localize_data.postTypeSelectOptions}
 							onChange={(value) => setAttributes({ ifPostType: value })}
 						/>
+						<TextControl
+							label={__('Custom Field Name', 'vk-dynamic-if-block')}
+							value={customFieldName}
+							onChange={(value) =>
+								setAttributes({ customFieldName: value })
+							}
+						/>
+						{customFieldName && (
+							<>
+								<SelectControl
+									label={__('Custom Field Rule', 'vk-dynamic-if-block')}
+									value={customFieldRule}
+									options={[
+										{ value: 'valueExists', label: __('Value Exist ( !empty() )', 'vk-dynamic-if-block') },
+										{ value: 'valueEquals', label: __('Value Equals ( === )', 'vk-dynamic-if-block') },
+									]}
+									onChange={(value) => setAttributes({ customFieldRule: value })}
+								/>
+								{customFieldRule === 'valueEquals' && (
+									<>
+										<TextControl
+											label={__('Custom Field Value', 'vk-dynamic-if-block')}
+											value={customFieldValue}
+											onChange={(value) =>
+												setAttributes({ customFieldValue: value })
+											}
+										/>
+									</>
+								)}
+							</>
+						)}
+
 						<ToggleControl
 							label={__('Exclusion designation', 'vk-dynamic-if-block')}
 							checked={exclusion}
@@ -77,11 +143,11 @@ registerBlockType('vk-blocks/dynamic-if', {
 						/>
 					</PanelBody>
 				</InspectorControls>
-				<div className="vk-dynamic-if-block__label">{ifPageType} / {ifPostType}</div>
+				<div className="vk-dynamic-if-block__label">{labels_string}</div>
 
 				<InnerBlocks
-					template={ MY_TEMPLATE }
-				 />
+					template={MY_TEMPLATE}
+				/>
 			</div>
 		);
 	},
