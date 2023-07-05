@@ -2,11 +2,11 @@
 /**
  * Plugin Name: VK Dynamic If Block
  * Plugin URI: https://vektor-inc.co.jp/en/plugins/vk-dynamic-if-block/
- * Description: A dynamic block that shows its inner blocks based on specified conditions, such as whether the current page is the front page or a single post.
+ * Description: A dynamic block displays its Inner Blocks based on specified conditions, such as whether the current page is the front page or a single post, the post type, or the value of a Custom Field.
  * Author: Vektor,Inc.
  * Author URI: https://vektor-inc.co.jp/en/
- * Version: 0.4.0
- * Stable tag: 0.4.0
+ * Version: 0.4.1
+ * Stable tag: 0.4.1
  * License: GPL-2.0-or-later
  * Text Domain: vk-dynamic-if-block
  *
