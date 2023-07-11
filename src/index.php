@@ -82,7 +82,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 
 		if ( get_the_ID() ) {
 			$get_value = get_post_meta( get_the_ID(), $attributes['customFieldName'], true );
-			if ( 'valueExists' === $attributes['customFieldRule'] ) {
+			if ( 'valueExists' === $attributes['customFieldRule'] || empty( $attributes['customFieldRule'] ) ) {
 				if ( $get_value || '0' === $get_value ) {
 					$display_by_custom_field = true;
 				} else {
