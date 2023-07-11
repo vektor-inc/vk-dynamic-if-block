@@ -35,6 +35,9 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+= 0.4.2 =
+* [ Bug fix ] Fixed bug in conditional branching based on custom field values
+
 = 0.4.1 =
 * Update descriptions
 

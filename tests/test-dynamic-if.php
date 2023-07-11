@@ -593,6 +593,24 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'content'   => 'Custom Field value not match',
 				'expected'  => '',
 			),
+			array(
+				'name'      => 'Custom Field value not match',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'ifPageType'       => 'none',
+					'ifPostType'       => 'none',
+					'customFieldName'  => 'price',
+					'customFieldRule'  => null,
+					'customFieldValue' => '100',
+				),
+				'test_meta' => array(
+					'post_id'    => $test_posts['event_post_id'],
+					'meta_key'   => 'price',
+					'meta_value' => '100',
+				),
+				'content'   => 'customFieldRule not set',
+				'expected'  => 'customFieldRule not set',
+			),
 		);
 
 		foreach ( $tests as $test ) {

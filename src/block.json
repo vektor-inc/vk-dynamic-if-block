@@ -19,7 +19,7 @@
 		},
 		"customFieldRule": {
 			"type": "string",
-			"default": ""
+			"default": "valueExists"
 		},
 		"customFieldValue": {
 			"type": "string",
