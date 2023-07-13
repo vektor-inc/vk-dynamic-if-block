@@ -4,7 +4,7 @@ Tags: dynamic block, if, Conditional branch, Conditional Display, Custom Field, 
 Requires at least: 6.0
 Tested up to: 6.2
 Requires PHP: 7.4
-Stable tag: 0.4.3
+Stable tag: 0.5.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -35,6 +35,7 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+= 0.5.0 =
 [ Add Function ]Added transforms settings to wrap and unwrap.
 
 = 0.4.3 =
