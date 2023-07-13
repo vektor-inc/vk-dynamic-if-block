@@ -1,5 +1,5 @@
 === VK Dynamic If Block ===
-Contributors: vektor-inc,kurudrive
+Contributors: vektor-inc,kurudrive,doshimaf
 Tags: dynamic block, if, Conditional branch, Conditional Display, Custom Field, Full Site Editing
 Requires at least: 6.0
 Tested up to: 6.2
