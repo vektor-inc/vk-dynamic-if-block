@@ -8,11 +8,13 @@ import {
 	ToggleControl
 } from '@wordpress/components';
 import { ReactComponent as Icon } from './icon.svg';
+import transforms from './transforms';
 
 registerBlockType('vk-blocks/dynamic-if', {
 	apiVersion: 2,
 	title: __('Dynamic If', 'vk-dynamic-if-block'),
 	icon: <Icon />,
+	transforms,
 	category: 'theme',
 	attributes: {
 		ifPageType: {
