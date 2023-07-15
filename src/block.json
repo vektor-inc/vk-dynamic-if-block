@@ -25,6 +25,26 @@
 			"type": "string",
 			"default": ""
 		},
+		"moreOrLessValueType": {
+			"type": "string",
+			"default": "number"
+		},
+		"moreThanValueNumber": {
+			"type": "string",
+			"default": ""
+		},
+		"lessThanValueNumber": {
+			"type": "string",
+			"default": ""
+		},
+		"moreThanValueDate": {
+			"type": "string",
+			"default": ""
+		},
+		"lessThanValueDate": {
+			"type": "string",
+			"default": ""
+		},
 		"exclusion": {
 			"type": "boolean",
 			"default": false

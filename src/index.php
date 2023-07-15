@@ -19,6 +19,11 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		'customFieldName'  => '',
 		'customFieldRule'  => 'valueExists',
 		'customFieldValue' => '',
+		'moreOrLessValueType' => 'number',
+		'moreThanValueNumber' => '',
+		'lessThanValueNumber' => '',
+		'moreThanValueDate' => '',
+		'lessThanValueDate' => '',
 		'exclusion'        => false,
 	);
 	$attributes         = array_merge( $attributes_default, $attributes );
