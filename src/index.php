@@ -19,7 +19,6 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		'customFieldName'  => '',
 		'customFieldRule'  => 'valueExists',
 		'customFieldValue' => '',
-		'moreOrLessValueType' => 'number',
 		'moreThanValue' => '',
 		'lessThanValue' => '',
 		'exclusion'        => false,

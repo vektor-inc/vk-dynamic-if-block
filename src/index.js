@@ -5,6 +5,7 @@ import {
 	PanelBody,
 	SelectControl,
 	TextControl,
+	BaseControl,
 	ToggleControl,
 	__experimentalNumberControl as NumberControl
 } from '@wordpress/components';
@@ -38,10 +39,6 @@ registerBlockType('vk-blocks/dynamic-if', {
 			type: 'string',
 			"default": ""
 		},
-		moreOrLessValueType: {
-			type: 'string',
-			"default": "number"
-		},
 		moreThanValue: {
 			type: 'string',
 			"default": ""
@@ -60,8 +57,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 		innerBlocks: true,
 	},
 	edit({ attributes, setAttributes }) {
-		const { ifPageType, ifPostType, customFieldName, customFieldRule, customFieldValue, moreOrLessValueType, moreThanValue, lessThanValue, exclusion } = attributes;
-		attributes.moreOrLessValueType = moreOrLessValueType
+		const { ifPageType, ifPostType, customFieldName, customFieldRule, customFieldValue, moreThanValue, lessThanValue, exclusion } = attributes;
 
 		const ifPageTypes = [
 			{ value: 'none', label: __('No restriction', 'vk-dynamic-if-block') },
@@ -128,16 +124,18 @@ registerBlockType('vk-blocks/dynamic-if', {
 							}
 						/>
 						{customFieldName && (
-							<>
+							<BaseControl>
 								<SelectControl
 									label={__('Custom Field Rule', 'vk-dynamic-if-block')}
 									value={customFieldRule}
 									options={[
 										{ value: 'valueExists', label: __('Value Exist ( !empty() )', 'vk-dynamic-if-block') },
 										{ value: 'valueEquals', label: __('Value Equals ( === )', 'vk-dynamic-if-block') },
-										{ value: 'moreOrLess', label: __('More or Less', 'vk-dynamic-if-block') },
+										{ value: 'setDisplayDeadline', label: __('Set to display deadline', 'vk-dynamic-if-block') },
+										{ value: 'compareMoreLess', label: __('Compare more/less values', 'vk-dynamic-if-block') },
 									]}
 									onChange={(value) => setAttributes({ customFieldRule: value })}
+									help={customFieldRule === 'setDisplayDeadline' ? __('Displayed when the value of the custom field is more than the set value.', 'vk-dynamic-if-block') : ''}
 								/>
 								{customFieldRule === 'valueEquals' && (
 									<>
@@ -150,38 +148,29 @@ registerBlockType('vk-blocks/dynamic-if', {
 										/>
 									</>
 								)}
-								{customFieldRule === 'moreOrLess' && (
+								{customFieldRule === 'compareMoreLess' && (
 									<>
-										<SelectControl
-											label={__('Custom Field Rule', 'vk-dynamic-if-block')}
-											value={moreOrLessValueType}
-											options={[
-												{ value: 'number', label: __('Number', 'vk-dynamic-if-block') },
-												{ value: 'date', label: __('Date', 'vk-dynamic-if-block') },
-											]}
-											onChange={(value) => setAttributes({ moreOrLessValueType: value })}
-										/>
 										<NumberControl
 											label={__('More than Value', 'vk-dynamic-if-block')}
 											step="0.5"
-											type={moreOrLessValueType === 'date' ? 'date' : 'number'}
 											value={moreThanValue}
 											onChange={(value) =>
 												setAttributes({ moreThanValue: value })
 											}
+											help={__('Displayed when the value of the custom field is more than the set value.', 'vk-dynamic-if-block')}
 										/>
 										<NumberControl
 											label={__('Less than Value', 'vk-dynamic-if-block')}
 											step="0.5"
-											type={moreOrLessValueType === 'date' ? 'date' : 'number'}
 											value={lessThanValue}
 											onChange={(value) =>
 												setAttributes({ lessThanValue: value })
 											}
+											help={__('Displayed when the value of the custom field is less than the set value.', 'vk-dynamic-if-block')}
 										/>
 									</>
 								)}
-							</>
+							</BaseControl>
 						)}
 
 						<ToggleControl

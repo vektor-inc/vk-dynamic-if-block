@@ -25,10 +25,6 @@
 			"type": "string",
 			"default": ""
 		},
-		"moreOrLessValueType": {
-			"type": "string",
-			"default": "number"
-		},
 		"moreThanValue": {
 			"type": "string",
 			"default": ""
