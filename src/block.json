@@ -29,19 +29,11 @@
 			"type": "string",
 			"default": "number"
 		},
-		"moreThanValueNumber": {
+		"moreThanValue": {
 			"type": "string",
 			"default": ""
 		},
-		"lessThanValueNumber": {
-			"type": "string",
-			"default": ""
-		},
-		"moreThanValueDate": {
-			"type": "string",
-			"default": ""
-		},
-		"lessThanValueDate": {
+		"lessThanValue": {
 			"type": "string",
 			"default": ""
 		},

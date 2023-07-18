@@ -6,8 +6,7 @@ import {
 	SelectControl,
 	TextControl,
 	ToggleControl,
-	__experimentalNumberControl as NumberControl,
-	DatePicker
+	__experimentalNumberControl as NumberControl
 } from '@wordpress/components';
 import { ReactComponent as Icon } from './icon.svg';
 import transforms from './transforms';
@@ -43,19 +42,11 @@ registerBlockType('vk-blocks/dynamic-if', {
 			type: 'string',
 			"default": "number"
 		},
-		moreThanValueNumber: {
+		moreThanValue: {
 			type: 'string',
 			"default": ""
 		},
-		lessThanValueNumber: {
-			type: 'string',
-			"default": ""
-		},
-		moreThanValueDate: {
-			type: 'string',
-			"default": ""
-		},
-		lessThanValueDate: {
+		lessThanValue: {
 			type: 'string',
 			"default": ""
 		},
@@ -69,7 +60,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 		innerBlocks: true,
 	},
 	edit({ attributes, setAttributes }) {
-		const { ifPageType, ifPostType, customFieldName, customFieldRule, customFieldValue, moreOrLessValueType, moreThanValueNumber, lessThanValueNumber, moreThanValueDate, lessThanValueDate, exclusion } = attributes;
+		const { ifPageType, ifPostType, customFieldName, customFieldRule, customFieldValue, moreOrLessValueType, moreThanValue, lessThanValue, exclusion } = attributes;
 		attributes.moreOrLessValueType = moreOrLessValueType
 
 		const ifPageTypes = [
@@ -170,45 +161,24 @@ registerBlockType('vk-blocks/dynamic-if', {
 											]}
 											onChange={(value) => setAttributes({ moreOrLessValueType: value })}
 										/>
-										{moreOrLessValueType === 'number' && (
-											<>
-												<NumberControl
-													label={__('More than Value', 'vk-dynamic-if-block')}
-													step="0.5"
-													value={moreThanValueNumber}
-													onChange={(value) =>
-														setAttributes({ moreThanValueNumber: value })
-													}
-												/>
-												<NumberControl
-													label={__('Less than Value', 'vk-dynamic-if-block')}
-													step="0.5"
-													value={lessThanValueNumber}
-													onChange={(value) =>
-														setAttributes({ lessThanValueNumber: value })
-													}
-												/>
-											</>
-										)}
-										{moreOrLessValueType === 'date' && (
-											<>
-												<DatePicker
-													label={__('More than Value', 'vk-dynamic-if-block')}
-													currentDate={moreThanValueDate}
-													onChange={(newDate) =>
-														setAttributes({ moreThanValueDate: newDate })
-													}
-												/>
-												<DatePicker
-													label={__('Less than Value', 'vk-dynamic-if-block')}
-													currentDate={lessThanValueDate}
-													onChange={(newDate) =>
-														setAttributes({ lessThanValueDate: newDate })
-													}
-												/>
-											</>
-										)}
-
+										<NumberControl
+											label={__('More than Value', 'vk-dynamic-if-block')}
+											step="0.5"
+											type={moreOrLessValueType === 'date' ? 'date' : 'number'}
+											value={moreThanValue}
+											onChange={(value) =>
+												setAttributes({ moreThanValue: value })
+											}
+										/>
+										<NumberControl
+											label={__('Less than Value', 'vk-dynamic-if-block')}
+											step="0.5"
+											type={moreOrLessValueType === 'date' ? 'date' : 'number'}
+											value={lessThanValue}
+											onChange={(value) =>
+												setAttributes({ lessThanValue: value })
+											}
+										/>
 									</>
 								)}
 							</>
