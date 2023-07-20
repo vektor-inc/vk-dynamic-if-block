@@ -151,6 +151,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 										<NumberControl
 											label={__('More than Value', 'vk-dynamic-if-block')}
 											step="0.5"
+											type=''
 											value={moreThanValue}
 											onChange={(value) =>
 												setAttributes({ moreThanValue: value })
@@ -160,6 +161,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 										<NumberControl
 											label={__('Less than Value', 'vk-dynamic-if-block')}
 											step="0.5"
+											type=''
 											value={lessThanValue}
 											onChange={(value) =>
 												setAttributes({ lessThanValue: value })
