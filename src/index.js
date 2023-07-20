@@ -131,9 +131,11 @@ registerBlockType('vk-blocks/dynamic-if', {
 									options={[
 										{ value: 'valueExists', label: __('Value Exist ( !empty() )', 'vk-dynamic-if-block') },
 										{ value: 'valueEquals', label: __('Value Equals ( === )', 'vk-dynamic-if-block') },
+										{ value: 'setDisplayDeadline', label: __('Set to display deadline', 'vk-dynamic-if-block') },
 										{ value: 'compareMoreLess', label: __('Compare more/less values', 'vk-dynamic-if-block') },
 									]}
 									onChange={(value) => setAttributes({ customFieldRule: value })}
+									help={customFieldRule === 'setDisplayDeadline' ? __('Displayed when the value of the custom field is more than the set value.', 'vk-dynamic-if-block') : ''}
 								/>
 								{customFieldRule === 'valueEquals' && (
 									<>
@@ -151,7 +153,6 @@ registerBlockType('vk-blocks/dynamic-if', {
 										<NumberControl
 											label={__('More than Value', 'vk-dynamic-if-block')}
 											step="0.5"
-											type=''
 											value={moreThanValue}
 											onChange={(value) =>
 												setAttributes({ moreThanValue: value })
@@ -161,7 +162,6 @@ registerBlockType('vk-blocks/dynamic-if', {
 										<NumberControl
 											label={__('Less than Value', 'vk-dynamic-if-block')}
 											step="0.5"
-											type=''
 											value={lessThanValue}
 											onChange={(value) =>
 												setAttributes({ lessThanValue: value })
