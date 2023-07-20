@@ -96,6 +96,26 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 				} else {
 					$display_by_custom_field = false;
 				}
+			} elseif ( 'compareMoreLess' === $attributes['customFieldRule'] ) {
+				if ( !empty($attributes['moreThanValue']) && empty($attributes['lessThanValue']) ){
+					if ( $get_value > $attributes['moreThanValue'] ) {
+						$display_by_custom_field = true;
+					} else {
+						$display_by_custom_field = false;
+					}
+				} elseif ( !empty($attributes['lessThanValue']) && empty($attributes['moreThanValue']) ){
+					if ( $get_value < $attributes['lessThanValue'] ) {
+						$display_by_custom_field = true;
+					} else {
+						$display_by_custom_field = false;
+					}
+				} elseif ( !empty($attributes['moreThanValue']) && !empty($attributes['lessThanValue']) ){
+					if ( $get_value > $attributes['moreThanValue'] && $get_value < $attributes['lessThanValue'] ) {
+						$display_by_custom_field = true;
+					} else {
+						$display_by_custom_field = false;
+					}
+				}
 			}
 		}
 	}
