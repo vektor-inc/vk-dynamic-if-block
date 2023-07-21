@@ -35,6 +35,8 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+[ Add Function ]Added conditional branching on more and less custom field values.
+
 = 0.5.0 =
 [ Add Function ]Added transforms settings to wrap and unwrap.
 

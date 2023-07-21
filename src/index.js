@@ -5,7 +5,9 @@ import {
 	PanelBody,
 	SelectControl,
 	TextControl,
-	ToggleControl
+	BaseControl,
+	ToggleControl,
+	__experimentalNumberControl as NumberControl
 } from '@wordpress/components';
 import { ReactComponent as Icon } from './icon.svg';
 import transforms from './transforms';
@@ -37,6 +39,14 @@ registerBlockType('vk-blocks/dynamic-if', {
 			type: 'string',
 			"default": ""
 		},
+		moreThanValue: {
+			type: 'string',
+			"default": ""
+		},
+		lessThanValue: {
+			type: 'string',
+			"default": ""
+		},
 		exclusion: {
 			type: 'boolian',
 			default: false,
@@ -47,7 +57,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 		innerBlocks: true,
 	},
 	edit({ attributes, setAttributes }) {
-		const { ifPageType, ifPostType, customFieldName, customFieldRule, customFieldValue, exclusion } = attributes;
+		const { ifPageType, ifPostType, customFieldName, customFieldRule, customFieldValue, moreThanValue, lessThanValue, exclusion } = attributes;
 
 		const ifPageTypes = [
 			{ value: 'none', label: __('No restriction', 'vk-dynamic-if-block') },
@@ -114,13 +124,14 @@ registerBlockType('vk-blocks/dynamic-if', {
 							}
 						/>
 						{customFieldName && (
-							<>
+							<BaseControl>
 								<SelectControl
 									label={__('Custom Field Rule', 'vk-dynamic-if-block')}
 									value={customFieldRule}
 									options={[
 										{ value: 'valueExists', label: __('Value Exist ( !empty() )', 'vk-dynamic-if-block') },
 										{ value: 'valueEquals', label: __('Value Equals ( === )', 'vk-dynamic-if-block') },
+										{ value: 'compareMoreLess', label: __('Compare more/less values', 'vk-dynamic-if-block') },
 									]}
 									onChange={(value) => setAttributes({ customFieldRule: value })}
 								/>
@@ -135,7 +146,29 @@ registerBlockType('vk-blocks/dynamic-if', {
 										/>
 									</>
 								)}
-							</>
+								{customFieldRule === 'compareMoreLess' && (
+									<>
+										<NumberControl
+											label={__('More than Value', 'vk-dynamic-if-block')}
+											step="0.5"
+											value={moreThanValue}
+											onChange={(value) =>
+												setAttributes({ moreThanValue: value })
+											}
+											help={__('Displayed when the value of the custom field is more than the set value.', 'vk-dynamic-if-block')}
+										/>
+										<NumberControl
+											label={__('Less than Value', 'vk-dynamic-if-block')}
+											step="0.5"
+											value={lessThanValue}
+											onChange={(value) =>
+												setAttributes({ lessThanValue: value })
+											}
+											help={__('Displayed when the value of the custom field is less than the set value.', 'vk-dynamic-if-block')}
+										/>
+									</>
+								)}
+							</BaseControl>
 						)}
 
 						<ToggleControl
