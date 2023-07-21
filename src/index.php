@@ -16,6 +16,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 	$attributes_default = array(
 		'ifPageType'       => 'none',
 		'ifPostType'       => 'none',
+		'userRole'         => 'none',
 		'customFieldName'  => '',
 		'customFieldRule'  => 'valueExists',
 		'customFieldValue' => '',
@@ -72,6 +73,33 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		$display_by_post_type = false;
 	}
 
+	// User Role Condition Check //////////////////////////////////.
+
+	$display_by_user_role = false;
+
+	$role_levels = array(
+		'subscriber' => 1,
+		'contributor' => 2,
+		'author' => 3,
+		'editor' => 4,
+		'administrator' => 5
+	);
+
+	if ( 'none' === $attributes['userRole'] ) {
+		$display_by_user_role = true;
+	} else if ( is_user_logged_in() ) {
+		$current_user = wp_get_current_user();
+		$user_roles = (array) $current_user->roles;
+		$highest_user_role = end($user_roles);
+		$current_user_role_level = $role_levels[$highest_user_role];
+		$selected_role_level = $role_levels[$attributes['userRole']];
+
+		if ($current_user_role_level >= $selected_role_level) {
+			$display_by_user_role = true;
+		}
+	}
+
+
 	// Custom Field Condition Check //////////////////////////////////.
 
 	$display_by_custom_field = false;
@@ -100,7 +128,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 
 	// Merge Condition Check //////////////////////////////////.
 
-	if ( $display_by_post_type && $display_by_page_type && $display_by_custom_field ) {
+	if ( $display_by_post_type && $display_by_page_type && $display_by_custom_field && $display_by_user_role ) {
 		$display = true;
 	}
 
