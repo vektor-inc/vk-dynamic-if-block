@@ -96,12 +96,6 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 				} else {
 					$display_by_custom_field = false;
 				}
-			} elseif ( 'setDisplayDeadline' === $attributes['customFieldRule'] ) {
-				if ( $get_value > date("Y-m-d") ) {
-					$display_by_custom_field = true;
-				} else {
-					$display_by_custom_field = false;
-				}
 			} elseif ( 'compareMoreLess' === $attributes['customFieldRule'] ) {
 				if ( !empty($attributes['moreThanValue']) && empty($attributes['lessThanValue']) ){
 					if ( $get_value > $attributes['moreThanValue'] ) {
