@@ -95,7 +95,19 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 					$display_by_custom_field = false;
 				}
 			} elseif ( 'setDisplayDeadline' === $attributes['customFieldRule'] ) {
-				if ( $get_value > date("Y-m-d") ) {
+				if ($get_value === date("Y-m-d", strtotime($get_value))) {
+					$get_value .= " 23:59";
+				}
+				if ( $get_value > current_time("Y-m-d H:i") ) {
+					$display_by_custom_field = true;
+				} else {
+					$display_by_custom_field = false;
+				}
+			} elseif ( 'setDisplayStartline' === $attributes['customFieldRule'] ) {
+				if ($get_value === date("Y-m-d", strtotime($get_value))) {
+					$get_value .= " 00:00";
+				}
+				if ( $get_value <= current_time("Y-m-d H:i") ) {
 					$display_by_custom_field = true;
 				} else {
 					$display_by_custom_field = false;
