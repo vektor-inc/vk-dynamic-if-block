@@ -16,7 +16,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 	$attributes_default = array(
 		'ifPageType'       => 'none',
 		'ifPostType'       => 'none',
-		'userRole'         => 'none',
+		'userRole'         => ['none'],
 		'customFieldName'  => '',
 		'customFieldRule'  => 'valueExists',
 		'customFieldValue' => '',
@@ -77,25 +77,18 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 
 	$display_by_user_role = false;
 
-	$role_levels = array(
-		'subscriber' => 1,
-		'contributor' => 2,
-		'author' => 3,
-		'editor' => 4,
-		'administrator' => 5
-	);
-
-	if ( 'none' === $attributes['userRole'] ) {
+	if ( 'none' === $attributes['userRole'][0] ) {
 		$display_by_user_role = true;
 	} else if ( is_user_logged_in() ) {
 		$current_user = wp_get_current_user();
 		$user_roles = (array) $current_user->roles;
-		$highest_user_role = end($user_roles);
-		$current_user_role_level = $role_levels[$highest_user_role];
-		$selected_role_level = $role_levels[$attributes['userRole']];
 
-		if ($current_user_role_level >= $selected_role_level) {
-			$display_by_user_role = true;
+		// Check if any of the user's roles match the selected roles.
+		foreach ($user_roles as $role) {
+			if (in_array($role, $attributes['userRole'])) {
+				$display_by_user_role = true;
+				break;
+			}
 		}
 	}
 

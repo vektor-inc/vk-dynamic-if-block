@@ -5,7 +5,9 @@ import {
 	PanelBody,
 	SelectControl,
 	TextControl,
-	ToggleControl
+	ToggleControl,
+	CheckboxControl,
+	BaseControl
 } from '@wordpress/components';
 import { ReactComponent as Icon } from './icon.svg';
 import transforms from './transforms';
@@ -26,8 +28,8 @@ registerBlockType('vk-blocks/dynamic-if', {
 			default: 'none',
 		},
 		userRole: {
-			type: 'string',
-			default: 'none',
+			type: 'array',
+			default: ['none'],
 		},
 		customFieldName: {
 			type: 'string',
@@ -119,12 +121,28 @@ registerBlockType('vk-blocks/dynamic-if', {
 							options={vk_dynamic_if_block_localize_data.postTypeSelectOptions}
 							onChange={(value) => setAttributes({ ifPostType: value })}
 						/>
-						<SelectControl
+						<BaseControl
+							__nextHasNoMarginBottom
 							label={__('User Role', 'vk-dynamic-if-block')}
-							value={userRole}
-							options={userRoles}
-							onChange={(value) => setAttributes({ userRole: value })}
-						/>
+						>
+							{userRoles.map((role, index) => {
+								return (
+									<CheckboxControl
+										__nextHasNoMarginBottom
+										key={index}
+										label={role.label}
+										checked={userRole.includes(role.value)}
+										onChange={(isChecked) => {
+											if (isChecked) {
+												setAttributes({ userRole: [...userRole, role.value] });
+											} else {
+												setAttributes({ userRole: userRole.filter((r) => r !== role.value) });
+											}
+										}}
+									/>
+								);
+							})}
+						</BaseControl>
 						<TextControl
 							label={__('Custom Field Name', 'vk-dynamic-if-block')}
 							value={customFieldName}
