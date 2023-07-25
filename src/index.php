@@ -90,6 +90,9 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 				break;
 			}
 		}
+	} else {
+		// This condition will apply if no user is logged in and the 'none' option is not selected.
+		$display_by_user_role = false;
 	}
 
 
@@ -152,6 +155,11 @@ function vk_dynamic_if_block_register_dynamic() {
 }
 add_action( 'init', 'vk_dynamic_if_block_register_dynamic' );
 
+// Get User Roles
+function get_user_roles() {
+	return wp_roles()->get_names();
+}
+
 function vk_dynamic_if_block_set_localize_script() {
 
 	$post_type_select_options = array(
@@ -194,6 +202,7 @@ function vk_dynamic_if_block_set_localize_script() {
 		'vk_dynamic_if_block_localize_data', // JS object name.
 		array(
 			'postTypeSelectOptions' => $post_type_select_options,
+			'userRoles' => get_user_roles(),
 		)
 	);
 }

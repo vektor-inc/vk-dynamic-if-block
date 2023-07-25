@@ -80,13 +80,13 @@ registerBlockType('vk-blocks/dynamic-if', {
 			['core/paragraph', {}],
 		];
 
+		const userRolesObj = vk_dynamic_if_block_localize_data.userRoles || {};
 		const userRoles = [
 			{ value: 'none', label: __('No restriction', 'vk-dynamic-if-block') },
-			{ value: 'administrator', label: __('Administrator', 'vk-dynamic-if-block') },
-			{ value: 'editor', label: __('Editor', 'vk-dynamic-if-block') },
-			{ value: 'author', label: __('Author', 'vk-dynamic-if-block') },
-			{ value: 'contributor', label: __('Contributor', 'vk-dynamic-if-block') },
-			{ value: 'subscriber', label: __('Subscriber', 'vk-dynamic-if-block') },
+			...Object.keys(userRolesObj).map(key => ({
+				value: key,
+				label: __(userRolesObj[key], 'vk-dynamic-if-block'),
+			}))
 		];
 
 		let labels = [];
