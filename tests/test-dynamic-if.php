@@ -611,6 +611,143 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'content'   => 'customFieldRule not set',
 				'expected'  => 'customFieldRule not set',
 			),
+			// datetime
+			array(
+				'name'      => 'Custom Field date deadline, before today',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'ifPageType'       => 'none',
+					'ifPostType'       => 'none',
+					'customFieldName'  => 'datetime',
+					'customFieldRule'  => 'setDisplayDeadline',
+				),
+				'test_meta' => array(
+					'post_id'    => $test_posts['event_post_id'],
+					'meta_key'   => 'datetime',
+					'meta_value' => date('Y-m-d H:i', strtotime('-5 days')),
+				),
+				'content'   => 'customFieldRule deadline of date',
+				'expected'  => '',
+			),
+			array(
+				'name'      => 'Custom Field date deadline, after today',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'ifPageType'       => 'none',
+					'ifPostType'       => 'none',
+					'customFieldName'  => 'datetime',
+					'customFieldRule'  => 'setDisplayDeadline',
+				),
+				'test_meta' => array(
+					'post_id'    => $test_posts['event_post_id'],
+					'meta_key'   => 'datetime',
+					'meta_value' => date('Y-m-d H:i', strtotime('+5 days')),
+				),
+				'content'   => 'customFieldRule deadline of date',
+				'expected'  => 'customFieldRule deadline of date',
+			),
+			array(
+				'name'      => 'Custom Field date deadline, after 1 hour',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'ifPageType'       => 'none',
+					'ifPostType'       => 'none',
+					'customFieldName'  => 'datetime',
+					'customFieldRule'  => 'setDisplayDeadline',
+				),
+				'test_meta' => array(
+					'post_id'    => $test_posts['event_post_id'],
+					'meta_key'   => 'datetime',
+					'meta_value' => date('Y-m-d H:i', strtotime('+1 hours')),
+				),
+				'content'   => 'customFieldRule deadline of date',
+				'expected'  => 'customFieldRule deadline of date',
+			),
+			array(
+				'name'      => 'Custom Field date deadline, Y-m-d today',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'ifPageType'       => 'none',
+					'ifPostType'       => 'none',
+					'customFieldName'  => 'datetime',
+					'customFieldRule'  => 'setDisplayDeadline',
+				),
+				'test_meta' => array(
+					'post_id'    => $test_posts['event_post_id'],
+					'meta_key'   => 'datetime',
+					'meta_value' => date('Y-m-d'),
+				),
+				'content'   => 'customFieldRule deadline of date',
+				'expected'  => 'customFieldRule deadline of date',
+			),
+			array(
+				'name'      => 'Custom Field date startline, before today',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'ifPageType'       => 'none',
+					'ifPostType'       => 'none',
+					'customFieldName'  => 'datetime',
+					'customFieldRule'  => 'setDisplayStartline',
+				),
+				'test_meta' => array(
+					'post_id'    => $test_posts['event_post_id'],
+					'meta_key'   => 'datetime',
+					'meta_value' => date('Y-m-d H:i', strtotime('-5 days')),
+				),
+				'content'   => 'customFieldRule startline of date',
+				'expected'  => 'customFieldRule startline of date',
+			),
+			array(
+				'name'      => 'Custom Field date startline, after today',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'ifPageType'       => 'none',
+					'ifPostType'       => 'none',
+					'customFieldName'  => 'datetime',
+					'customFieldRule'  => 'setDisplayStartline',
+				),
+				'test_meta' => array(
+					'post_id'    => $test_posts['event_post_id'],
+					'meta_key'   => 'datetime',
+					'meta_value' => date('Y-m-d H:i', strtotime('+5 days')),
+				),
+				'content'   => 'customFieldRule startline of date',
+				'expected'  => '',
+			),
+			array(
+				'name'      => 'Custom Field date startline, before 1 hour',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'ifPageType'       => 'none',
+					'ifPostType'       => 'none',
+					'customFieldName'  => 'datetime',
+					'customFieldRule'  => 'setDisplayStartline',
+				),
+				'test_meta' => array(
+					'post_id'    => $test_posts['event_post_id'],
+					'meta_key'   => 'datetime',
+					'meta_value' => date('Y-m-d H:i', strtotime('-1 hours')),
+				),
+				'content'   => 'customFieldRule startline of date',
+				'expected'  => 'customFieldRule startline of date',
+			),
+			array(
+				'name'      => 'Custom Field date startline, Y-m-d today',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'ifPageType'       => 'none',
+					'ifPostType'       => 'none',
+					'customFieldName'  => 'datetime',
+					'customFieldRule'  => 'setDisplayStartline',
+				),
+				'test_meta' => array(
+					'post_id'    => $test_posts['event_post_id'],
+					'meta_key'   => 'datetime',
+					'meta_value' => date('Y-m-d'),
+				),
+				'content'   => 'customFieldRule startline of date',
+				'expected'  => 'customFieldRule startline of date',
+			),
 		);
 
 		foreach ( $tests as $test ) {
