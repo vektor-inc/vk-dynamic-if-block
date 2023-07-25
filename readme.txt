@@ -35,6 +35,8 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+[ Add Function ] Added user roles condition
+
 = 0.5.0 =
 [ Add Function ]Added transforms settings to wrap and unwrap.
 
