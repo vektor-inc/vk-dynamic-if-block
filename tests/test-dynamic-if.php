@@ -611,6 +611,31 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'content'   => 'customFieldRule not set',
 				'expected'  => 'customFieldRule not set',
 			),
+			/******************************************
+			* User Role */
+			array(
+				'name'      => 'Page viewable by administrator and editor',
+				'go_to'     => get_permalink( $test_posts['parent_page_id'] ),
+				'attribute' => array(
+					'userRole' => array(
+						'administrator',
+						'editor'
+					),
+				),
+				'content'   => 'Page viewable by administrator and editor',
+				'expected'  => '',
+			),
+			array(
+				'name'      => 'No restrictions on viewers',
+				'go_to'     => get_permalink( $test_posts['parent_page_id'] ),
+				'attribute' => array(
+					'userRole' => array(
+						'none'
+					),
+				),
+				'content'   => 'No restrictions on viewers',
+				'expected'  => 'No restrictions on viewers',
+			),
 		);
 
 		foreach ( $tests as $test ) {
