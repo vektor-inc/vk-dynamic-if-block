@@ -77,13 +77,13 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 
 	$display_by_user_role = false;
 
-	if ( is_user_logged_in() ) {
-		$current_user = wp_get_current_user();
-		$user_roles = (array) $current_user->roles;
+	if (!isset($attributes['userRole']) || empty($attributes['userRole'])) {
+		$display_by_user_role = true;
+	} else {
+		if ( is_user_logged_in() ) {
+			$current_user = wp_get_current_user();
+			$user_roles = (array) $current_user->roles;
 
-		if (!isset($attributes['userRole']) || empty($attributes['userRole'])) {
-			$display_by_user_role = true;
-		} else {
 			// Check if any of the user's roles match the selected roles.
 			foreach ($user_roles as $role) {
 				if (in_array($role, $attributes['userRole'])) {
@@ -91,9 +91,9 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 					break;
 				}
 			}
+		} else {
+			$display_by_user_role = false;
 		}
-	} else {
-		$display_by_user_role = false;
 	}
 
 
