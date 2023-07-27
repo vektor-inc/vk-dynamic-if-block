@@ -629,9 +629,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'No restrictions on viewers',
 				'go_to'     => get_permalink( $test_posts['parent_page_id'] ),
 				'attribute' => array(
-					'userRole' => array(
-						'none'
-					),
+					'userRole' =>  array(),
 				),
 				'content'   => 'No restrictions on viewers',
 				'expected'  => 'No restrictions on viewers',

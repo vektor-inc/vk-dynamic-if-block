@@ -15,9 +15,7 @@
 		},
 		"userRole": {
 			"type": "array",
-			"default": [
-				"none"
-			]
+			"default": []
 		},
 		"customFieldName": {
 			"type": "string",

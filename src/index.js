@@ -29,7 +29,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 		},
 		userRole: {
 			type: 'array',
-			default: ['none'],
+			default: [],
 		},
 		customFieldName: {
 			type: 'string',
@@ -81,13 +81,10 @@ registerBlockType('vk-blocks/dynamic-if', {
 		];
 
 		const userRolesObj = vk_dynamic_if_block_localize_data.userRoles || {};
-		const userRoles = [
-			{ value: 'none', label: __('No restriction', 'vk-dynamic-if-block') },
-			...Object.keys(userRolesObj).map(key => ({
-				value: key,
-				label: __(userRolesObj[key], 'vk-dynamic-if-block'),
-			}))
-		];
+		const userRoles = Object.keys(userRolesObj).map(key => ({
+			value: key,
+			label: __(userRolesObj[key], 'vk-dynamic-if-block'),
+		}));
 
 		let labels = [];
 
