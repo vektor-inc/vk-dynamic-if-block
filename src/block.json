@@ -28,6 +28,22 @@
 		"exclusion": {
 			"type": "boolean",
 			"default": false
+		},
+		"displayPeriodSetting": {
+			"type": "string",
+			"default": "notSpecified"
+		},
+		"periodSpecificationMethod": {
+			"type": "string",
+			"default": "direct"
+		},
+		"displayPeriodValue": {
+			"type": "string",
+			"default": ""
+		},
+		"referCustomFieldValue": {
+			"type": "string",
+			"default": ""
 		}
 	},
 	"supports": {

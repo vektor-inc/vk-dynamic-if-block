@@ -14,12 +14,16 @@ use VektorInc\VK_Helpers\VkHelpers;
  */
 function vk_dynamic_if_block_render( $attributes, $content ) {
 	$attributes_default = array(
-		'ifPageType'       => 'none',
-		'ifPostType'       => 'none',
-		'customFieldName'  => '',
-		'customFieldRule'  => 'valueExists',
-		'customFieldValue' => '',
-		'exclusion'        => false,
+		'ifPageType'                => 'none',
+		'ifPostType'                => 'none',
+		'customFieldName'           => '',
+		'customFieldRule'           => 'valueExists',
+		'customFieldValue'          => '',
+		'exclusion'                 => false,
+		'displayPeriodSetting'      => 'notSpecified',
+		'periodSpecificationMethod' => 'direct',
+		'displayPeriodValue'        => '',
+		'referCustomFieldValue'     => ''
 	);
 	$attributes         = array_merge( $attributes_default, $attributes );
 
