@@ -16,3 +16,8 @@
 	background-color: #e5e5e5;
 	z-index: 10000;
 }
+
+// Specific margin-bottom of user role check box
+.dynamic-if-user-role .components-checkbox-control {
+	margin-bottom:15px;
+}

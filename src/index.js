@@ -120,6 +120,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 						/>
 						<BaseControl
 							__nextHasNoMarginBottom
+							className="dynamic-if-user-role"
 							label={__('User Role', 'vk-dynamic-if-block')}
 							help={__('If unchecked, no restrictions are imposed by user role', 'vk-dynamic-if-block')}
 						>
