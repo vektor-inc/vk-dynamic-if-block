@@ -5,7 +5,9 @@ import {
 	PanelBody,
 	SelectControl,
 	TextControl,
-	ToggleControl
+	ToggleControl,
+	CheckboxControl,
+	BaseControl
 } from '@wordpress/components';
 import { ReactComponent as Icon } from './icon.svg';
 import transforms from './transforms';
@@ -24,6 +26,10 @@ registerBlockType('vk-blocks/dynamic-if', {
 		ifPostType: {
 			type: 'string',
 			default: 'none',
+		},
+		userRole: {
+			type: 'array',
+			default: [],
 		},
 		customFieldName: {
 			type: 'string',
@@ -47,7 +53,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 		innerBlocks: true,
 	},
 	edit({ attributes, setAttributes }) {
-		const { ifPageType, ifPostType, customFieldName, customFieldRule, customFieldValue, exclusion } = attributes;
+		const { ifPageType, ifPostType, userRole, customFieldName, customFieldRule, customFieldValue, exclusion } = attributes;
 
 		const ifPageTypes = [
 			{ value: 'none', label: __('No restriction', 'vk-dynamic-if-block') },
@@ -73,6 +79,12 @@ registerBlockType('vk-blocks/dynamic-if', {
 		const MY_TEMPLATE = [
 			['core/paragraph', {}],
 		];
+
+		const userRolesObj = vk_dynamic_if_block_localize_data.userRoles || {};
+		const userRoles = Object.keys(userRolesObj).map(key => ({
+			value: key,
+			label: __(userRolesObj[key], 'vk-dynamic-if-block'),
+		}));
 
 		let labels = [];
 
@@ -106,6 +118,30 @@ registerBlockType('vk-blocks/dynamic-if', {
 							options={vk_dynamic_if_block_localize_data.postTypeSelectOptions}
 							onChange={(value) => setAttributes({ ifPostType: value })}
 						/>
+						<BaseControl
+							__nextHasNoMarginBottom
+							className="dynamic-if-user-role"
+							label={__('User Role', 'vk-dynamic-if-block')}
+							help={__('If unchecked, no restrictions are imposed by user role', 'vk-dynamic-if-block')}
+						>
+							{userRoles.map((role, index) => {
+								return (
+									<CheckboxControl
+										__nextHasNoMarginBottom
+										key={index}
+										label={role.label}
+										checked={userRole.includes(role.value)}
+										onChange={(isChecked) => {
+											if (isChecked) {
+												setAttributes({ userRole: [...userRole, role.value] });
+											} else {
+												setAttributes({ userRole: userRole.filter((r) => r !== role.value) });
+											}
+										}}
+									/>
+								);
+							})}
+						</BaseControl>
 						<TextControl
 							label={__('Custom Field Name', 'vk-dynamic-if-block')}
 							value={customFieldName}

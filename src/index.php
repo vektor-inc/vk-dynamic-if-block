@@ -10,12 +10,14 @@ use VektorInc\VK_Helpers\VkHelpers;
 /**
  * Block Render function
  *
+ * @param array $user_roles : 通常の処理では関数内でログイン状態を取得するが、PHPUnit用に引数で渡せるようにしている。
  * @return string $return : Return HTML.
  */
-function vk_dynamic_if_block_render( $attributes, $content ) {
+function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array() ) {
 	$attributes_default = array(
 		'ifPageType'       => 'none',
 		'ifPostType'       => 'none',
+		'userRole'         => [],
 		'customFieldName'  => '',
 		'customFieldRule'  => 'valueExists',
 		'customFieldValue' => '',
@@ -72,6 +74,33 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		$display_by_post_type = false;
 	}
 
+	// User Role Condition Check //////////////////////////////////.
+
+	$display_by_user_role = false;
+
+	if ( empty( $user_roles ) ){
+		$current_user = wp_get_current_user();
+		$user_roles = (array) $current_user->roles;
+	}
+
+	if (!isset($attributes['userRole']) || empty($attributes['userRole'])) {
+		$display_by_user_role = true;
+	} else {
+		if ( is_user_logged_in() || $user_roles ) {
+
+			// Check if any of the user's roles match the selected roles.
+			foreach ($user_roles as $role) {
+				if (in_array($role, $attributes['userRole'])) {
+					$display_by_user_role = true;
+					break;
+				}
+			}
+		} else {
+			$display_by_user_role = false;
+		}
+	}
+
+
 	// Custom Field Condition Check //////////////////////////////////.
 
 	$display_by_custom_field = false;
@@ -100,7 +129,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 
 	// Merge Condition Check //////////////////////////////////.
 
-	if ( $display_by_post_type && $display_by_page_type && $display_by_custom_field ) {
+	if ( $display_by_post_type && $display_by_page_type && $display_by_custom_field && $display_by_user_role ) {
 		$display = true;
 	}
 
@@ -130,6 +159,11 @@ function vk_dynamic_if_block_register_dynamic() {
 	);
 }
 add_action( 'init', 'vk_dynamic_if_block_register_dynamic' );
+
+// Get User Roles
+function get_user_roles() {
+	return wp_roles()->get_names();
+}
 
 function vk_dynamic_if_block_set_localize_script() {
 
@@ -173,6 +207,7 @@ function vk_dynamic_if_block_set_localize_script() {
 		'vk_dynamic_if_block_localize_data', // JS object name.
 		array(
 			'postTypeSelectOptions' => $post_type_select_options,
+			'userRoles' => get_user_roles(),
 		)
 	);
 }
