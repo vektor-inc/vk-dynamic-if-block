@@ -13,6 +13,10 @@
 			"type": "string",
 			"default": "none"
 		},
+		"userRole": {
+			"type": "array",
+			"default": []
+		},
 		"customFieldName": {
 			"type": "string",
 			"default": ""
