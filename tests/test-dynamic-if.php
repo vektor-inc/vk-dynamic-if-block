@@ -635,6 +635,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'expected'  => 'No restrictions on viewers',
 			),
 			array(
+				'name'       => 'Editor can view',
+				'go_to'      => get_permalink( $test_posts['parent_page_id'] ),
+				'attribute'  => array(
+					'userRole' => array( 'editor' ),
+				),
+				'user_roles' => array( 'editor' ),
+				'content'    => 'Editor can view',
+				'expected'   => 'Editor can view',
+			),
+			array(
 				'name'       => 'Editor can not view',
 				'go_to'      => get_permalink( $test_posts['parent_page_id'] ),
 				'attribute'  => array(
