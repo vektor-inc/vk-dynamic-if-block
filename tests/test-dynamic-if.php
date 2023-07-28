@@ -619,7 +619,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'attribute' => array(
 					'userRole' => array(
 						'administrator',
-						'editor'
+						'editor',
 					),
 				),
 				'content'   => 'Page viewable by administrator and editor',
@@ -629,10 +629,20 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'No restrictions on viewers',
 				'go_to'     => get_permalink( $test_posts['parent_page_id'] ),
 				'attribute' => array(
-					'userRole' =>  array(),
+					'userRole' => array(),
 				),
 				'content'   => 'No restrictions on viewers',
 				'expected'  => 'No restrictions on viewers',
+			),
+			array(
+				'name'       => 'Editor can not view',
+				'go_to'      => get_permalink( $test_posts['parent_page_id'] ),
+				'attribute'  => array(
+					'userRole' => array( 'administrator' ),
+				),
+				'user_roles' => array( 'editor' ),
+				'content'    => 'Editor can not view',
+				'expected'   => '',
 			),
 		);
 
@@ -654,7 +664,11 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 
 			print PHP_EOL;
 			$this->go_to( $test['go_to'] );
-			$actual = vk_dynamic_if_block_render( $test['attribute'], $test['content'] );
+			if ( isset( $test['user_roles'] ) ) {
+				$actual = vk_dynamic_if_block_render( $test['attribute'], $test['content'], $test['user_roles'] );
+			} else {
+				$actual = vk_dynamic_if_block_render( $test['attribute'], $test['content'] );
+			}
 
 			print 'Page : ' . esc_html( $test['name'] ) . PHP_EOL;
 			print 'go_to : ' . esc_html( $test['go_to'] ) . PHP_EOL;
