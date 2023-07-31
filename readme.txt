@@ -34,7 +34,7 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 3. Dynamic If block in the site editor.
 
 == Changelog ==
-
+[ Specification Change ]Fix WordPress 6.3 transforms settings.
 [ Add Function ] Added user roles condition
 
 = 0.5.0 =
