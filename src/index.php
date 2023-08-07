@@ -139,9 +139,17 @@ function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array(
 		$display_by_period = true;
 	} elseif ( 'deadline' === $attributes['displayPeriodSetting'] ) {
 		if ( 'direct' === $attributes['periodSpecificationMethod'] ) {
+
+			// 時間指定がない場合に時間を自動指定
 			if ( $attributes['displayPeriodValue'] === date("Y-m-d", strtotime($attributes['displayPeriodValue'])) ) {
 				$attributes['displayPeriodValue'] .= " 23:59";
 			}
+
+			// 日付のフォーマットを Y-m-d H:i に指定
+			if ( $attributes['displayPeriodValue'] !== date("Y-m-d H:i", strtotime($attributes['displayPeriodValue'])) ){
+				$attributes['displayPeriodValue'] = date("Y-m-d H:i", strtotime($attributes['displayPeriodValue']));
+			}
+
 			if ( $attributes['displayPeriodValue'] > current_time("Y-m-d H:i") ) {
 				$display_by_period = true;
 			} else {
@@ -160,9 +168,17 @@ function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array(
 		}
 	} elseif ( 'startline' === $attributes['displayPeriodSetting'] ) {
 		if ( 'direct' === $attributes['periodSpecificationMethod'] ) {
+
+			// 時間指定がない場合に時間を自動指定
 			if ( $attributes['displayPeriodValue'] === date("Y-m-d", strtotime($attributes['displayPeriodValue'])) ) {
 				$attributes['displayPeriodValue'] .= " 00:00";
 			}
+
+			// 日付のフォーマットを Y-m-d H:i に指定
+			if ( $attributes['displayPeriodValue'] !== date("Y-m-d H:i", strtotime($attributes['displayPeriodValue'])) ){
+				$attributes['displayPeriodValue'] = date("Y-m-d H:i", strtotime($attributes['displayPeriodValue']));
+			}
+
 			if ( $attributes['displayPeriodValue'] <= current_time("Y-m-d H:i") ) {
 				$display_by_period = true;
 			} else {
