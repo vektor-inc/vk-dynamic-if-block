@@ -168,7 +168,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 			'post_status'  => 'publish',
 			'post_author'  => $test_users['test_user'],
 			'post_content' => 'content',
-			'post_date'    => date('Y-m-d', strtotime('-5 days', strtotime(date('Y-m-d')))),
+			'post_date'    => date( 'Y-m-d', strtotime( '-5 days', strtotime( date( 'Y-m-d' ) ) ) ),
 		);
 		$test_posts['event_post_id'] = wp_insert_post( $post );
 
@@ -676,7 +676,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'attribute' => array(
 					'displayPeriodSetting'      => 'deadline',
 					'periodSpecificationMethod' => 'direct',
-					'displayPeriodValue'        => date('Y-m-d H:i', strtotime('+5 days')),
+					'displayPeriodValue'        => date( 'Y-m-d H:i', strtotime( '+5 days' ) ),
 				),
 				'content'   => 'Display Period [ deadline / direct / after today]( true )',
 				'expected'  => 'Display Period [ deadline / direct / after today]( true )',
@@ -687,7 +687,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'attribute' => array(
 					'displayPeriodSetting'      => 'deadline',
 					'periodSpecificationMethod' => 'direct',
-					'displayPeriodValue'        => date('Y-m-d H:i', strtotime('-5 days')),
+					'displayPeriodValue'        => date( 'Y-m-d H:i', strtotime( '-5 days' ) ),
 				),
 				'content'   => 'Display Period [ deadline / direct / before today]( false )',
 				'expected'  => '',
@@ -698,7 +698,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'attribute' => array(
 					'displayPeriodSetting'      => 'deadline',
 					'periodSpecificationMethod' => 'direct',
-					'displayPeriodValue'        => date('Y-m-d H:i', strtotime('-1 hours')),
+					'displayPeriodValue'        => date( 'Y-m-d H:i', strtotime( '-1 hours' ) ),
 				),
 				'content'   => 'Display Period [ deadline / direct / before now]( false )',
 				'expected'  => '',
@@ -709,7 +709,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'attribute' => array(
 					'displayPeriodSetting'      => 'deadline',
 					'periodSpecificationMethod' => 'direct',
-					'displayPeriodValue'        => date('Y-m-d'),
+					'displayPeriodValue'        => date( 'Y-m-d' ),
 				),
 				'content'   => 'Display Period [ deadline / direct / Y-m-d today]( true )',
 				'expected'  => 'Display Period [ deadline / direct / Y-m-d today]( true )',
@@ -725,7 +725,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
 					'meta_key'   => 'datetime',
-					'meta_value' => date('Y-m-d H:i', strtotime('+5 days')),
+					'meta_value' => date( 'Y-m-d H:i', strtotime( '+5 days' ) ),
 				),
 				'content'   => 'Display Period [ deadline / referCustomField / after today]( true )',
 				'expected'  => 'Display Period [ deadline / referCustomField / after today]( true )',
@@ -741,7 +741,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
 					'meta_key'   => 'datetime',
-					'meta_value' => date('Y-m-d H:i', strtotime('-5 days')),
+					'meta_value' => date( 'Y-m-d H:i', strtotime( '-5 days' ) ),
 				),
 				'content'   => 'Display Period [ deadline / referCustomField / before today]( false )',
 				'expected'  => '',
@@ -753,7 +753,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'attribute' => array(
 					'displayPeriodSetting'      => 'startline',
 					'periodSpecificationMethod' => 'direct',
-					'displayPeriodValue'        => date('Y-m-d H:i', strtotime('+5 days')),
+					'displayPeriodValue'        => date( 'Y-m-d H:i', strtotime( '+5 days' ) ),
 				),
 				'content'   => 'Display Period [ startline / direct / after today]( false )',
 				'expected'  => '',
@@ -764,7 +764,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'attribute' => array(
 					'displayPeriodSetting'      => 'startline',
 					'periodSpecificationMethod' => 'direct',
-					'displayPeriodValue'        => date('Y-m-d H:i', strtotime('-5 days')),
+					'displayPeriodValue'        => date( 'Y-m-d H:i', strtotime( '-5 days' ) ),
 				),
 				'content'   => 'Display Period [ startline / direct / before today]( true )',
 				'expected'  => 'Display Period [ startline / direct / before today]( true )',
@@ -775,7 +775,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'attribute' => array(
 					'displayPeriodSetting'      => 'startline',
 					'periodSpecificationMethod' => 'direct',
-					'displayPeriodValue'        => date('Y-m-d H:i', strtotime('-1 hours')),
+					'displayPeriodValue'        => date( 'Y-m-d H:i', strtotime( '-1 hours' ) ),
 				),
 				'content'   => 'Display Period [ startline / direct / before now]( true )',
 				'expected'  => 'Display Period [ startline / direct / before now]( true )',
@@ -786,7 +786,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'attribute' => array(
 					'displayPeriodSetting'      => 'startline',
 					'periodSpecificationMethod' => 'direct',
-					'displayPeriodValue'        => date('Y-m-d'),
+					'displayPeriodValue'        => date( 'Y-m-d' ),
 				),
 				'content'   => 'Display Period [ startline / direct / Y-m-d today]( true )',
 				'expected'  => 'Display Period [ startline / direct / Y-m-d today]( true )',
@@ -802,7 +802,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
 					'meta_key'   => 'datetime',
-					'meta_value' => date('Y-m-d H:i', strtotime('+5 days')),
+					'meta_value' => date( 'Y-m-d H:i', strtotime( '+5 days' ) ),
 				),
 				'content'   => 'Display Period [ startline / referCustomField / after today]( false )',
 				'expected'  => '',
@@ -818,7 +818,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
 					'meta_key'   => 'datetime',
-					'meta_value' => date('Y-m-d H:i', strtotime('-5 days')),
+					'meta_value' => date( 'Y-m-d H:i', strtotime( '-5 days' ) ),
 				),
 				'content'   => 'Display Period [ startline / referCustomField / before today]( true )',
 				'expected'  => 'Display Period [ startline / referCustomField / before today]( true )',
@@ -863,7 +863,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'attribute' => array(
 					'displayPeriodSetting'      => 'daysSincePublic',
 					'periodSpecificationMethod' => 'referCustomField',
-					'referCustomFieldValue'        => 'number',
+					'referCustomFieldValue'     => 'number',
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
@@ -879,7 +879,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'attribute' => array(
 					'displayPeriodSetting'      => 'daysSincePublic',
 					'periodSpecificationMethod' => 'referCustomField',
-					'referCustomFieldValue'        => 'number',
+					'referCustomFieldValue'     => 'number',
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
@@ -895,7 +895,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'attribute' => array(
 					'displayPeriodSetting'      => 'daysSincePublic',
 					'periodSpecificationMethod' => 'referCustomField',
-					'referCustomFieldValue'        => 'number',
+					'referCustomFieldValue'     => 'number',
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
