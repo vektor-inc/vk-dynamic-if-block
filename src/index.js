@@ -190,64 +190,63 @@ registerBlockType('vk-blocks/dynamic-if', {
 								)}
 							</>
 						)}
+						<BaseControl title={__('Display Period', 'vk-dynamic-if-block')}>
+							<SelectControl
+								label={__('Display Period Setting', 'vk-dynamic-if-block')}
+								value={displayPeriodSetting}
+								options={[
+									{ value: 'notSpecified', label: __('Not specified', 'vk-dynamic-if-block') },
+									{ value: 'deadline', label: __('Set to display deadline', 'vk-dynamic-if-block') },
+									{ value: 'startline', label: __('Set to display startline', 'vk-dynamic-if-block') },
+									{ value: 'daysSincePublic', label: __('Number of days from the date of publication', 'vk-dynamic-if-block') },
+								]}
+								onChange={(value) => setAttributes({ displayPeriodSetting: value })}
+							/>
+							{displayPeriodSetting !== 'notSpecified' && (
+								<>
+									<SelectControl
+										label={__('Period specification method', 'vk-dynamic-if-block')}
+										value={periodSpecificationMethod}
+										options={[
+											{ value: 'direct', label: __('Direct input in this block', 'vk-dynamic-if-block') },
+											{ value: 'referCustomField', label: __('Refer to value of custom field', 'vk-dynamic-if-block') },
+										]}
+										onChange={(value) => setAttributes({ periodSpecificationMethod: value })}
+									/>
+									{periodSpecificationMethod === 'direct' && (
+										<NumberControl
+											label={__('Referenced Custom Field Value', 'vk-dynamic-if-block')}
+											type={displayPeriodSetting === 'daysSincePublic' ? 'number' : 'datetime-local'}
+											step={displayPeriodSetting === 'daysSincePublic' ? 1 : 60}
+											value={displayPeriodValue}
+											onChange={(value) =>
+												setAttributes({ displayPeriodValue: value })
+											}
+										/>
+									)}
+									{periodSpecificationMethod === 'referCustomField' && (
+										<TextControl
+											label={__('Referenced Custom Field Value', 'vk-dynamic-if-block')}
+											value={referCustomFieldValue}
+											onChange={(value) =>
+												setAttributes({ referCustomFieldValue: value })
+											}
+											help={
+												displayPeriodSetting === 'daysSincePublic'
+													? __('Save the value of the custom field as an integer.', 'vk-dynamic-if-block')
+													: __('Save the custom field values as Y-m-d H:i.', 'vk-dynamic-if-block')
+											}
+										/>
+									)}
+								</>
+							)}
 
+						</BaseControl>
 						<ToggleControl
 							label={__('Exclusion designation', 'vk-dynamic-if-block')}
 							checked={exclusion}
 							onChange={(checked) => setAttributes({ exclusion: checked })}
 						/>
-					</PanelBody>
-					<PanelBody title={__('Display Period', 'vk-dynamic-if-block')}>
-						<SelectControl
-							label={__('Display Period Setting', 'vk-dynamic-if-block')}
-							value={displayPeriodSetting}
-							options={[
-								{ value: 'notSpecified', label: __('Not specified', 'vk-dynamic-if-block') },
-								{ value: 'deadline', label: __('Set to display deadline', 'vk-dynamic-if-block') },
-								{ value: 'startline', label: __('Set to display startline', 'vk-dynamic-if-block') },
-								{ value: 'daysSincePublic', label: __('Number of days from the date of publication', 'vk-dynamic-if-block') },
-							]}
-							onChange={(value) => setAttributes({ displayPeriodSetting: value })}
-						/>
-						{displayPeriodSetting !== 'notSpecified' && (
-							<>
-								<SelectControl
-									label={__('Period specification method', 'vk-dynamic-if-block')}
-									value={periodSpecificationMethod}
-									options={[
-										{ value: 'direct', label: __('Direct input in this block', 'vk-dynamic-if-block') },
-										{ value: 'referCustomField', label: __('Refer to value of custom field', 'vk-dynamic-if-block') },
-									]}
-									onChange={(value) => setAttributes({ periodSpecificationMethod: value })}
-								/>
-								{periodSpecificationMethod === 'direct' && (
-									<NumberControl
-										label={__('Referenced Custom Field Value', 'vk-dynamic-if-block')}
-										type={displayPeriodSetting === 'daysSincePublic' ? 'number' : 'datetime-local'}
-										step={displayPeriodSetting === 'daysSincePublic' ? 1 : 60}
-										value={displayPeriodValue}
-										onChange={(value) =>
-											setAttributes({ displayPeriodValue: value })
-										}
-									/>
-								)}
-								{periodSpecificationMethod === 'referCustomField' && (
-									<TextControl
-										label={__('Referenced Custom Field Value', 'vk-dynamic-if-block')}
-										value={referCustomFieldValue}
-										onChange={(value) =>
-											setAttributes({ referCustomFieldValue: value })
-										}
-										help={
-											displayPeriodSetting === 'daysSincePublic'
-												? __('Save the value of the custom field as an integer.', 'vk-dynamic-if-block')
-												: __('Save the custom field values as Y-m-d H:i.', 'vk-dynamic-if-block')
-										}
-									/>
-								)}
-							</>
-						)}
-
 					</PanelBody>
 				</InspectorControls>
 				<div className="vk-dynamic-if-block__label">{labels_string}</div>
