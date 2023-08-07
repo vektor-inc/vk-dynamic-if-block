@@ -35,7 +35,7 @@
 		},
 		"displayPeriodSetting": {
 			"type": "string",
-			"default": "notSpecified"
+			"default": "none"
 		},
 		"periodSpecificationMethod": {
 			"type": "string",

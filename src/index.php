@@ -22,7 +22,7 @@ function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array(
 		'customFieldRule'           => 'valueExists',
 		'customFieldValue'          => '',
 		'exclusion'                 => false,
-		'displayPeriodSetting'      => 'notSpecified',
+		'displayPeriodSetting'      => 'none',
 		'periodSpecificationMethod' => 'direct',
 		'displayPeriodValue'        => '',
 		'referCustomFieldValue'     => ''
@@ -135,7 +135,7 @@ function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array(
 
 	$display_by_period = false;
 
-	if ( 'notSpecified' === $attributes['displayPeriodSetting'] ) {
+	if ( 'none' === $attributes['displayPeriodSetting'] ) {
 		$display_by_period = true;
 	} elseif ( 'deadline' === $attributes['displayPeriodSetting'] ) {
 		if ( 'direct' === $attributes['periodSpecificationMethod'] ) {

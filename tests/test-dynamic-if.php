@@ -662,7 +662,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Display Period not specified',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'displayPeriodSetting'      => 'notSpecified',
+					'displayPeriodSetting'      => 'none',
 					'periodSpecificationMethod' => 'direct',
 					'displayPeriodValue'        => '',
 				),

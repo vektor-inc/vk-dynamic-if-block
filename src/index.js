@@ -50,7 +50,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 		},
 		displayPeriodSetting: {
 			type: 'string',
-			"default": "notSpecified"
+			"default": "none"
 		},
 		periodSpecificationMethod: {
 			type: 'string',
@@ -115,6 +115,10 @@ registerBlockType('vk-blocks/dynamic-if', {
 
 		if (customFieldName) {
 			labels.push(customFieldName);
+		}
+
+		if (displayPeriodSetting !== "none") {
+			labels.push(displayPeriodSetting);
 		}
 
 		let labels_string = labels.join(" / ");
@@ -195,7 +199,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 								label={__('Display Period Setting', 'vk-dynamic-if-block')}
 								value={displayPeriodSetting}
 								options={[
-									{ value: 'notSpecified', label: __('Not specified', 'vk-dynamic-if-block') },
+									{ value: 'none', label: __('No restriction', 'vk-dynamic-if-block') },
 									{ value: 'deadline', label: __('Set to display deadline', 'vk-dynamic-if-block') },
 									{ value: 'startline', label: __('Set to display startline', 'vk-dynamic-if-block') },
 									{ value: 'daysSincePublic', label: __('Number of days from the date of publication', 'vk-dynamic-if-block') },
@@ -211,7 +215,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 												: __('You can set the deadline or startline to be displayed, as well as the time period.', 'vk-dynamic-if-block')
 								}
 							/>
-							{displayPeriodSetting !== 'notSpecified' && (
+							{displayPeriodSetting !== 'none' && (
 								<>
 									<SelectControl
 										label={__('Period specification method', 'vk-dynamic-if-block')}
