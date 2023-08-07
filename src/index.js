@@ -19,6 +19,10 @@ registerBlockType('vk-blocks/dynamic-if', {
 	transforms,
 	category: 'theme',
 	attributes: {
+		selectCondition: {
+			type: 'string',
+			default: 'none',
+		},
 		ifPageType: {
 			type: 'string',
 			default: 'none',
@@ -53,7 +57,15 @@ registerBlockType('vk-blocks/dynamic-if', {
 		innerBlocks: true,
 	},
 	edit({ attributes, setAttributes }) {
-		const { ifPageType, ifPostType, userRole, customFieldName, customFieldRule, customFieldValue, exclusion } = attributes;
+		const { selectCondition, ifPageType, ifPostType, userRole, customFieldName, customFieldRule, customFieldValue, exclusion } = attributes;
+
+		const selectConditions = [
+			{ value: 'none', label: __('No restriction', 'vk-dynamic-if-block') },
+			{ value: 'pageType', label: __('Page Type', 'vk-dynamic-if-block') },
+			{ value: 'postType', label: __('Post Type', 'vk-dynamic-if-block') },
+			{ value: 'userRole', label: __('User Role', 'vk-dynamic-if-block') },
+			{ value: 'customField', label: __('Custom Field', 'vk-dynamic-if-block') },
+		]
 
 		const ifPageTypes = [
 			{ value: 'none', label: __('No restriction', 'vk-dynamic-if-block') },
@@ -107,73 +119,88 @@ registerBlockType('vk-blocks/dynamic-if', {
 				<InspectorControls>
 					<PanelBody title={__('Display Conditions', 'vk-dynamic-if-block')}>
 						<SelectControl
-							label={__('Page Type', 'vk-dynamic-if-block')}
-							value={ifPageType}
-							options={ifPageTypes}
-							onChange={(value) => setAttributes({ ifPageType: value })}
+							label={__('Condition Select', 'vk-dynamic-if-block')}
+							value={selectCondition}
+							options={selectConditions}
+							onChange={(value) => setAttributes({ selectCondition: value })}
 						/>
-						<SelectControl
-							label={__('Post Type', 'vk-dynamic-if-block')}
-							value={ifPostType}
-							options={vk_dynamic_if_block_localize_data.postTypeSelectOptions}
-							onChange={(value) => setAttributes({ ifPostType: value })}
-						/>
-						<BaseControl
-							__nextHasNoMarginBottom
-							className="dynamic-if-user-role"
-							label={__('User Role', 'vk-dynamic-if-block')}
-							help={__('If unchecked, no restrictions are imposed by user role', 'vk-dynamic-if-block')}
-						>
-							{userRoles.map((role, index) => {
-								return (
-									<CheckboxControl
-										__nextHasNoMarginBottom
-										key={index}
-										label={role.label}
-										checked={userRole.includes(role.value)}
-										onChange={(isChecked) => {
-											if (isChecked) {
-												setAttributes({ userRole: [...userRole, role.value] });
-											} else {
-												setAttributes({ userRole: userRole.filter((r) => r !== role.value) });
-											}
-										}}
-									/>
-								);
-							})}
-						</BaseControl>
-						<TextControl
-							label={__('Custom Field Name', 'vk-dynamic-if-block')}
-							value={customFieldName}
-							onChange={(value) =>
-								setAttributes({ customFieldName: value })
-							}
-						/>
-						{customFieldName && (
-							<>
-								<SelectControl
-									label={__('Custom Field Rule', 'vk-dynamic-if-block')}
-									value={customFieldRule}
-									options={[
-										{ value: 'valueExists', label: __('Value Exist ( !empty() )', 'vk-dynamic-if-block') },
-										{ value: 'valueEquals', label: __('Value Equals ( === )', 'vk-dynamic-if-block') },
-									]}
-									onChange={(value) => setAttributes({ customFieldRule: value })}
-								/>
-								{customFieldRule === 'valueEquals' && (
-									<>
-										<TextControl
-											label={__('Custom Field Value', 'vk-dynamic-if-block')}
-											value={customFieldValue}
-											onChange={(value) =>
-												setAttributes({ customFieldValue: value })
-											}
+						{selectCondition === 'pageType' && (
+							<SelectControl
+								label={__('Page Type', 'vk-dynamic-if-block')}
+								value={ifPageType}
+								options={ifPageTypes}
+								onChange={(value) => setAttributes({ ifPageType: value })}
+							/>
+						)}
+						{selectCondition === 'postType' && (
+							<SelectControl
+								label={__('Post Type', 'vk-dynamic-if-block')}
+								value={ifPostType}
+								options={vk_dynamic_if_block_localize_data.postTypeSelectOptions}
+								onChange={(value) => setAttributes({ ifPostType: value })}
+							/>
+						)}
+						{selectCondition === 'userRole' && (
+							<BaseControl
+								__nextHasNoMarginBottom
+								className="dynamic-if-user-role"
+								label={__('User Role', 'vk-dynamic-if-block')}
+								help={__('If unchecked, no restrictions are imposed by user role', 'vk-dynamic-if-block')}
+							>
+								{userRoles.map((role, index) => {
+									return (
+										<CheckboxControl
+											__nextHasNoMarginBottom
+											key={index}
+											label={role.label}
+											checked={userRole.includes(role.value)}
+											onChange={(isChecked) => {
+												if (isChecked) {
+													setAttributes({ userRole: [...userRole, role.value] });
+												} else {
+													setAttributes({ userRole: userRole.filter((r) => r !== role.value) });
+												}
+											}}
 										/>
+									);
+								})}
+							</BaseControl>
+						)}
+						{selectCondition === 'customFiled' && (
+							<>
+								<TextControl
+									label={__('Custom Field Name', 'vk-dynamic-if-block')}
+									value={customFieldName}
+									onChange={(value) =>
+										setAttributes({ customFieldName: value })
+									}
+								/>
+								{customFieldName && (
+									<>
+										<SelectControl
+											label={__('Custom Field Rule', 'vk-dynamic-if-block')}
+											value={customFieldRule}
+											options={[
+												{ value: 'valueExists', label: __('Value Exist ( !empty() )', 'vk-dynamic-if-block') },
+												{ value: 'valueEquals', label: __('Value Equals ( === )', 'vk-dynamic-if-block') },
+											]}
+											onChange={(value) => setAttributes({ customFieldRule: value })}
+										/>
+										{customFieldRule === 'valueEquals' && (
+											<>
+												<TextControl
+													label={__('Custom Field Value', 'vk-dynamic-if-block')}
+													value={customFieldValue}
+													onChange={(value) =>
+														setAttributes({ customFieldValue: value })
+													}
+												/>
+											</>
+										)}
 									</>
 								)}
 							</>
 						)}
-
 						<ToggleControl
 							label={__('Exclusion designation', 'vk-dynamic-if-block')}
 							checked={exclusion}

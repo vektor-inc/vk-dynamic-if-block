@@ -15,6 +15,7 @@ use VektorInc\VK_Helpers\VkHelpers;
  */
 function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array() ) {
 	$attributes_default = array(
+		'selectCondition'       => 'none',
 		'ifPageType'       => 'none',
 		'ifPostType'       => 'none',
 		'userRole'         => [],

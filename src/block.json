@@ -5,6 +5,10 @@
 	"category": "theme",
 	"textdomain": "vk-dynamic-if-block",
 	"attributes": {
+		"selectCondition": {
+			"type": "string",
+			"default": "none"
+		},
 		"ifPageType": {
 			"type": "string",
 			"default": "none"
