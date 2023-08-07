@@ -201,6 +201,15 @@ registerBlockType('vk-blocks/dynamic-if', {
 									{ value: 'daysSincePublic', label: __('Number of days from the date of publication', 'vk-dynamic-if-block') },
 								]}
 								onChange={(value) => setAttributes({ displayPeriodSetting: value })}
+								help={
+									displayPeriodSetting === 'deadline'
+										? __('After the specified date, it is hidden.', 'vk-dynamic-if-block')
+										: displayPeriodSetting === 'startline'
+											? __('After the specified date, it is display.', 'vk-dynamic-if-block')
+											: displayPeriodSetting === 'daysSincePublic'
+												? __('After the specified number of days, it is hidden.', 'vk-dynamic-if-block')
+												: __('You can set the deadline or startline to be displayed, as well as the time period.', 'vk-dynamic-if-block')
+								}
 							/>
 							{displayPeriodSetting !== 'notSpecified' && (
 								<>
@@ -215,7 +224,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 									/>
 									{periodSpecificationMethod === 'direct' && (
 										<NumberControl
-											label={__('Referenced Custom Field Value', 'vk-dynamic-if-block')}
+											label={__('Value for the specified period', 'vk-dynamic-if-block')}
 											type={displayPeriodSetting === 'daysSincePublic' ? 'number' : 'datetime-local'}
 											step={displayPeriodSetting === 'daysSincePublic' ? 1 : 60}
 											value={displayPeriodValue}
