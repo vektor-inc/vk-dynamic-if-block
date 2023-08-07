@@ -35,6 +35,7 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+[ Fix ] Added UserRole label to block.
 [ Add Function ] Added user roles condition
 
 = 0.5.0 =
