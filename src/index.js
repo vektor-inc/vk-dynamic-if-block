@@ -60,7 +60,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 			type: 'string',
 			"default": ""
 		},
-		referCustomFieldValue: {
+		referCustomFieldName: {
 			type: 'string',
 			"default": ""
 		},
@@ -70,7 +70,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 		innerBlocks: true,
 	},
 	edit({ attributes, setAttributes }) {
-		const { ifPageType, ifPostType, userRole, customFieldName, customFieldRule, customFieldValue, exclusion, displayPeriodSetting, periodSpecificationMethod, displayPeriodValue, referCustomFieldValue } = attributes;
+		const { ifPageType, ifPostType, userRole, customFieldName, customFieldRule, customFieldValue, exclusion, displayPeriodSetting, periodSpecificationMethod, displayPeriodValue, referCustomFieldName } = attributes;
 
 		const ifPageTypes = [
 			{ value: 'none', label: __('No restriction', 'vk-dynamic-if-block') },
@@ -240,9 +240,9 @@ registerBlockType('vk-blocks/dynamic-if', {
 									{periodSpecificationMethod === 'referCustomField' && (
 										<TextControl
 											label={__('Referenced Custom Field Value', 'vk-dynamic-if-block')}
-											value={referCustomFieldValue}
+											value={referCustomFieldName}
 											onChange={(value) =>
-												setAttributes({ referCustomFieldValue: value })
+												setAttributes({ referCustomFieldName: value })
 											}
 											help={
 												displayPeriodSetting === 'daysSincePublic'

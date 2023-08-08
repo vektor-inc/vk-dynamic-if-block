@@ -720,7 +720,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'attribute' => array(
 					'displayPeriodSetting'      => 'deadline',
 					'periodSpecificationMethod' => 'referCustomField',
-					'referCustomFieldValue'     => 'datetime',
+					'referCustomFieldName'      => 'datetime',
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
@@ -736,7 +736,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'attribute' => array(
 					'displayPeriodSetting'      => 'deadline',
 					'periodSpecificationMethod' => 'referCustomField',
-					'referCustomFieldValue'     => 'datetime',
+					'referCustomFieldName'      => 'datetime',
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
@@ -797,7 +797,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'attribute' => array(
 					'displayPeriodSetting'      => 'startline',
 					'periodSpecificationMethod' => 'referCustomField',
-					'referCustomFieldValue'     => 'datetime',
+					'referCustomFieldName'      => 'datetime',
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
@@ -813,7 +813,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'attribute' => array(
 					'displayPeriodSetting'      => 'startline',
 					'periodSpecificationMethod' => 'referCustomField',
-					'referCustomFieldValue'     => 'datetime',
+					'referCustomFieldName'      => 'datetime',
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
@@ -863,7 +863,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'attribute' => array(
 					'displayPeriodSetting'      => 'daysSincePublic',
 					'periodSpecificationMethod' => 'referCustomField',
-					'referCustomFieldValue'     => 'number',
+					'referCustomFieldName'      => 'number',
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
@@ -879,7 +879,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'attribute' => array(
 					'displayPeriodSetting'      => 'daysSincePublic',
 					'periodSpecificationMethod' => 'referCustomField',
-					'referCustomFieldValue'     => 'number',
+					'referCustomFieldName'      => 'number',
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
@@ -895,7 +895,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'attribute' => array(
 					'displayPeriodSetting'      => 'daysSincePublic',
 					'periodSpecificationMethod' => 'referCustomField',
-					'referCustomFieldValue'     => 'number',
+					'referCustomFieldName'      => 'number',
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
