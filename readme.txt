@@ -38,6 +38,8 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 [ Fix ] Added UserRole label to block.
 [ Add Function ] Added user roles condition
 
+[ Add Function ] Added date condition
+
 = 0.5.0 =
 [ Add Function ]Added transforms settings to wrap and unwrap.
 
