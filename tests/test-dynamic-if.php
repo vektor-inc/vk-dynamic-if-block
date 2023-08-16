@@ -168,6 +168,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 			'post_status'  => 'publish',
 			'post_author'  => $test_users['test_user'],
 			'post_content' => 'content',
+			'post_date'    => date( 'Y-m-d', strtotime( '-5 days', strtotime( date( 'Y-m-d' ) ) ) ),
 		);
 		$test_posts['event_post_id'] = wp_insert_post( $post );
 
@@ -653,6 +654,256 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'user_roles' => array( 'editor' ),
 				'content'    => 'Editor can not view',
 				'expected'   => '',
+			),
+			/******************************************
+			 * Display Period */
+			// not specified
+			array(
+				'name'      => 'Display Period not specified',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'displayPeriodSetting'      => 'none',
+					'periodSpecificationMethod' => 'direct',
+					'displayPeriodValue'        => '',
+				),
+				'content'   => 'Display Period not specified',
+				'expected'  => 'Display Period not specified',
+			),
+			// deadline
+			array(
+				'name'      => 'Display Period [ deadline / direct / after today]( true )',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'displayPeriodSetting'      => 'deadline',
+					'periodSpecificationMethod' => 'direct',
+					'displayPeriodValue'        => date( 'Y-m-d H:i', strtotime( '+5 days' ) ),
+				),
+				'content'   => 'Display Period [ deadline / direct / after today]( true )',
+				'expected'  => 'Display Period [ deadline / direct / after today]( true )',
+			),
+			array(
+				'name'      => 'Display Period [ deadline / direct / before today]( false )',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'displayPeriodSetting'      => 'deadline',
+					'periodSpecificationMethod' => 'direct',
+					'displayPeriodValue'        => date( 'Y-m-d H:i', strtotime( '-5 days' ) ),
+				),
+				'content'   => 'Display Period [ deadline / direct / before today]( false )',
+				'expected'  => '',
+			),
+			array(
+				'name'      => 'Display Period [ deadline / direct / before now]( false )',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'displayPeriodSetting'      => 'deadline',
+					'periodSpecificationMethod' => 'direct',
+					'displayPeriodValue'        => date( 'Y-m-d H:i', strtotime( '-1 hours' ) ),
+				),
+				'content'   => 'Display Period [ deadline / direct / before now]( false )',
+				'expected'  => '',
+			),
+			array(
+				'name'      => 'Display Period [ deadline / direct / Y-m-d today]( true )',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'displayPeriodSetting'      => 'deadline',
+					'periodSpecificationMethod' => 'direct',
+					'displayPeriodValue'        => date( 'Y-m-d' ),
+				),
+				'content'   => 'Display Period [ deadline / direct / Y-m-d today]( true )',
+				'expected'  => 'Display Period [ deadline / direct / Y-m-d today]( true )',
+			),
+			array(
+				'name'      => 'Display Period [ deadline / referCustomField / after today]( true )',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'displayPeriodSetting'      => 'deadline',
+					'periodSpecificationMethod' => 'referCustomField',
+					'referCustomFieldName'      => 'datetime',
+				),
+				'test_meta' => array(
+					'post_id'    => $test_posts['event_post_id'],
+					'meta_key'   => 'datetime',
+					'meta_value' => date( 'Y-m-d H:i', strtotime( '+5 days' ) ),
+				),
+				'content'   => 'Display Period [ deadline / referCustomField / after today]( true )',
+				'expected'  => 'Display Period [ deadline / referCustomField / after today]( true )',
+			),
+			array(
+				'name'      => 'Display Period [ deadline / referCustomField / before today]( false )',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'displayPeriodSetting'      => 'deadline',
+					'periodSpecificationMethod' => 'referCustomField',
+					'referCustomFieldName'      => 'datetime',
+				),
+				'test_meta' => array(
+					'post_id'    => $test_posts['event_post_id'],
+					'meta_key'   => 'datetime',
+					'meta_value' => date( 'Y-m-d H:i', strtotime( '-5 days' ) ),
+				),
+				'content'   => 'Display Period [ deadline / referCustomField / before today]( false )',
+				'expected'  => '',
+			),
+			// startline
+			array(
+				'name'      => 'Display Period [ startline / direct / after today]( false )',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'displayPeriodSetting'      => 'startline',
+					'periodSpecificationMethod' => 'direct',
+					'displayPeriodValue'        => date( 'Y-m-d H:i', strtotime( '+5 days' ) ),
+				),
+				'content'   => 'Display Period [ startline / direct / after today]( false )',
+				'expected'  => '',
+			),
+			array(
+				'name'      => 'Display Period [ startline / direct / before today]( true )',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'displayPeriodSetting'      => 'startline',
+					'periodSpecificationMethod' => 'direct',
+					'displayPeriodValue'        => date( 'Y-m-d H:i', strtotime( '-5 days' ) ),
+				),
+				'content'   => 'Display Period [ startline / direct / before today]( true )',
+				'expected'  => 'Display Period [ startline / direct / before today]( true )',
+			),
+			array(
+				'name'      => 'Display Period [ startline / direct / before now]( true )',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'displayPeriodSetting'      => 'startline',
+					'periodSpecificationMethod' => 'direct',
+					'displayPeriodValue'        => date( 'Y-m-d H:i', strtotime( '-1 hours' ) ),
+				),
+				'content'   => 'Display Period [ startline / direct / before now]( true )',
+				'expected'  => 'Display Period [ startline / direct / before now]( true )',
+			),
+			array(
+				'name'      => 'Display Period [ startline / direct / Y-m-d today]( true )',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'displayPeriodSetting'      => 'startline',
+					'periodSpecificationMethod' => 'direct',
+					'displayPeriodValue'        => date( 'Y-m-d' ),
+				),
+				'content'   => 'Display Period [ startline / direct / Y-m-d today]( true )',
+				'expected'  => 'Display Period [ startline / direct / Y-m-d today]( true )',
+			),
+			array(
+				'name'      => 'Display Period [ startline / referCustomField / after today]( false )',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'displayPeriodSetting'      => 'startline',
+					'periodSpecificationMethod' => 'referCustomField',
+					'referCustomFieldName'      => 'datetime',
+				),
+				'test_meta' => array(
+					'post_id'    => $test_posts['event_post_id'],
+					'meta_key'   => 'datetime',
+					'meta_value' => date( 'Y-m-d H:i', strtotime( '+5 days' ) ),
+				),
+				'content'   => 'Display Period [ startline / referCustomField / after today]( false )',
+				'expected'  => '',
+			),
+			array(
+				'name'      => 'Display Period [ startline / referCustomField / before today]( true )',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'displayPeriodSetting'      => 'startline',
+					'periodSpecificationMethod' => 'referCustomField',
+					'referCustomFieldName'      => 'datetime',
+				),
+				'test_meta' => array(
+					'post_id'    => $test_posts['event_post_id'],
+					'meta_key'   => 'datetime',
+					'meta_value' => date( 'Y-m-d H:i', strtotime( '-5 days' ) ),
+				),
+				'content'   => 'Display Period [ startline / referCustomField / before today]( true )',
+				'expected'  => 'Display Period [ startline / referCustomField / before today]( true )',
+			),
+			// daysSincePublic
+			array(
+				'name'      => 'Display Period [ daysSincePublic / direct / 10 days later]( true )',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'displayPeriodSetting'      => 'daysSincePublic',
+					'periodSpecificationMethod' => 'direct',
+					'displayPeriodValue'        => '10',
+				),
+				'content'   => 'Display Period [ daysSincePublic / direct / 10 days later]( true )',
+				'expected'  => 'Display Period [ daysSincePublic / direct / 10 days later]( true )',
+			),
+			array(
+				'name'      => 'Display Period [ daysSincePublic / direct / 5 days later]( false )',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'displayPeriodSetting'      => 'daysSincePublic',
+					'periodSpecificationMethod' => 'direct',
+					'displayPeriodValue'        => '5',
+				),
+				'content'   => 'Display Period [ daysSincePublic / direct / 5 days later]( false )',
+				'expected'  => '',
+			),
+			array(
+				'name'      => 'Display Period [ daysSincePublic / direct / 3 days later]( false )',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'displayPeriodSetting'      => 'daysSincePublic',
+					'periodSpecificationMethod' => 'direct',
+					'displayPeriodValue'        => '3',
+				),
+				'content'   => 'Display Period [ daysSincePublic / direct / 3 days later]( false )',
+				'expected'  => '',
+			),
+			array(
+				'name'      => 'Display Period [ daysSincePublic / referCustomField / 10 days later]( true )',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'displayPeriodSetting'      => 'daysSincePublic',
+					'periodSpecificationMethod' => 'referCustomField',
+					'referCustomFieldName'      => 'number',
+				),
+				'test_meta' => array(
+					'post_id'    => $test_posts['event_post_id'],
+					'meta_key'   => 'number',
+					'meta_value' => '10',
+				),
+				'content'   => 'Display Period [ daysSincePublic / referCustomField / 10 days later]( true )',
+				'expected'  => 'Display Period [ daysSincePublic / referCustomField / 10 days later]( true )',
+			),
+			array(
+				'name'      => 'Display Period [ daysSincePublic / referCustomField / 5 days later]( false )',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'displayPeriodSetting'      => 'daysSincePublic',
+					'periodSpecificationMethod' => 'referCustomField',
+					'referCustomFieldName'      => 'number',
+				),
+				'test_meta' => array(
+					'post_id'    => $test_posts['event_post_id'],
+					'meta_key'   => 'number',
+					'meta_value' => '5',
+				),
+				'content'   => 'Display Period [ daysSincePublic / referCustomField / 5 days later]( false )',
+				'expected'  => '',
+			),
+			array(
+				'name'      => 'Display Period [ daysSincePublic / referCustomField / 3 days later]( false )',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'displayPeriodSetting'      => 'daysSincePublic',
+					'periodSpecificationMethod' => 'referCustomField',
+					'referCustomFieldName'      => 'number',
+				),
+				'test_meta' => array(
+					'post_id'    => $test_posts['event_post_id'],
+					'meta_key'   => 'number',
+					'meta_value' => '3',
+				),
+				'content'   => 'Display Period [ daysSincePublic / referCustomField / 3 days later]( false )',
+				'expected'  => '',
 			),
 		);
 
