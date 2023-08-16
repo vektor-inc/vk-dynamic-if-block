@@ -112,6 +112,14 @@ registerBlockType('vk-blocks/dynamic-if', {
 		if (ifPostType !== "none") {
 			labels.push(ifPostType);
 		}
+		if (userRole.length > 0) {
+			userRole.forEach((roleValue) => {
+				const roleLabel = userRoles.find((role) => role.value === roleValue);
+				if (roleLabel) {
+					labels.push(roleLabel.label);
+				}
+			});
+		}
 
 		if (customFieldName) {
 			labels.push(customFieldName);
