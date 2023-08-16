@@ -15,13 +15,17 @@ use VektorInc\VK_Helpers\VkHelpers;
  */
 function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array() ) {
 	$attributes_default = array(
-		'ifPageType'       => 'none',
-		'ifPostType'       => 'none',
-		'userRole'         => [],
-		'customFieldName'  => '',
-		'customFieldRule'  => 'valueExists',
-		'customFieldValue' => '',
-		'exclusion'        => false,
+		'ifPageType'                => 'none',
+		'ifPostType'                => 'none',
+		'userRole'                  => [],
+		'customFieldName'           => '',
+		'customFieldRule'           => 'valueExists',
+		'customFieldValue'          => '',
+		'exclusion'                 => false,
+		'displayPeriodSetting'      => 'none',
+		'periodSpecificationMethod' => 'direct',
+		'displayPeriodValue'        => '',
+		'referCustomFieldName'     => ''
 	);
 	$attributes         = array_merge( $attributes_default, $attributes );
 
@@ -127,9 +131,98 @@ function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array(
 		}
 	}
 
+	// Display period Check //////////////////////////////////.
+
+	$display_by_period = false;
+
+	if ( 'none' === $attributes['displayPeriodSetting'] ) {
+		$display_by_period = true;
+	} elseif ( 'deadline' === $attributes['displayPeriodSetting'] ) {
+		if ( 'direct' === $attributes['periodSpecificationMethod'] ) {
+
+			// 時間指定がない場合に時間を自動指定
+			if ( $attributes['displayPeriodValue'] === date("Y-m-d", strtotime($attributes['displayPeriodValue'])) ) {
+				$attributes['displayPeriodValue'] .= " 23:59";
+			}
+
+			// 日付のフォーマットを Y-m-d H:i に指定
+			if ( $attributes['displayPeriodValue'] !== date("Y-m-d H:i", strtotime($attributes['displayPeriodValue'])) ){
+				$attributes['displayPeriodValue'] = date("Y-m-d H:i", strtotime($attributes['displayPeriodValue']));
+			}
+
+			if ( $attributes['displayPeriodValue'] > current_time("Y-m-d H:i") ) {
+				$display_by_period = true;
+			} else {
+				$display_by_period = false;
+			}
+		} elseif ( 'referCustomField' === $attributes['periodSpecificationMethod'] ){
+			$get_refer_value = get_post_meta( get_the_ID(), $attributes['referCustomFieldName'], true );
+			if ( $get_refer_value === date("Y-m-d", strtotime($get_refer_value)) ) {
+				$get_refer_value .= " 23:59";
+			}
+			if ( $get_refer_value > current_time("Y-m-d H:i") ) {
+				$display_by_period = true;
+			} else {
+				$display_by_period = false;
+			}
+		}
+	} elseif ( 'startline' === $attributes['displayPeriodSetting'] ) {
+		if ( 'direct' === $attributes['periodSpecificationMethod'] ) {
+
+			// 時間指定がない場合に時間を自動指定
+			if ( $attributes['displayPeriodValue'] === date("Y-m-d", strtotime($attributes['displayPeriodValue'])) ) {
+				$attributes['displayPeriodValue'] .= " 00:00";
+			}
+
+			// 日付のフォーマットを Y-m-d H:i に指定
+			if ( $attributes['displayPeriodValue'] !== date("Y-m-d H:i", strtotime($attributes['displayPeriodValue'])) ){
+				$attributes['displayPeriodValue'] = date("Y-m-d H:i", strtotime($attributes['displayPeriodValue']));
+			}
+
+			if ( $attributes['displayPeriodValue'] <= current_time("Y-m-d H:i") ) {
+				$display_by_period = true;
+			} else {
+				$display_by_period = false;
+			}
+		} elseif ( 'referCustomField' === $attributes['periodSpecificationMethod'] ){
+			$get_refer_value = get_post_meta( get_the_ID(), $attributes['referCustomFieldName'], true );
+			if ( $get_refer_value === date("Y-m-d", strtotime($get_refer_value)) ) {
+				$get_refer_value .= " 00:00";
+			}
+			if ( $get_refer_value <= current_time("Y-m-d H:i") ) {
+				$display_by_period = true;
+			} else {
+				$display_by_period = false;
+			}
+		}
+	} elseif ( 'daysSincePublic' === $attributes['displayPeriodSetting'] ) {
+		if ( 'direct' === $attributes['periodSpecificationMethod'] ) {
+			$days_since_public = intval($attributes['displayPeriodValue']);
+			$post_publish_date = get_post_time('U', true, get_the_ID());
+			$current_time = current_time('timestamp');
+
+			if ($current_time >= $post_publish_date + ($days_since_public * 86400)) {
+				$display_by_period = false;
+			} else {
+				$display_by_period = true;
+			}
+		} elseif ( 'referCustomField' === $attributes['periodSpecificationMethod'] ){
+			$get_refer_value = get_post_meta(get_the_ID(), $attributes['referCustomFieldName'], true);
+			$days_since_public = intval($get_refer_value);
+			$post_publish_date = get_post_time('U', true, get_the_ID());
+			$current_time = current_time('timestamp');
+
+			if ($current_time >= $post_publish_date + ($days_since_public * 86400)) {
+				$display_by_period = false;
+			} else {
+				$display_by_period = true;
+			}
+		}
+	}
+
 	// Merge Condition Check //////////////////////////////////.
 
-	if ( $display_by_post_type && $display_by_page_type && $display_by_custom_field && $display_by_user_role ) {
+	if ( $display_by_post_type && $display_by_page_type && $display_by_custom_field && $display_by_user_role && $display_by_period ) {
 		$display = true;
 	}
 
