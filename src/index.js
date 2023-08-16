@@ -239,7 +239,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 									)}
 									{periodSpecificationMethod === 'referCustomField' && (
 										<TextControl
-											label={__('Referenced Custom Field Value', 'vk-dynamic-if-block')}
+											label={__('Referenced custom field name', 'vk-dynamic-if-block')}
 											value={referCustomFieldName}
 											onChange={(value) =>
 												setAttributes({ referCustomFieldName: value })
