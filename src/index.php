@@ -155,7 +155,7 @@ function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array(
 				$display_by_period = false;
 			}
 		} elseif ( 'referCustomField' === $attributes['periodSpecificationMethod'] ) {
-			if( $attributes['referCustomFieldName'] ){
+			if( !empty($attributes['referCustomFieldName']) ){
 				$get_refer_value = get_post_meta( get_the_ID(), $attributes['referCustomFieldName'], true );
 				if ( $get_refer_value === date( 'Y-m-d', strtotime( $get_refer_value ) ) ) {
 					$get_refer_value .= ' 23:59';
@@ -188,7 +188,7 @@ function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array(
 				$display_by_period = false;
 			}
 		} elseif ( 'referCustomField' === $attributes['periodSpecificationMethod'] ) {
-			if( $attributes['referCustomFieldName'] ){
+			if( !empty($attributes['referCustomFieldName']) ){
 				$get_refer_value = get_post_meta( get_the_ID(), $attributes['referCustomFieldName'], true );
 				if ( $get_refer_value === date( 'Y-m-d', strtotime( $get_refer_value ) ) ) {
 					$get_refer_value .= ' 00:00';
@@ -214,13 +214,17 @@ function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array(
 				$display_by_period = true;
 			}
 		} elseif ( 'referCustomField' === $attributes['periodSpecificationMethod'] ) {
-			$get_refer_value   = get_post_meta( get_the_ID(), $attributes['referCustomFieldName'], true );
-			$days_since_public = intval( $get_refer_value );
-			$post_publish_date = get_post_time( 'U', true, get_the_ID() );
-			$current_time      = current_time( 'timestamp' );
+			if( !empty($attributes['referCustomFieldName']) ){
+				$get_refer_value   = get_post_meta( get_the_ID(), $attributes['referCustomFieldName'], true );
+				$days_since_public = intval( $get_refer_value );
+				$post_publish_date = get_post_time( 'U', true, get_the_ID() );
+				$current_time      = current_time( 'timestamp' );
 
-			if ( $current_time >= $post_publish_date + ( $days_since_public * 86400 ) ) {
-				$display_by_period = false;
+				if ( $current_time >= $post_publish_date + ( $days_since_public * 86400 ) ) {
+					$display_by_period = false;
+				} else {
+					$display_by_period = true;
+				}
 			} else {
 				$display_by_period = true;
 			}
