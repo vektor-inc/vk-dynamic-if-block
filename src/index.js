@@ -246,18 +246,25 @@ registerBlockType('vk-blocks/dynamic-if', {
 										/>
 									)}
 									{periodSpecificationMethod === 'referCustomField' && (
-										<TextControl
-											label={__('Referenced custom field name', 'vk-dynamic-if-block')}
-											value={referCustomFieldName}
-											onChange={(value) =>
-												setAttributes({ referCustomFieldName: value })
-											}
-											help={
-												displayPeriodSetting === 'daysSincePublic'
-													? __('Save the value of the custom field as an integer.', 'vk-dynamic-if-block')
-													: __('Save the custom field values as Y-m-d H:i.', 'vk-dynamic-if-block')
-											}
-										/>
+										<>
+											<TextControl
+												label={__('Referenced custom field name', 'vk-dynamic-if-block')}
+												value={referCustomFieldName}
+												onChange={(value) =>
+													setAttributes({ referCustomFieldName: value })
+												}
+												help={
+													displayPeriodSetting === 'daysSincePublic'
+														? __('Save the value of the custom field as an integer.', 'vk-dynamic-if-block')
+														: __('Save the custom field values as Y-m-d H:i.', 'vk-dynamic-if-block')
+												}
+											/>
+											{!referCustomFieldName && (
+												<div className="alert alert-warning">
+													{__('Enter the name of the custom field you wish to reference.', 'vk-dynamic-if-block')}
+												</div>
+											)}
+										</>
 									)}
 								</>
 							)}
