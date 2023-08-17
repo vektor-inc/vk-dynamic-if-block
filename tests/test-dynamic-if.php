@@ -905,6 +905,33 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'content'   => 'Display Period [ daysSincePublic / referCustomField / 3 days later]( false )',
 				'expected'  => '',
 			),
+			array(
+				'name'      => 'Display Period [ deadline / referCustomField / empty ]( true )',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'displayPeriodSetting'      => 'deadline',
+					'periodSpecificationMethod' => 'referCustomField',
+					'referCustomFieldName'      => '',
+				),
+				'content'   => 'Display Period [ deadline / referCustomField / empty ]( true )',
+				'expected'  => 'Display Period [ deadline / referCustomField / empty ]( true )',
+			),
+			array(
+				'name'      => 'Display Period [ deadline / referCustomField / not date]( true )',
+				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
+				'attribute' => array(
+					'displayPeriodSetting'      => 'daysSincePublic',
+					'periodSpecificationMethod' => 'referCustomField',
+					'referCustomFieldName'      => 'text',
+				),
+				'test_meta' => array(
+					'post_id'    => $test_posts['event_post_id'],
+					'meta_key'   => 'text',
+					'meta_value' => 'text',
+				),
+				'content'   => 'Display Period [ deadline / referCustomField / not date]( true )',
+				'expected'  => 'Display Period [ deadline / referCustomField / not date]( true )',
+			),
 		);
 
 		foreach ( $tests as $test ) {
