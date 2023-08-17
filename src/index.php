@@ -159,13 +159,13 @@ function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array(
 				$get_refer_value = get_post_meta( get_the_ID(), $attributes['referCustomFieldName'], true );
 
 				// Check if $get_refer_value matches the date format
-				$date_check1 = DateTime::createFromFormat( 'Y-m-d', $get_refer_value );
-				$date_check2 = DateTime::createFromFormat( 'Y-m-d H:i', $get_refer_value );
+				$check_date_Ymd = DateTime::createFromFormat( 'Y-m-d', $get_refer_value );
+				$check_date_Ymd_Hi = DateTime::createFromFormat( 'Y-m-d H:i', $get_refer_value );
 
-				if ( ( $date_check1 && $date_check1->format( 'Y-m-d' ) === $get_refer_value ) ||
-					( $date_check2 && $date_check2->format( 'Y-m-d H:i' ) === $get_refer_value ) ) {
+				if ( ( $check_date_Ymd && $check_date_Ymd->format( 'Y-m-d' ) === $get_refer_value ) ||
+					( $check_date_Ymd_Hi && $check_date_Ymd_Hi->format( 'Y-m-d H:i' ) === $get_refer_value ) ) {
 
-					if ( !$date_check2 ) {
+					if ( $check_date_Ymd ) {
 						// If it's only 'Y-m-d' format, append the time as 23:59
 						$get_refer_value .= ' 23:59';
 					}
@@ -207,13 +207,13 @@ function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array(
 				$get_refer_value = get_post_meta( get_the_ID(), $attributes['referCustomFieldName'], true );
 
 				// Check if $get_refer_value matches the date format
-				$date_check1 = DateTime::createFromFormat( 'Y-m-d', $get_refer_value );
-				$date_check2 = DateTime::createFromFormat( 'Y-m-d H:i', $get_refer_value );
+				$check_date_Ymd = DateTime::createFromFormat( 'Y-m-d', $get_refer_value );
+				$check_date_Ymd_Hi = DateTime::createFromFormat( 'Y-m-d H:i', $get_refer_value );
 
-				if ( ( $date_check1 && $date_check1->format( 'Y-m-d' ) === $get_refer_value ) ||
-					( $date_check2 && $date_check2->format( 'Y-m-d H:i' ) === $get_refer_value ) ) {
+				if ( ( $check_date_Ymd && $check_date_Ymd->format( 'Y-m-d' ) === $get_refer_value ) ||
+					( $check_date_Ymd_Hi && $check_date_Ymd_Hi->format( 'Y-m-d H:i' ) === $get_refer_value ) ) {
 
-					if (!$date_check2) {
+					if ( $check_date_Ymd ) {
 						// If it's only 'Y-m-d' format, append the time as 00:00
 						$get_refer_value .= ' 00:00';
 					}
