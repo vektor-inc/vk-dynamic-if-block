@@ -155,19 +155,34 @@ function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array(
 				$display_by_period = false;
 			}
 		} elseif ( 'referCustomField' === $attributes['periodSpecificationMethod'] ) {
-			if( !empty($attributes['referCustomFieldName']) ){
+			if ( !empty( $attributes['referCustomFieldName'] ) ) {
 				$get_refer_value = get_post_meta( get_the_ID(), $attributes['referCustomFieldName'], true );
-				if ( $get_refer_value === date( 'Y-m-d', strtotime( $get_refer_value ) ) ) {
-					$get_refer_value .= ' 23:59';
-				}
-				if ( $get_refer_value > current_time( 'Y-m-d H:i' ) ) {
-					$display_by_period = true;
+
+				// Check if $get_refer_value matches the date format
+				$date_check1 = DateTime::createFromFormat( 'Y-m-d', $get_refer_value );
+				$date_check2 = DateTime::createFromFormat( 'Y-m-d H:i', $get_refer_value );
+
+				if ( ( $date_check1 && $date_check1->format( 'Y-m-d' ) === $get_refer_value ) ||
+					( $date_check2 && $date_check2->format( 'Y-m-d H:i' ) === $get_refer_value ) ) {
+
+					if ( !$date_check2 ) {
+						// If it's only 'Y-m-d' format, append the time as 23:59
+						$get_refer_value .= ' 23:59';
+					}
+
+					if ( $get_refer_value > current_time( 'Y-m-d H:i' ) ) {
+						$display_by_period = true;
+					} else {
+						$display_by_period = false;
+					}
 				} else {
-					$display_by_period = false;
+					// This means the value doesn't match either date formats
+					$display_by_period = true;
 				}
 			} else {
 				$display_by_period = true;
 			}
+
 		}
 	} elseif ( 'startline' === $attributes['displayPeriodSetting'] ) {
 		if ( 'direct' === $attributes['periodSpecificationMethod'] ) {
@@ -188,15 +203,29 @@ function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array(
 				$display_by_period = false;
 			}
 		} elseif ( 'referCustomField' === $attributes['periodSpecificationMethod'] ) {
-			if( !empty($attributes['referCustomFieldName']) ){
+			if ( !empty( $attributes['referCustomFieldName'] ) ) {
 				$get_refer_value = get_post_meta( get_the_ID(), $attributes['referCustomFieldName'], true );
-				if ( $get_refer_value === date( 'Y-m-d', strtotime( $get_refer_value ) ) ) {
-					$get_refer_value .= ' 00:00';
-				}
-				if ( $get_refer_value <= current_time( 'Y-m-d H:i' ) ) {
-					$display_by_period = true;
+
+				// Check if $get_refer_value matches the date format
+				$date_check1 = DateTime::createFromFormat( 'Y-m-d', $get_refer_value );
+				$date_check2 = DateTime::createFromFormat( 'Y-m-d H:i', $get_refer_value );
+
+				if ( ( $date_check1 && $date_check1->format( 'Y-m-d' ) === $get_refer_value ) ||
+					( $date_check2 && $date_check2->format( 'Y-m-d H:i' ) === $get_refer_value ) ) {
+
+					if (!$date_check2) {
+						// If it's only 'Y-m-d' format, append the time as 00:00
+						$get_refer_value .= ' 00:00';
+					}
+
+					if ( $get_refer_value <= current_time( 'Y-m-d H:i' ) ) {
+						$display_by_period = true;
+					} else {
+						$display_by_period = false;
+					}
 				} else {
-					$display_by_period = false;
+					// This means the value doesn't match either date formats
+					$display_by_period = true;
 				}
 			} else {
 				$display_by_period = true;
@@ -214,20 +243,28 @@ function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array(
 				$display_by_period = true;
 			}
 		} elseif ( 'referCustomField' === $attributes['periodSpecificationMethod'] ) {
-			if( !empty($attributes['referCustomFieldName']) ){
-				$get_refer_value   = get_post_meta( get_the_ID(), $attributes['referCustomFieldName'], true );
-				$days_since_public = intval( $get_refer_value );
-				$post_publish_date = get_post_time( 'U', true, get_the_ID() );
-				$current_time      = current_time( 'timestamp' );
+			if (!empty($attributes['referCustomFieldName'])) {
+				$get_refer_value = get_post_meta(get_the_ID(), $attributes['referCustomFieldName'], true);
 
-				if ( $current_time >= $post_publish_date + ( $days_since_public * 86400 ) ) {
-					$display_by_period = false;
+				// Check if $get_refer_value is numeric
+				if (is_numeric($get_refer_value)) {
+					$days_since_public = intval($get_refer_value);
+					$post_publish_date = get_post_time('U', true, get_the_ID());
+					$current_time      = current_time('timestamp');
+
+					if ($current_time >= $post_publish_date + ($days_since_public * 86400)) {
+						$display_by_period = false;
+					} else {
+						$display_by_period = true;
+					}
 				} else {
+					// This means the value is not numeric
 					$display_by_period = true;
 				}
 			} else {
 				$display_by_period = true;
 			}
+
 		}
 	}
 
