@@ -920,7 +920,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Display Period [ deadline / referCustomField / not date]( true )',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'displayPeriodSetting'      => 'daysSincePublic',
+					'displayPeriodSetting'      => 'deadline',
 					'periodSpecificationMethod' => 'referCustomField',
 					'referCustomFieldName'      => 'text',
 				),
