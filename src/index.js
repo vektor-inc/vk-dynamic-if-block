@@ -260,7 +260,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 												}
 											/>
 											{!referCustomFieldName && (
-												<div className="alert alert-warning">
+												<div className="vkdif__alert vkdif__alert-warning">
 													{__('Enter the name of the custom field you wish to reference.', 'vk-dynamic-if-block')}
 												</div>
 											)}
