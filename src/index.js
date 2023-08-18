@@ -134,7 +134,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 		return (
 			<div {...useBlockProps({ className: blockClassName })}>
 				<InspectorControls>
-					<PanelBody title={__('Display Conditions', 'vk-dynamic-if-block')}>
+					<PanelBody title={__('Display Conditions', 'vk-dynamic-if-block')} className={'vkdif'}>
 						<SelectControl
 							label={__('Page Type', 'vk-dynamic-if-block')}
 							value={ifPageType}
