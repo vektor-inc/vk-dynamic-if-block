@@ -3,15 +3,15 @@
 	padding: 4px;
 	position: relative;
 	.editor-styles-wrapper .is-layout-constrained > * + & {
-		margin-block-start:0;
+		margin-block-start: 0;
 	}
-  }
+}
 .vk-dynamic-if-block__label {
 	position: absolute;
-	padding:1px 5px;
-	top:0;
-	right:0;
-	font-size:9px;
+	padding: 1px 5px;
+	top: 0;
+	right: 0;
+	font-size: 9px;
 	text-align: right;
 	background-color: #e5e5e5;
 	z-index: 10000;
@@ -19,5 +19,41 @@
 
 // Specific margin-bottom of user role check box
 .dynamic-if-user-role .components-checkbox-control {
-	margin-bottom:15px;
+	margin-bottom: 15px;
+}
+
+.vkdif .vkdif__refer-cf-name {
+	margin-bottom: 0;
+	& .components-base-control__help {
+		margin-bottom: 0;
+	}
+}
+
+// alert
+.vkdif__alert {
+	padding: 1em;
+	margin: 0.5em auto;
+	border-radius: 3px;
+	p {
+		margin: 0;
+	}
+
+	@each $var
+		in (
+			(success, #dff0d8, #3c763d, #d6e9c6),
+			(info, #d9edf7, #31708f, #bce8f1),
+			(warning, #fcf8e3, #8a6d3b, #faebcc),
+			(danger, #f2dede, #a94442, #ebccd1)
+		)
+	{
+		$class-name: nth($var, 1);
+		$color-bg: nth($var, 2);
+		$color: nth($var, 3);
+		$color-border: nth($var, 4);
+		&-#{$class-name} {
+			background-color: $color-bg;
+			color: $color;
+			border-color: $color-border;
+		}
+	}
 }

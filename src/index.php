@@ -22,10 +22,10 @@ function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array(
 		'customFieldRule'           => 'valueExists',
 		'customFieldValue'          => '',
 		'exclusion'                 => false,
-		'displayPeriodSetting'      => 'none',
+		'periodDisplaySetting'      => 'none',
 		'periodSpecificationMethod' => 'direct',
-		'displayPeriodValue'        => '',
-		'referCustomFieldName'      => '',
+		'periodDisplayValue'        => '',
+		'periodReferCustomField'      => '',
 	);
 	$attributes         = array_merge( $attributes_default, $attributes );
 
@@ -134,69 +134,106 @@ function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array(
 
 	$display_by_period = false;
 
-	if ( 'none' === $attributes['displayPeriodSetting'] ) {
+	if ( 'none' === $attributes['periodDisplaySetting'] ) {
 		$display_by_period = true;
-	} elseif ( 'deadline' === $attributes['displayPeriodSetting'] ) {
+	} elseif ( 'deadline' === $attributes['periodDisplaySetting'] ) {
 		if ( 'direct' === $attributes['periodSpecificationMethod'] ) {
 
 			// 時間指定がない場合に時間を自動指定.
-			if ( $attributes['displayPeriodValue'] === date( 'Y-m-d', strtotime( $attributes['displayPeriodValue'] ) ) ) {
-				$attributes['displayPeriodValue'] .= ' 23:59';
+			if ( $attributes['periodDisplayValue'] === date( 'Y-m-d', strtotime( $attributes['periodDisplayValue'] ) ) ) {
+				$attributes['periodDisplayValue'] .= ' 23:59';
 			}
 
 			// 日付のフォーマットを Y-m-d H:i に指定.
-			if ( $attributes['displayPeriodValue'] !== date( 'Y-m-d H:i', strtotime( $attributes['displayPeriodValue'] ) ) ) {
-				$attributes['displayPeriodValue'] = date( 'Y-m-d H:i', strtotime( $attributes['displayPeriodValue'] ) );
+			if ( $attributes['periodDisplayValue'] !== date( 'Y-m-d H:i', strtotime( $attributes['periodDisplayValue'] ) ) ) {
+				$attributes['periodDisplayValue'] = date( 'Y-m-d H:i', strtotime( $attributes['periodDisplayValue'] ) );
 			}
 
-			if ( $attributes['displayPeriodValue'] > current_time( 'Y-m-d H:i' ) ) {
+			if ( $attributes['periodDisplayValue'] > current_time( 'Y-m-d H:i' ) ) {
 				$display_by_period = true;
 			} else {
 				$display_by_period = false;
 			}
 		} elseif ( 'referCustomField' === $attributes['periodSpecificationMethod'] ) {
-			$get_refer_value = get_post_meta( get_the_ID(), $attributes['referCustomFieldName'], true );
-			if ( $get_refer_value === date( 'Y-m-d', strtotime( $get_refer_value ) ) ) {
-				$get_refer_value .= ' 23:59';
-			}
-			if ( $get_refer_value > current_time( 'Y-m-d H:i' ) ) {
-				$display_by_period = true;
+			if ( !empty( $attributes['periodReferCustomField'] ) ) {
+				$get_refer_value = get_post_meta( get_the_ID(), $attributes['periodReferCustomField'], true );
+
+				// Check if $get_refer_value matches the date format
+				$check_date_Ymd = DateTime::createFromFormat( 'Y-m-d', $get_refer_value );
+				$check_date_Ymd_Hi = DateTime::createFromFormat( 'Y-m-d H:i', $get_refer_value );
+
+				if ( ( $check_date_Ymd && $check_date_Ymd->format( 'Y-m-d' ) === $get_refer_value ) ||
+					( $check_date_Ymd_Hi && $check_date_Ymd_Hi->format( 'Y-m-d H:i' ) === $get_refer_value ) ) {
+
+					if ( $check_date_Ymd ) {
+						// If it's only 'Y-m-d' format, append the time as 23:59
+						$get_refer_value .= ' 23:59';
+					}
+
+					if ( $get_refer_value > current_time( 'Y-m-d H:i' ) ) {
+						$display_by_period = true;
+					} else {
+						$display_by_period = false;
+					}
+				} else {
+					// This means the value doesn't match either date formats
+					$display_by_period = true;
+				}
 			} else {
-				$display_by_period = false;
+				$display_by_period = true;
 			}
+
 		}
-	} elseif ( 'startline' === $attributes['displayPeriodSetting'] ) {
+	} elseif ( 'startline' === $attributes['periodDisplaySetting'] ) {
 		if ( 'direct' === $attributes['periodSpecificationMethod'] ) {
 
 			// 時間指定がない場合に時間を自動指定.
-			if ( $attributes['displayPeriodValue'] === date( 'Y-m-d', strtotime( $attributes['displayPeriodValue'] ) ) ) {
-				$attributes['displayPeriodValue'] .= ' 00:00';
+			if ( $attributes['periodDisplayValue'] === date( 'Y-m-d', strtotime( $attributes['periodDisplayValue'] ) ) ) {
+				$attributes['periodDisplayValue'] .= ' 00:00';
 			}
 
 			// 日付のフォーマットを Y-m-d H:i に指定.
-			if ( $attributes['displayPeriodValue'] !== date( 'Y-m-d H:i', strtotime( $attributes['displayPeriodValue'] ) ) ) {
-				$attributes['displayPeriodValue'] = date( 'Y-m-d H:i', strtotime( $attributes['displayPeriodValue'] ) );
+			if ( $attributes['periodDisplayValue'] !== date( 'Y-m-d H:i', strtotime( $attributes['periodDisplayValue'] ) ) ) {
+				$attributes['periodDisplayValue'] = date( 'Y-m-d H:i', strtotime( $attributes['periodDisplayValue'] ) );
 			}
 
-			if ( $attributes['displayPeriodValue'] <= current_time( 'Y-m-d H:i' ) ) {
+			if ( $attributes['periodDisplayValue'] <= current_time( 'Y-m-d H:i' ) ) {
 				$display_by_period = true;
 			} else {
 				$display_by_period = false;
 			}
 		} elseif ( 'referCustomField' === $attributes['periodSpecificationMethod'] ) {
-			$get_refer_value = get_post_meta( get_the_ID(), $attributes['referCustomFieldName'], true );
-			if ( $get_refer_value === date( 'Y-m-d', strtotime( $get_refer_value ) ) ) {
-				$get_refer_value .= ' 00:00';
-			}
-			if ( $get_refer_value <= current_time( 'Y-m-d H:i' ) ) {
-				$display_by_period = true;
+			if ( !empty( $attributes['periodReferCustomField'] ) ) {
+				$get_refer_value = get_post_meta( get_the_ID(), $attributes['periodReferCustomField'], true );
+
+				// Check if $get_refer_value matches the date format
+				$check_date_Ymd = DateTime::createFromFormat( 'Y-m-d', $get_refer_value );
+				$check_date_Ymd_Hi = DateTime::createFromFormat( 'Y-m-d H:i', $get_refer_value );
+
+				if ( ( $check_date_Ymd && $check_date_Ymd->format( 'Y-m-d' ) === $get_refer_value ) ||
+					( $check_date_Ymd_Hi && $check_date_Ymd_Hi->format( 'Y-m-d H:i' ) === $get_refer_value ) ) {
+
+					if ( $check_date_Ymd ) {
+						// If it's only 'Y-m-d' format, append the time as 00:00
+						$get_refer_value .= ' 00:00';
+					}
+
+					if ( $get_refer_value <= current_time( 'Y-m-d H:i' ) ) {
+						$display_by_period = true;
+					} else {
+						$display_by_period = false;
+					}
+				} else {
+					// This means the value doesn't match either date formats
+					$display_by_period = true;
+				}
 			} else {
-				$display_by_period = false;
+				$display_by_period = true;
 			}
 		}
-	} elseif ( 'daysSincePublic' === $attributes['displayPeriodSetting'] ) {
+	} elseif ( 'daysSincePublic' === $attributes['periodDisplaySetting'] ) {
 		if ( 'direct' === $attributes['periodSpecificationMethod'] ) {
-			$days_since_public = intval( $attributes['displayPeriodValue'] );
+			$days_since_public = intval( $attributes['periodDisplayValue'] );
 			$post_publish_date = get_post_time( 'U', true, get_the_ID() );
 			$current_time      = current_time( 'timestamp' );
 
@@ -206,16 +243,28 @@ function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array(
 				$display_by_period = true;
 			}
 		} elseif ( 'referCustomField' === $attributes['periodSpecificationMethod'] ) {
-			$get_refer_value   = get_post_meta( get_the_ID(), $attributes['referCustomFieldName'], true );
-			$days_since_public = intval( $get_refer_value );
-			$post_publish_date = get_post_time( 'U', true, get_the_ID() );
-			$current_time      = current_time( 'timestamp' );
+			if ( !empty( $attributes['periodReferCustomField'] ) ) {
+				$get_refer_value = get_post_meta( get_the_ID(), $attributes['periodReferCustomField'], true );
 
-			if ( $current_time >= $post_publish_date + ( $days_since_public * 86400 ) ) {
-				$display_by_period = false;
+				// Check if $get_refer_value is numeric
+				if ( is_numeric( $get_refer_value ) ) {
+					$days_since_public = intval( $get_refer_value );
+					$post_publish_date = get_post_time( 'U', true, get_the_ID() );
+					$current_time      = current_time( 'timestamp' );
+
+					if ( $current_time >= $post_publish_date + ( $days_since_public * 86400 ) ) {
+						$display_by_period = false;
+					} else {
+						$display_by_period = true;
+					}
+				} else {
+					// This means the value is not numeric
+					$display_by_period = true;
+				}
 			} else {
 				$display_by_period = true;
 			}
+
 		}
 	}
 
