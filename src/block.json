@@ -33,7 +33,7 @@
 			"type": "boolean",
 			"default": false
 		},
-		"displayPeriodSetting": {
+		"periodDisplaySetting": {
 			"type": "string",
 			"default": "none"
 		},
@@ -41,11 +41,11 @@
 			"type": "string",
 			"default": "direct"
 		},
-		"displayPeriodValue": {
+		"periodDisplayValue": {
 			"type": "string",
 			"default": ""
 		},
-		"referCustomFieldName": {
+		"periodReferCustomField": {
 			"type": "string",
 			"default": ""
 		}
