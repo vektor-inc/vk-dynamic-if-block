@@ -258,6 +258,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 														? __('Save the value of the custom field as an integer.', 'vk-dynamic-if-block')
 														: __('Save the custom field values as Y-m-d H:i.', 'vk-dynamic-if-block')
 												}
+												className="vkdif__refer-cf-name"
 											/>
 											{!referCustomFieldName && (
 												<div className="vkdif__alert vkdif__alert-warning">

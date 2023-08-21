@@ -22,10 +22,17 @@
 	margin-bottom: 15px;
 }
 
+.vkdif .vkdif__refer-cf-name {
+	margin-bottom: 0;
+	& .components-base-control__help {
+		margin-bottom: 0;
+	}
+}
+
 // alert
 .vkdif__alert {
 	padding: 1em;
-	margin: 1em auto;
+	margin: 0.5em auto;
 	border-radius: 3px;
 	p {
 		margin: 0;
