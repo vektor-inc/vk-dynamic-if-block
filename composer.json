@@ -4,7 +4,7 @@
 	},
 	"require-dev": {
 		"wp-phpunit/wp-phpunit": "^5.4",
-		"yoast/phpunit-polyfills": "^1.0",
+		"yoast/phpunit-polyfills": "^2.0",
 		"vektor-inc/vk-wp-unit-test-tools": "^0.12.0"
 	}
 }
