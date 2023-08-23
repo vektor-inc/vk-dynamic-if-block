@@ -10,10 +10,11 @@ use VektorInc\VK_Helpers\VkHelpers;
 /**
  * Block Render function
  *
- * @param array $user_roles : 通常の処理では関数内でログイン状態を取得するが、PHPUnit用に引数で渡せるようにしている。
+ * @param array  $attributes : Block attributes.
+ * @param string $content : Block inner content.
  * @return string $return : Return HTML.
  */
-function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array() ) {
+function vk_dynamic_if_block_render( $attributes, $content ) {
 	$attributes_default = array(
 		'ifPageType'                => 'none',
 		'ifPostType'                => 'none',
@@ -25,7 +26,7 @@ function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array(
 		'periodDisplaySetting'      => 'none',
 		'periodSpecificationMethod' => 'direct',
 		'periodDisplayValue'        => '',
-		'periodReferCustomField'      => '',
+		'periodReferCustomField'    => '',
 	);
 	$attributes         = array_merge( $attributes_default, $attributes );
 
@@ -82,7 +83,10 @@ function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array(
 
 	$display_by_user_role = false;
 
-	if ( empty( $user_roles ) ) {
+	// PHPUnit用のユーザーロール情報がある場合はそれを設定.
+	if ( ! empty( $attributes['test_user_roles'] ) ) {
+		$user_roles = $attributes['test_user_roles'];
+	} else {
 		$current_user = wp_get_current_user();
 		$user_roles   = (array) $current_user->roles;
 	}
@@ -155,11 +159,11 @@ function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array(
 				$display_by_period = false;
 			}
 		} elseif ( 'referCustomField' === $attributes['periodSpecificationMethod'] ) {
-			if ( !empty( $attributes['periodReferCustomField'] ) ) {
+			if ( ! empty( $attributes['periodReferCustomField'] ) ) {
 				$get_refer_value = get_post_meta( get_the_ID(), $attributes['periodReferCustomField'], true );
 
 				// Check if $get_refer_value matches the date format
-				$check_date_Ymd = DateTime::createFromFormat( 'Y-m-d', $get_refer_value );
+				$check_date_Ymd    = DateTime::createFromFormat( 'Y-m-d', $get_refer_value );
 				$check_date_Ymd_Hi = DateTime::createFromFormat( 'Y-m-d H:i', $get_refer_value );
 
 				if ( ( $check_date_Ymd && $check_date_Ymd->format( 'Y-m-d' ) === $get_refer_value ) ||
@@ -182,7 +186,6 @@ function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array(
 			} else {
 				$display_by_period = true;
 			}
-
 		}
 	} elseif ( 'startline' === $attributes['periodDisplaySetting'] ) {
 		if ( 'direct' === $attributes['periodSpecificationMethod'] ) {
@@ -203,11 +206,11 @@ function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array(
 				$display_by_period = false;
 			}
 		} elseif ( 'referCustomField' === $attributes['periodSpecificationMethod'] ) {
-			if ( !empty( $attributes['periodReferCustomField'] ) ) {
+			if ( ! empty( $attributes['periodReferCustomField'] ) ) {
 				$get_refer_value = get_post_meta( get_the_ID(), $attributes['periodReferCustomField'], true );
 
 				// Check if $get_refer_value matches the date format
-				$check_date_Ymd = DateTime::createFromFormat( 'Y-m-d', $get_refer_value );
+				$check_date_Ymd    = DateTime::createFromFormat( 'Y-m-d', $get_refer_value );
 				$check_date_Ymd_Hi = DateTime::createFromFormat( 'Y-m-d H:i', $get_refer_value );
 
 				if ( ( $check_date_Ymd && $check_date_Ymd->format( 'Y-m-d' ) === $get_refer_value ) ||
@@ -243,7 +246,7 @@ function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array(
 				$display_by_period = true;
 			}
 		} elseif ( 'referCustomField' === $attributes['periodSpecificationMethod'] ) {
-			if ( !empty( $attributes['periodReferCustomField'] ) ) {
+			if ( ! empty( $attributes['periodReferCustomField'] ) ) {
 				$get_refer_value = get_post_meta( get_the_ID(), $attributes['periodReferCustomField'], true );
 
 				// Check if $get_refer_value is numeric
@@ -264,7 +267,6 @@ function vk_dynamic_if_block_render( $attributes, $content, $user_roles = array(
 			} else {
 				$display_by_period = true;
 			}
-
 		}
 	}
 
