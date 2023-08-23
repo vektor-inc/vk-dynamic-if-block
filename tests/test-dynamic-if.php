@@ -953,7 +953,8 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 			print PHP_EOL;
 			$this->go_to( $test['go_to'] );
 			if ( isset( $test['user_roles'] ) ) {
-				$actual = vk_dynamic_if_block_render( $test['attribute'], $test['content'], $test['user_roles'] );
+				$test['attribute']['test_user_roles'] = $test['user_roles'];
+				$actual = vk_dynamic_if_block_render( $test['attribute'], $test['content'] );
 			} else {
 				$actual = vk_dynamic_if_block_render( $test['attribute'], $test['content'] );
 			}
