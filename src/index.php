@@ -143,7 +143,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 	} elseif ( 'deadline' === $attributes['periodDisplaySetting'] ) {
 		if ( 'direct' === $attributes['periodSpecificationMethod'] ) {
 
-			// 時間指定がない場合に時間を自動指定.
+			// 時間指定がない場合(日付までで時間が入力されていない場合)に時間を自動指定.
 			if ( $attributes['periodDisplayValue'] === date( 'Y-m-d', strtotime( $attributes['periodDisplayValue'] ) ) ) {
 				$attributes['periodDisplayValue'] .= ' 23:59';
 			}
@@ -162,19 +162,24 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 			if ( ! empty( $attributes['periodReferCustomField'] ) ) {
 				$get_refer_value = get_post_meta( get_the_ID(), $attributes['periodReferCustomField'], true );
 
-				// Check if $get_refer_value matches the date format
-				$check_date_Ymd    = DateTime::createFromFormat( 'Y-m-d', $get_refer_value );
-				$check_date_Ymd_Hi = DateTime::createFromFormat( 'Y-m-d H:i', $get_refer_value );
+				// Check if $get_refer_value matches the date format.
+				$check_date_ymd     = DateTime::createFromFormat( 'Y-m-d', $get_refer_value );
+				$check_date_ymd_hi  = DateTime::createFromFormat( 'Y-m-d H:i', $get_refer_value );
+				$check_date_ymd_his = DateTime::createFromFormat( 'Y-m-d H:i:s', $get_refer_value );
 
-				if ( ( $check_date_Ymd && $check_date_Ymd->format( 'Y-m-d' ) === $get_refer_value ) ||
-					( $check_date_Ymd_Hi && $check_date_Ymd_Hi->format( 'Y-m-d H:i' ) === $get_refer_value ) ) {
+				if ( $check_date_ymd || $check_date_ymd_hi || $check_date_ymd_his ) {
 
-					if ( $check_date_Ymd ) {
-						// If it's only 'Y-m-d' format, append the time as 23:59
-						$get_refer_value .= ' 23:59';
+					if ( $check_date_ymd ) {
+						// If it's only 'Y-m-d' format, append the time as 23:59.
+						$get_refer_value .= ' 23:59:59';
 					}
 
-					if ( $get_refer_value > current_time( 'Y-m-d H:i' ) ) {
+					if ( $check_date_ymd_hi ) {
+						// If it's only 'Y-m-d H:s' format, append the time as 23:59:59.
+						$get_refer_value .= ':59';
+					}
+
+					if ( $get_refer_value > current_time( 'Y-m-d H:i:s' ) ) {
 						$display_by_period = true;
 					} else {
 						$display_by_period = false;
@@ -209,25 +214,30 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 			if ( ! empty( $attributes['periodReferCustomField'] ) ) {
 				$get_refer_value = get_post_meta( get_the_ID(), $attributes['periodReferCustomField'], true );
 
-				// Check if $get_refer_value matches the date format
-				$check_date_Ymd    = DateTime::createFromFormat( 'Y-m-d', $get_refer_value );
-				$check_date_Ymd_Hi = DateTime::createFromFormat( 'Y-m-d H:i', $get_refer_value );
+				// Check if $get_refer_value matches the date format.
+				$check_date_ymd     = DateTime::createFromFormat( 'Y-m-d', $get_refer_value );
+				$check_date_ymd_hi  = DateTime::createFromFormat( 'Y-m-d H:i', $get_refer_value );
+				$check_date_ymd_his = DateTime::createFromFormat( 'Y-m-d H:i:s', $get_refer_value );
 
-				if ( ( $check_date_Ymd && $check_date_Ymd->format( 'Y-m-d' ) === $get_refer_value ) ||
-					( $check_date_Ymd_Hi && $check_date_Ymd_Hi->format( 'Y-m-d H:i' ) === $get_refer_value ) ) {
+				if ( $check_date_ymd || $check_date_ymd_hi || $check_date_ymd_his ) {
 
-					if ( $check_date_Ymd ) {
-						// If it's only 'Y-m-d' format, append the time as 00:00
-						$get_refer_value .= ' 00:00';
+					if ( $check_date_ymd ) {
+						// If it's only 'Y-m-d' format, append the time as 00:00:00.
+						$get_refer_value .= ' 00:00:00';
 					}
 
-					if ( $get_refer_value <= current_time( 'Y-m-d H:i' ) ) {
+					if ( $check_date_ymd_hi ) {
+						// If it's only 'Y-m-d H:i' format, append the time as 00:00:00.
+						$get_refer_value .= ':00';
+					}
+
+					if ( $get_refer_value <= current_time( 'Y-m-d H:i:s' ) ) {
 						$display_by_period = true;
 					} else {
 						$display_by_period = false;
 					}
 				} else {
-					// This means the value doesn't match either date formats
+					// This means the value doesn't match either date formats.
 					$display_by_period = true;
 				}
 			} else {
@@ -249,7 +259,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 			if ( ! empty( $attributes['periodReferCustomField'] ) ) {
 				$get_refer_value = get_post_meta( get_the_ID(), $attributes['periodReferCustomField'], true );
 
-				// Check if $get_refer_value is numeric
+				// Check if $get_refer_value is numeric.
 				if ( is_numeric( $get_refer_value ) ) {
 					$days_since_public = intval( $get_refer_value );
 					$post_publish_date = get_post_time( 'U', true, get_the_ID() );
@@ -261,7 +271,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 						$display_by_period = true;
 					}
 				} else {
-					// This means the value is not numeric
+					// This means the value is not numeric.
 					$display_by_period = true;
 				}
 			} else {
