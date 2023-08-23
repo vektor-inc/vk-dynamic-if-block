@@ -48,7 +48,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 			type: 'boolian',
 			default: false,
 		},
-		displayPeriodSetting: {
+		periodDisplaySetting: {
 			type: 'string',
 			"default": "none"
 		},
@@ -56,11 +56,11 @@ registerBlockType('vk-blocks/dynamic-if', {
 			type: 'string',
 			"default": "direct"
 		},
-		displayPeriodValue: {
+		periodDisplayValue: {
 			type: 'string',
 			"default": ""
 		},
-		referCustomFieldName: {
+		periodReferCustomField: {
 			type: 'string',
 			"default": ""
 		},
@@ -70,7 +70,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 		innerBlocks: true,
 	},
 	edit({ attributes, setAttributes }) {
-		const { ifPageType, ifPostType, userRole, customFieldName, customFieldRule, customFieldValue, exclusion, displayPeriodSetting, periodSpecificationMethod, displayPeriodValue, referCustomFieldName } = attributes;
+		const { ifPageType, ifPostType, userRole, customFieldName, customFieldRule, customFieldValue, exclusion, periodDisplaySetting, periodSpecificationMethod, periodDisplayValue, periodReferCustomField } = attributes;
 
 		const ifPageTypes = [
 			{ value: 'none', label: __('No restriction', 'vk-dynamic-if-block') },
@@ -125,8 +125,8 @@ registerBlockType('vk-blocks/dynamic-if', {
 			labels.push(customFieldName);
 		}
 
-		if (displayPeriodSetting !== "none") {
-			labels.push(displayPeriodSetting);
+		if (periodDisplaySetting !== "none") {
+			labels.push(periodDisplaySetting);
 		}
 
 		let labels_string = labels.join(" / ");
@@ -134,7 +134,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 		return (
 			<div {...useBlockProps({ className: blockClassName })}>
 				<InspectorControls>
-					<PanelBody title={__('Display Conditions', 'vk-dynamic-if-block')}>
+					<PanelBody title={__('Display Conditions', 'vk-dynamic-if-block')} className={'vkdif'}>
 						<SelectControl
 							label={__('Page Type', 'vk-dynamic-if-block')}
 							value={ifPageType}
@@ -205,25 +205,25 @@ registerBlockType('vk-blocks/dynamic-if', {
 						<BaseControl title={__('Display Period', 'vk-dynamic-if-block')}>
 							<SelectControl
 								label={__('Display Period Setting', 'vk-dynamic-if-block')}
-								value={displayPeriodSetting}
+								value={periodDisplaySetting}
 								options={[
 									{ value: 'none', label: __('No restriction', 'vk-dynamic-if-block') },
 									{ value: 'deadline', label: __('Set to display deadline', 'vk-dynamic-if-block') },
 									{ value: 'startline', label: __('Set to display startline', 'vk-dynamic-if-block') },
 									{ value: 'daysSincePublic', label: __('Number of days from the date of publication', 'vk-dynamic-if-block') },
 								]}
-								onChange={(value) => setAttributes({ displayPeriodSetting: value })}
+								onChange={(value) => setAttributes({ periodDisplaySetting: value })}
 								help={
-									displayPeriodSetting === 'deadline'
+									periodDisplaySetting === 'deadline'
 										? __('After the specified date, it is hidden.', 'vk-dynamic-if-block')
-										: displayPeriodSetting === 'startline'
+										: periodDisplaySetting === 'startline'
 											? __('After the specified date, it is display.', 'vk-dynamic-if-block')
-											: displayPeriodSetting === 'daysSincePublic'
+											: periodDisplaySetting === 'daysSincePublic'
 												? __('After the specified number of days, it is hidden.', 'vk-dynamic-if-block')
 												: __('You can set the deadline or startline to be displayed, as well as the time period.', 'vk-dynamic-if-block')
 								}
 							/>
-							{displayPeriodSetting !== 'none' && (
+							{periodDisplaySetting !== 'none' && (
 								<>
 									<SelectControl
 										label={__('Period specification method', 'vk-dynamic-if-block')}
@@ -237,27 +237,35 @@ registerBlockType('vk-blocks/dynamic-if', {
 									{periodSpecificationMethod === 'direct' && (
 										<NumberControl
 											label={__('Value for the specified period', 'vk-dynamic-if-block')}
-											type={displayPeriodSetting === 'daysSincePublic' ? 'number' : 'datetime-local'}
-											step={displayPeriodSetting === 'daysSincePublic' ? 1 : 60}
-											value={displayPeriodValue}
+											type={periodDisplaySetting === 'daysSincePublic' ? 'number' : 'datetime-local'}
+											step={periodDisplaySetting === 'daysSincePublic' ? 1 : 60}
+											value={periodDisplayValue}
 											onChange={(value) =>
-												setAttributes({ displayPeriodValue: value })
+												setAttributes({ periodDisplayValue: value })
 											}
 										/>
 									)}
 									{periodSpecificationMethod === 'referCustomField' && (
-										<TextControl
-											label={__('Referenced custom field name', 'vk-dynamic-if-block')}
-											value={referCustomFieldName}
-											onChange={(value) =>
-												setAttributes({ referCustomFieldName: value })
-											}
-											help={
-												displayPeriodSetting === 'daysSincePublic'
-													? __('Save the value of the custom field as an integer.', 'vk-dynamic-if-block')
-													: __('Save the custom field values as Y-m-d H:i.', 'vk-dynamic-if-block')
-											}
-										/>
+										<>
+											<TextControl
+												label={__('Referenced custom field name', 'vk-dynamic-if-block')}
+												value={periodReferCustomField}
+												onChange={(value) =>
+													setAttributes({ periodReferCustomField: value })
+												}
+												help={
+													periodDisplaySetting === 'daysSincePublic'
+														? __('Save the value of the custom field as an integer.', 'vk-dynamic-if-block')
+														: __('Save the custom field values as Y-m-d H:i:s.', 'vk-dynamic-if-block')
+												}
+												className="vkdif__refer-cf-name"
+											/>
+											{!periodReferCustomField && (
+												<div className="vkdif__alert vkdif__alert-warning">
+													{__('Enter the name of the custom field you wish to reference.', 'vk-dynamic-if-block')}
+												</div>
+											)}
+										</>
 									)}
 								</>
 							)}

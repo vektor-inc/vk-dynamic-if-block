@@ -4,11 +4,11 @@ Tags: dynamic block, if, Conditional branch, Conditional Display, Custom Field, 
 Requires at least: 6.0
 Tested up to: 6.2
 Requires PHP: 7.4
-Stable tag: 0.5.0
+Stable tag: 0.6.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-A dynamic block displays its Inner Blocks based on specified conditions, such as whether the current page is the front page or a single post, the post type, or the value of a Custom Field.
+VK Dynamic If Block displays its Inner Blocks based on specified conditions, such as whether the current page is the front page or a single post, the post type, or the value of a Custom Field.
 
 == Description ==
 
@@ -36,6 +36,15 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 == Changelog ==
 
 [ Specification Change ]Fix WordPress 6.3 transforms settings.
+
+= 0.6.3 =
+[ Fix ] Fixed a bug related to the period setting when referencing a custom field.
+
+= 0.6.2 =
+[ Fix ] Fix the bug in conditional branching based on user roles.
+
+= 0.6.1 =
+[ Fix ] Correct the translation
 
 = 0.6.0 =
 [ Add Function ] Added user roles condition
