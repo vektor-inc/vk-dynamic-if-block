@@ -16,19 +16,52 @@ use VektorInc\VK_Helpers\VkHelpers;
  */
 function vk_dynamic_if_block_render( $attributes, $content ) {
 	$attributes_default = array(
-		'ifPageType'                => 'none',
-		'ifPostType'                => 'none',
-		'userRole'                  => array(),
-		'customFieldName'           => '',
-		'customFieldRule'           => 'valueExists',
-		'customFieldValue'          => '',
-		'exclusion'                 => false,
-		'periodDisplaySetting'      => 'none',
-		'periodSpecificationMethod' => 'direct',
-		'periodDisplayValue'        => '',
-		'periodReferCustomField'    => '',
+		'conditions' => array(
+			'properties' => array(
+				'conditionPageType' => array(
+					'enable' => false,
+					'properties' => array(
+						'ifPageType' => 'none'
+					)
+				),
+				'conditionPostType' => array(
+					'enable' => false,
+					'properties' => array(
+						'ifPostType' => 'none'
+					)
+				),
+				'conditionUserRole' => array(
+					'enable' => false,
+					'properties' => array(
+						'userRole' => array()
+					)
+				),
+				'conditionCustomField' => array(
+					'enable' => false,
+					'properties' => array(
+						'customFieldName' => '',
+						'customFieldRule' => 'valueExists',
+						'customFieldValue' => ''
+					)
+				),
+				'conditionPeriodDisplay' => array(
+					'enable' => false,
+					'properties' => array(
+						'periodDisplaySetting' => 'none',
+						'periodSpecificationMethod' => 'direct',
+						'periodDisplayValue' => '',
+						'periodReferCustomField' => ''
+					)
+				),
+			),
+		),
+		'exclusion' => false
 	);
-	$attributes         = array_merge( $attributes_default, $attributes );
+
+	$attributes = array_merge($attributes_default, $attributes);
+
+	// var_dump($attributes);
+
 
 	$display = false;
 
@@ -36,24 +69,26 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 
 	$display_by_page_type = false;
 
+	$ifPageType = $attributes['conditions']['conditionPageType']['properties']['ifPageType'];
+
 	if (
-		is_front_page() && 'is_front_page' === $attributes['ifPageType'] ||
-		is_single() && 'is_single' === $attributes['ifPageType'] ||
-		is_page() && 'is_page' === $attributes['ifPageType'] ||
-		is_singular() && 'is_singular' === $attributes['ifPageType'] ||
-		is_home() && ! is_front_page() && 'is_home' === $attributes['ifPageType'] ||
-		is_post_type_archive() && 'is_post_type_archive' === $attributes['ifPageType'] ||
-		is_category() && 'is_category' === $attributes['ifPageType'] ||
-		is_tag() && 'is_tag' === $attributes['ifPageType'] ||
-		is_tax() && 'is_tax' === $attributes['ifPageType'] ||
-		is_year() && 'is_year' === $attributes['ifPageType'] ||
-		is_month() && 'is_month' === $attributes['ifPageType'] ||
-		is_date() && 'is_date' === $attributes['ifPageType'] ||
-		is_author() && 'is_author' === $attributes['ifPageType'] ||
-		is_search() && 'is_search' === $attributes['ifPageType'] ||
-		is_404() && 'is_404' === $attributes['ifPageType'] ||
-		is_archive() && 'is_archive' === $attributes['ifPageType'] ||
-		'none' === $attributes['ifPageType']
+		is_front_page() && 'is_front_page' === $ifPageType ||
+		is_single() && 'is_single' === $ifPageType ||
+		is_page() && 'is_page' === $ifPageType ||
+		is_singular() && 'is_singular' === $ifPageType ||
+		is_home() && ! is_front_page() && 'is_home' === $ifPageType ||
+		is_post_type_archive() && 'is_post_type_archive' === $ifPageType ||
+		is_category() && 'is_category' === $ifPageType ||
+		is_tag() && 'is_tag' === $ifPageType ||
+		is_tax() && 'is_tax' === $ifPageType ||
+		is_year() && 'is_year' === $ifPageType ||
+		is_month() && 'is_month' === $ifPageType ||
+		is_date() && 'is_date' === $ifPageType ||
+		is_author() && 'is_author' === $ifPageType ||
+		is_search() && 'is_search' === $ifPageType ||
+		is_404() && 'is_404' === $ifPageType ||
+		is_archive() && 'is_archive' === $ifPageType ||
+		'none' === $ifPageType
 	) {
 		$display_by_page_type = true;
 	}
@@ -71,9 +106,11 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		$post_type_slug = get_post_type();
 	}
 
-	if ( 'none' === $attributes['ifPostType'] ) {
+	$ifPostType = $attributes['conditions']['conditionPostType']['properties']['ifPostType'];
+
+	if ( 'none' === $ifPostType ) {
 		$display_by_post_type = true;
-	} elseif ( $post_type_slug === $attributes['ifPostType'] ) {
+	} elseif ( $post_type_slug === $ifPostType ) {
 		$display_by_post_type = true;
 	} else {
 		$display_by_post_type = false;
@@ -83,6 +120,8 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 
 	$display_by_user_role = false;
 
+	$userRole = $attributes['conditions']['conditionUserRole']['properties']['userRole'];
+
 	// PHPUnit用のユーザーロール情報がある場合はそれを設定.
 	if ( ! empty( $attributes['test_user_roles'] ) ) {
 		$user_roles = $attributes['test_user_roles'];
@@ -91,14 +130,13 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		$user_roles   = (array) $current_user->roles;
 	}
 
-	if ( ! isset( $attributes['userRole'] ) || empty( $attributes['userRole'] ) ) {
+	if ( ! isset( $userRole ) || empty( $userRole ) ) {
 		$display_by_user_role = true;
 	} else {
 		if ( is_user_logged_in() || $user_roles ) {
-
 			// Check if any of the user's roles match the selected roles.
 			foreach ( $user_roles as $role ) {
-				if ( in_array( $role, $attributes['userRole'] ) ) {
+				if ( in_array( $role, $userRole ) ) {
 					$display_by_user_role = true;
 					break;
 				}
@@ -112,20 +150,21 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 
 	$display_by_custom_field = false;
 
-	if ( ! $attributes['customFieldName'] ) {
-		$display_by_custom_field = true;
-	} elseif ( $attributes['customFieldName'] ) {
+	$conditionCustomField = $attributes['conditions']['conditionCustomField']['properties'];
 
+	if ( ! $conditionCustomField['customFieldName'] ) {
+		$display_by_custom_field = true;
+	} elseif ( $conditionCustomField['customFieldName'] ) {
 		if ( get_the_ID() ) {
-			$get_value = get_post_meta( get_the_ID(), $attributes['customFieldName'], true );
-			if ( 'valueExists' === $attributes['customFieldRule'] || empty( $attributes['customFieldRule'] ) ) {
+			$get_value = get_post_meta( get_the_ID(), $conditionCustomField['customFieldName'], true );
+			if ( 'valueExists' === $conditionCustomField['customFieldRule'] || empty( $conditionCustomField['customFieldRule'] ) ) {
 				if ( $get_value || '0' === $get_value ) {
 					$display_by_custom_field = true;
 				} else {
 					$display_by_custom_field = false;
 				}
-			} elseif ( 'valueEquals' === $attributes['customFieldRule'] ) {
-				if ( $get_value === $attributes['customFieldValue'] ) {
+			} elseif ( 'valueEquals' === $conditionCustomField['customFieldRule'] ) {
+				if ( $get_value === $conditionCustomField['customFieldValue'] ) {
 					$display_by_custom_field = true;
 				} else {
 					$display_by_custom_field = false;
@@ -138,140 +177,109 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 
 	$display_by_period = false;
 
-	if ( 'none' === $attributes['periodDisplaySetting'] ) {
+	$conditionPeriodDisplay = $attributes['conditions']['conditionPeriodDisplay']['properties'];
+
+	$periodDisplaySetting = $conditionPeriodDisplay['periodDisplaySetting'];
+	$periodSpecificationMethod = $conditionPeriodDisplay['periodSpecificationMethod'];
+	$periodDisplayValue = $conditionPeriodDisplay['periodDisplayValue'];
+	$periodReferCustomField = $conditionPeriodDisplay['periodReferCustomField'];
+
+	if ( 'none' === $periodDisplaySetting ) {
 		$display_by_period = true;
-	} elseif ( 'deadline' === $attributes['periodDisplaySetting'] ) {
-		if ( 'direct' === $attributes['periodSpecificationMethod'] ) {
+	} elseif ( 'deadline' === $periodDisplaySetting ) {
+		if ( 'direct' === $periodSpecificationMethod ) {
 
-			// 時間指定がない場合(日付までで時間が入力されていない場合)に時間を自動指定.
-			if ( $attributes['periodDisplayValue'] === date( 'Y-m-d', strtotime( $attributes['periodDisplayValue'] ) ) ) {
-				$attributes['periodDisplayValue'] .= ' 23:59';
+			// Adjust time if no specific time is set
+			if ($periodDisplayValue === date('Y-m-d', strtotime($periodDisplayValue))) {
+				$periodDisplayValue .= ' 23:59';
 			}
 
-			// 日付のフォーマットを Y-m-d H:i に指定.
-			if ( $attributes['periodDisplayValue'] !== date( 'Y-m-d H:i', strtotime( $attributes['periodDisplayValue'] ) ) ) {
-				$attributes['periodDisplayValue'] = date( 'Y-m-d H:i', strtotime( $attributes['periodDisplayValue'] ) );
+			// Ensure the date format is consistent
+			if ($periodDisplayValue !== date('Y-m-d H:i', strtotime($periodDisplayValue))) {
+				$periodDisplayValue = date('Y-m-d H:i', strtotime($periodDisplayValue));
 			}
 
-			if ( $attributes['periodDisplayValue'] > current_time( 'Y-m-d H:i' ) ) {
+			if ($periodDisplayValue > current_time('Y-m-d H:i')) {
 				$display_by_period = true;
 			} else {
 				$display_by_period = false;
 			}
-		} elseif ( 'referCustomField' === $attributes['periodSpecificationMethod'] ) {
-			if ( ! empty( $attributes['periodReferCustomField'] ) ) {
-				$get_refer_value = get_post_meta( get_the_ID(), $attributes['periodReferCustomField'], true );
+		} elseif ('referCustomField' === $periodSpecificationMethod) {
+			$get_refer_value = get_post_meta(get_the_ID(), $periodReferCustomField, true);
+			$check_date_ymd = DateTime::createFromFormat('Y-m-d', $get_refer_value);
+			$check_date_ymd_hi = DateTime::createFromFormat('Y-m-d H:i', $get_refer_value);
+			$check_date_ymd_his = DateTime::createFromFormat('Y-m-d H:i:s', $get_refer_value);
 
-				// Check if $get_refer_value matches the date format.
-				$check_date_ymd     = DateTime::createFromFormat( 'Y-m-d', $get_refer_value );
-				$check_date_ymd_hi  = DateTime::createFromFormat( 'Y-m-d H:i', $get_refer_value );
-				$check_date_ymd_his = DateTime::createFromFormat( 'Y-m-d H:i:s', $get_refer_value );
-
-				if ( $check_date_ymd || $check_date_ymd_hi || $check_date_ymd_his ) {
-
-					if ( $check_date_ymd ) {
-						// If it's only 'Y-m-d' format, append the time as 23:59.
-						$get_refer_value .= ' 23:59:59';
-					}
-
-					if ( $check_date_ymd_hi ) {
-						// If it's only 'Y-m-d H:s' format, append the time as 23:59:59.
-						$get_refer_value .= ':59';
-					}
-
-					if ( $get_refer_value > current_time( 'Y-m-d H:i:s' ) ) {
-						$display_by_period = true;
-					} else {
-						$display_by_period = false;
-					}
-				} else {
-					// This means the value doesn't match either date formats
+			if ($check_date_ymd || $check_date_ymd_hi || $check_date_ymd_his) {
+				if ($check_date_ymd) {
+					$get_refer_value .= ' 23:59:59';
+				}
+				if ($check_date_ymd_hi) {
+					$get_refer_value .= ':59';
+				}
+				if ($get_refer_value > current_time('Y-m-d H:i:s')) {
 					$display_by_period = true;
+				} else {
+					$display_by_period = false;
 				}
 			} else {
 				$display_by_period = true;
 			}
 		}
-	} elseif ( 'startline' === $attributes['periodDisplaySetting'] ) {
-		if ( 'direct' === $attributes['periodSpecificationMethod'] ) {
-
-			// 時間指定がない場合に時間を自動指定.
-			if ( $attributes['periodDisplayValue'] === date( 'Y-m-d', strtotime( $attributes['periodDisplayValue'] ) ) ) {
-				$attributes['periodDisplayValue'] .= ' 00:00';
+	} elseif ('startline' === $periodDisplaySetting) {
+		if ('direct' === $periodSpecificationMethod) {
+			if ($periodDisplayValue === date('Y-m-d', strtotime($periodDisplayValue))) {
+				$periodDisplayValue .= ' 00:00';
 			}
-
-			// 日付のフォーマットを Y-m-d H:i に指定.
-			if ( $attributes['periodDisplayValue'] !== date( 'Y-m-d H:i', strtotime( $attributes['periodDisplayValue'] ) ) ) {
-				$attributes['periodDisplayValue'] = date( 'Y-m-d H:i', strtotime( $attributes['periodDisplayValue'] ) );
+			if ($periodDisplayValue !== date('Y-m-d H:i', strtotime($periodDisplayValue))) {
+				$periodDisplayValue = date('Y-m-d H:i', strtotime($periodDisplayValue));
 			}
-
-			if ( $attributes['periodDisplayValue'] <= current_time( 'Y-m-d H:i' ) ) {
+			if ($periodDisplayValue <= current_time('Y-m-d H:i')) {
 				$display_by_period = true;
 			} else {
 				$display_by_period = false;
 			}
-		} elseif ( 'referCustomField' === $attributes['periodSpecificationMethod'] ) {
-			if ( ! empty( $attributes['periodReferCustomField'] ) ) {
-				$get_refer_value = get_post_meta( get_the_ID(), $attributes['periodReferCustomField'], true );
+		} elseif ('referCustomField' === $periodSpecificationMethod) {
+			$get_refer_value = get_post_meta(get_the_ID(), $periodReferCustomField, true);
+			$check_date_ymd = DateTime::createFromFormat('Y-m-d', $get_refer_value);
+			$check_date_ymd_hi = DateTime::createFromFormat('Y-m-d H:i', $get_refer_value);
+			$check_date_ymd_his = DateTime::createFromFormat('Y-m-d H:i:s', $get_refer_value);
 
-				// Check if $get_refer_value matches the date format.
-				$check_date_ymd     = DateTime::createFromFormat( 'Y-m-d', $get_refer_value );
-				$check_date_ymd_hi  = DateTime::createFromFormat( 'Y-m-d H:i', $get_refer_value );
-				$check_date_ymd_his = DateTime::createFromFormat( 'Y-m-d H:i:s', $get_refer_value );
-
-				if ( $check_date_ymd || $check_date_ymd_hi || $check_date_ymd_his ) {
-
-					if ( $check_date_ymd ) {
-						// If it's only 'Y-m-d' format, append the time as 00:00:00.
-						$get_refer_value .= ' 00:00:00';
-					}
-
-					if ( $check_date_ymd_hi ) {
-						// If it's only 'Y-m-d H:i' format, append the time as 00:00:00.
-						$get_refer_value .= ':00';
-					}
-
-					if ( $get_refer_value <= current_time( 'Y-m-d H:i:s' ) ) {
-						$display_by_period = true;
-					} else {
-						$display_by_period = false;
-					}
-				} else {
-					// This means the value doesn't match either date formats.
+			if ($check_date_ymd || $check_date_ymd_hi || $check_date_ymd_his) {
+				if ($check_date_ymd) {
+					$get_refer_value .= ' 00:00:00';
+				}
+				if ($check_date_ymd_hi) {
+					$get_refer_value .= ':00';
+				}
+				if ($get_refer_value <= current_time('Y-m-d H:i:s')) {
 					$display_by_period = true;
+				} else {
+					$display_by_period = false;
 				}
 			} else {
 				$display_by_period = true;
 			}
 		}
-	} elseif ( 'daysSincePublic' === $attributes['periodDisplaySetting'] ) {
-		if ( 'direct' === $attributes['periodSpecificationMethod'] ) {
-			$days_since_public = intval( $attributes['periodDisplayValue'] );
-			$post_publish_date = get_post_time( 'U', true, get_the_ID() );
-			$current_time      = current_time( 'timestamp' );
-
-			if ( $current_time >= $post_publish_date + ( $days_since_public * 86400 ) ) {
+	} elseif ('daysSincePublic' === $periodDisplaySetting) {
+		if ('direct' === $periodSpecificationMethod) {
+			$days_since_public = intval($periodDisplayValue);
+			$post_publish_date = get_post_time('U', true, get_the_ID());
+			$current_time = current_time('timestamp');
+			if ($current_time >= $post_publish_date + ($days_since_public * 86400)) {
 				$display_by_period = false;
 			} else {
 				$display_by_period = true;
 			}
-		} elseif ( 'referCustomField' === $attributes['periodSpecificationMethod'] ) {
-			if ( ! empty( $attributes['periodReferCustomField'] ) ) {
-				$get_refer_value = get_post_meta( get_the_ID(), $attributes['periodReferCustomField'], true );
-
-				// Check if $get_refer_value is numeric.
-				if ( is_numeric( $get_refer_value ) ) {
-					$days_since_public = intval( $get_refer_value );
-					$post_publish_date = get_post_time( 'U', true, get_the_ID() );
-					$current_time      = current_time( 'timestamp' );
-
-					if ( $current_time >= $post_publish_date + ( $days_since_public * 86400 ) ) {
-						$display_by_period = false;
-					} else {
-						$display_by_period = true;
-					}
+		} elseif ('referCustomField' === $periodSpecificationMethod) {
+			$get_refer_value = get_post_meta(get_the_ID(), $periodReferCustomField, true);
+			if (is_numeric($get_refer_value)) {
+				$days_since_public = intval($get_refer_value);
+				$post_publish_date = get_post_time('U', true, get_the_ID());
+				$current_time = current_time('timestamp');
+				if ($current_time >= $post_publish_date + ($days_since_public * 86400)) {
+					$display_by_period = false;
 				} else {
-					// This means the value is not numeric.
 					$display_by_period = true;
 				}
 			} else {

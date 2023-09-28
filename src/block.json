@@ -5,49 +5,99 @@
 	"category": "theme",
 	"textdomain": "vk-dynamic-if-block",
 	"attributes": {
-		"ifPageType": {
-			"type": "string",
-			"default": "none"
-		},
-		"ifPostType": {
-			"type": "string",
-			"default": "none"
-		},
-		"userRole": {
-			"type": "array",
-			"default": []
-		},
-		"customFieldName": {
-			"type": "string",
-			"default": ""
-		},
-		"customFieldRule": {
-			"type": "string",
-			"default": "valueExists"
-		},
-		"customFieldValue": {
-			"type": "string",
-			"default": ""
+		"conditions": {
+			"type": "object",
+			"properties": {
+				"conditionPageType": {
+					"type": "object",
+					"enable": {
+						"type": "boolean",
+						"default": false
+					},
+					"properties": {
+						"ifPageType": {
+							"type": "string",
+							"default": "none"
+						}
+					}
+				},
+				"conditionPostType": {
+					"type": "object",
+					"enable": {
+						"type": "boolean",
+						"default": false
+					},
+					"properties": {
+						"ifPostType": {
+							"type": "string",
+							"default": "none"
+						}
+					}
+				},
+				"conditionUserRole": {
+					"type": "object",
+					"enable": {
+						"type": "boolean",
+						"default": false
+					},
+					"properties": {
+						"userRole": {
+							"type": "array",
+							"default": []
+						}
+					}
+				},
+				"conditionCustomField": {
+					"type": "object",
+					"enable": {
+						"type": "boolean",
+						"default": false
+					},
+					"properties": {
+						"customFieldName": {
+							"type": "string",
+							"default": ""
+						},
+						"customFieldRule": {
+							"type": "string",
+							"default": "valueExists"
+						},
+						"customFieldValue": {
+							"type": "string",
+							"default": ""
+						}
+					}
+				},
+				"conditionPeriodDisplay": {
+					"type": "object",
+					"enable": {
+						"type": "boolean",
+						"default": false
+					},
+					"properties": {
+						"periodDisplaySetting": {
+							"type": "string",
+							"default": "none"
+						},
+						"periodSpecificationMethod": {
+							"type": "string",
+							"default": "direct"
+						},
+						"periodDisplayValue": {
+							"type": "string",
+							"default": ""
+						},
+						"periodReferCustomField": {
+							"type": "string",
+							"default": ""
+						}
+					}
+				}
+			}
 		},
 		"exclusion": {
 			"type": "boolean",
 			"default": false
-		},
-		"periodDisplaySetting": {
-			"type": "string",
-			"default": "none"
-		},
-		"periodSpecificationMethod": {
-			"type": "string",
-			"default": "direct"
-		},
-		"periodDisplayValue": {
-			"type": "string",
-			"default": ""
-		},
-		"periodReferCustomField": {
-			"type": "string",
-			"default": ""
 		}
 	},
 	"supports": {

@@ -25,7 +25,8 @@
 		"phpunit": "npm run build && wp-env run phpunit 'phpunit -c /var/www/html/wp-content/plugins/vk-dynamic-if-block/phpunit.xml --verbose'"
 	},
 	"dependencies": {
-		"@wordpress/env": "^5.15.0"
+		"@wordpress/env": "^5.15.0",
+		"@wordpress/icons": "^9.31.0"
 	},
 	"devDependencies": {
 		"@wordpress/scripts": "^26.1.0",
