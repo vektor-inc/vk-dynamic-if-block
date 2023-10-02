@@ -22,10 +22,19 @@
 	margin-bottom: 15px;
 }
 
-.vkdif .vkdif__refer-cf-name {
-	margin-bottom: 0;
-	& .components-base-control__help {
+.vkdif {
+	&.components-panel {
+		border-bottom: 1px solid #e0e0e0;
+	}
+	.components-panel__header > h2 {
 		margin-bottom: 0;
+		padding: 16px 0;
+	}
+	.vkdif__refer-cf-name {
+		margin-bottom: 0;
+		.components-base-control__help {
+			margin-bottom: 0;
+		}
 	}
 }
 
@@ -54,47 +63,6 @@
 			background-color: $color-bg;
 			color: $color;
 			border-color: $color-border;
-		}
-	}
-}
-
-/** ==============================
-UI・仕様変更用
-============================== */
-.vkdif__controls-panel {
-	border-top: 1px solid #dddddd;
-	display: grid;
-	gap: 16px;
-	margin-top: -1px;
-	padding: 16px;
-	.controls-panel-header {
-		align-items: center;
-		display: flex;
-		flex-direction: row;
-		gap: calc(8px);
-		grid-column: 1 / -1;
-		justify-content: space-between;
-		width: 100%;
-		-webkit-box-align: center;
-		-webkit-box-pack: justify;
-
-		h2 {
-			font-weight: 500;
-			margin: 0;
-		}
-
-		.controls-panel-header__dropdown-menus {
-			line-height: 0;
-			margin: -4px 0;
-
-			.components-button {
-				padding: 0px;
-				min-width: 24px;
-			}
-
-			.components-spinner {
-				margin: 0 4px;
-			}
 		}
 	}
 }

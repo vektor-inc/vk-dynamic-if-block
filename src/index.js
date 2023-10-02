@@ -1,9 +1,17 @@
 import { __ } from '@wordpress/i18n';
 import { registerBlockType } from '@wordpress/blocks';
 import { useBlockProps, InnerBlocks, InspectorControls } from '@wordpress/block-editor';
+import {
+	PanelBody,
+	SelectControl,
+	TextControl,
+	ToggleControl,
+	CheckboxControl,
+	BaseControl,
+	__experimentalNumberControl as NumberControl,
+} from '@wordpress/components';
 import { ReactComponent as Icon } from './icon.svg';
 import transforms from './transforms';
-import ControlsPanel from './ControlsPanel'
 
 registerBlockType('vk-blocks/dynamic-if', {
 	apiVersion: 2,
@@ -12,49 +20,49 @@ registerBlockType('vk-blocks/dynamic-if', {
 	transforms,
 	category: 'theme',
 	attributes: {
-		conditions: {
-			type: "object",
-			default: {
-				conditionPageType: {
-					enable: false,
-					properties: {
-						ifPageType: "none",
-					}
-				},
-				conditionPostType: {
-					enable: false,
-					properties: {
-						ifPostType: "none",
-					}
-				},
-				conditionUserRole: {
-					enable: false,
-					properties: {
-						userRole: [],
-					}
-				},
-				conditionCustomField: {
-					enable: false,
-					properties: {
-						customFieldName: "",
-						customFieldRule: "valueExists",
-						customFieldValue: "",
-					}
-				},
-				conditionPeriodDisplay: {
-					enable: false,
-					properties: {
-						periodDisplaySetting: "none",
-						periodSpecificationMethod: "direct",
-						periodDisplayValue: "",
-						periodReferCustomField: "",
-					}
-				},
-			}
+		ifPageType: {
+			type: 'string',
+			default: 'none',
+		},
+		ifPostType: {
+			type: 'string',
+			default: 'none',
+		},
+		userRole: {
+			type: 'array',
+			default: [],
+		},
+		customFieldName: {
+			type: 'string',
+			"default": ""
+		},
+		customFieldRule: {
+			type: 'string',
+			"default": ""
+		},
+		customFieldValue: {
+			type: 'string',
+			"default": ""
 		},
 		exclusion: {
-			type: "boolean",
+			type: 'boolian',
 			default: false,
+		},
+		periodDisplaySetting: {
+			type: 'string',
+			"default": "none"
+		},
+		periodSpecificationMethod: {
+			type: 'string',
+			"default": "direct"
+		},
+		periodDisplayValue: {
+			type: 'string',
+			"default": ""
+		},
+		periodReferCustomField: {
+			type: 'string',
+			"default": ""
 		},
 	},
 	supports: {
@@ -62,20 +70,7 @@ registerBlockType('vk-blocks/dynamic-if', {
 		innerBlocks: true,
 	},
 	edit({ attributes, setAttributes }) {
-		const {
-			conditions: {
-				conditionPageType: { enable: enablePageType, properties: { ifPageType } },
-				conditionPostType: { enable: enablePostType, properties: { ifPostType } },
-				conditionUserRole: { enable: enableUserRole, properties: { userRole } },
-				conditionCustomField: { enable: enableCustomField, properties: { customFieldName } },
-				conditionPeriodDisplay: { enable: enablePeriodDisplay, properties: { periodDisplaySetting } },
-			},
-		} = attributes;
-
-		const blockClassName = `vk-dynamic-if-block ifPageType-${ifPageType} ifPostType-${ifPostType}`;
-		const MY_TEMPLATE = [
-			['core/paragraph', {}],
-		];
+		const { ifPageType, ifPostType, userRole, customFieldName, customFieldRule, customFieldValue, exclusion, periodDisplaySetting, periodSpecificationMethod, periodDisplayValue, periodReferCustomField } = attributes;
 
 		const ifPageTypes = [
 			{ value: 'none', label: __('No restriction', 'vk-dynamic-if-block') },
@@ -97,6 +92,11 @@ registerBlockType('vk-blocks/dynamic-if', {
 			{ value: 'is_404', label: __('404', 'vk-dynamic-if-block') + ' ( is_404() )' },
 		];
 
+		const blockClassName = `vk-dynamic-if-block ifPageType-${ifPageType} ifPostType-${ifPostType}`;
+		const MY_TEMPLATE = [
+			['core/paragraph', {}],
+		];
+
 		const userRolesObj = vk_dynamic_if_block_localize_data.userRoles || {};
 		const userRoles = Object.keys(userRolesObj).map(key => ({
 			value: key,
@@ -105,13 +105,14 @@ registerBlockType('vk-blocks/dynamic-if', {
 
 		let labels = [];
 
-		if (enablePageType && ifPageType !== "none") {
+		if (ifPageType !== "none") {
 			labels.push(ifPageType);
 		}
-		if (enablePostType && ifPostType !== "none") {
+
+		if (ifPostType !== "none") {
 			labels.push(ifPostType);
 		}
-		if (enableUserRole && userRole.length > 0) {
+		if (userRole.length > 0) {
 			userRole.forEach((roleValue) => {
 				const roleLabel = userRoles.find((role) => role.value === roleValue);
 				if (roleLabel) {
@@ -119,10 +120,12 @@ registerBlockType('vk-blocks/dynamic-if', {
 				}
 			});
 		}
-		if (enableCustomField && customFieldName) {
+
+		if (customFieldName) {
 			labels.push(customFieldName);
 		}
-		if (enablePeriodDisplay && periodDisplaySetting !== "none") {
+
+		if (periodDisplaySetting !== "none") {
 			labels.push(periodDisplaySetting);
 		}
 
@@ -130,15 +133,150 @@ registerBlockType('vk-blocks/dynamic-if', {
 
 		return (
 			<div {...useBlockProps({ className: blockClassName })}>
-				<InspectorControls group="settings">
-					<div className="vkdif__controls-panel">
-						<ControlsPanel attributes={attributes} setAttributes={setAttributes} ifPageTypes={ifPageTypes} userRoles={userRoles} />
-					</div>
-					{/* <ToggleControl
-						label={__('Exclusion designation', 'vk-dynamic-if-block')}
-						checked={exclusion}
-						onChange={(checked) => setAttributes({ exclusion: checked })}
-					/> */}
+				<InspectorControls>
+					<PanelBody title={__('Display Conditions', 'vk-dynamic-if-block')} className={'vkdif'}>
+						<SelectControl
+							label={__('Page Type', 'vk-dynamic-if-block')}
+							value={ifPageType}
+							options={ifPageTypes}
+							onChange={(value) => setAttributes({ ifPageType: value })}
+						/>
+						<SelectControl
+							label={__('Post Type', 'vk-dynamic-if-block')}
+							value={ifPostType}
+							options={vk_dynamic_if_block_localize_data.postTypeSelectOptions}
+							onChange={(value) => setAttributes({ ifPostType: value })}
+						/>
+						<BaseControl
+							__nextHasNoMarginBottom
+							className="dynamic-if-user-role"
+							label={__('User Role', 'vk-dynamic-if-block')}
+							help={__('If unchecked, no restrictions are imposed by user role', 'vk-dynamic-if-block')}
+						>
+							{userRoles.map((role, index) => {
+								return (
+									<CheckboxControl
+										__nextHasNoMarginBottom
+										key={index}
+										label={role.label}
+										checked={userRole.includes(role.value)}
+										onChange={(isChecked) => {
+											if (isChecked) {
+												setAttributes({ userRole: [...userRole, role.value] });
+											} else {
+												setAttributes({ userRole: userRole.filter((r) => r !== role.value) });
+											}
+										}}
+									/>
+								);
+							})}
+						</BaseControl>
+						<TextControl
+							label={__('Custom Field Name', 'vk-dynamic-if-block')}
+							value={customFieldName}
+							onChange={(value) =>
+								setAttributes({ customFieldName: value })
+							}
+						/>
+						{customFieldName && (
+							<>
+								<SelectControl
+									label={__('Custom Field Rule', 'vk-dynamic-if-block')}
+									value={customFieldRule}
+									options={[
+										{ value: 'valueExists', label: __('Value Exist ( !empty() )', 'vk-dynamic-if-block') },
+										{ value: 'valueEquals', label: __('Value Equals ( === )', 'vk-dynamic-if-block') },
+									]}
+									onChange={(value) => setAttributes({ customFieldRule: value })}
+								/>
+								{customFieldRule === 'valueEquals' && (
+									<>
+										<TextControl
+											label={__('Custom Field Value', 'vk-dynamic-if-block')}
+											value={customFieldValue}
+											onChange={(value) =>
+												setAttributes({ customFieldValue: value })
+											}
+										/>
+									</>
+								)}
+							</>
+						)}
+						<BaseControl title={__('Display Period', 'vk-dynamic-if-block')}>
+							<SelectControl
+								label={__('Display Period Setting', 'vk-dynamic-if-block')}
+								value={periodDisplaySetting}
+								options={[
+									{ value: 'none', label: __('No restriction', 'vk-dynamic-if-block') },
+									{ value: 'deadline', label: __('Set to display deadline', 'vk-dynamic-if-block') },
+									{ value: 'startline', label: __('Set to display startline', 'vk-dynamic-if-block') },
+									{ value: 'daysSincePublic', label: __('Number of days from the date of publication', 'vk-dynamic-if-block') },
+								]}
+								onChange={(value) => setAttributes({ periodDisplaySetting: value })}
+								help={
+									periodDisplaySetting === 'deadline'
+										? __('After the specified date, it is hidden.', 'vk-dynamic-if-block')
+										: periodDisplaySetting === 'startline'
+											? __('After the specified date, it is display.', 'vk-dynamic-if-block')
+											: periodDisplaySetting === 'daysSincePublic'
+												? __('After the specified number of days, it is hidden.', 'vk-dynamic-if-block')
+												: __('You can set the deadline or startline to be displayed, as well as the time period.', 'vk-dynamic-if-block')
+								}
+							/>
+							{periodDisplaySetting !== 'none' && (
+								<>
+									<SelectControl
+										label={__('Period specification method', 'vk-dynamic-if-block')}
+										value={periodSpecificationMethod}
+										options={[
+											{ value: 'direct', label: __('Direct input in this block', 'vk-dynamic-if-block') },
+											{ value: 'referCustomField', label: __('Refer to value of custom field', 'vk-dynamic-if-block') },
+										]}
+										onChange={(value) => setAttributes({ periodSpecificationMethod: value })}
+									/>
+									{periodSpecificationMethod === 'direct' && (
+										<NumberControl
+											label={__('Value for the specified period', 'vk-dynamic-if-block')}
+											type={periodDisplaySetting === 'daysSincePublic' ? 'number' : 'datetime-local'}
+											step={periodDisplaySetting === 'daysSincePublic' ? 1 : 60}
+											value={periodDisplayValue}
+											onChange={(value) =>
+												setAttributes({ periodDisplayValue: value })
+											}
+										/>
+									)}
+									{periodSpecificationMethod === 'referCustomField' && (
+										<>
+											<TextControl
+												label={__('Referenced custom field name', 'vk-dynamic-if-block')}
+												value={periodReferCustomField}
+												onChange={(value) =>
+													setAttributes({ periodReferCustomField: value })
+												}
+												help={
+													periodDisplaySetting === 'daysSincePublic'
+														? __('Save the value of the custom field as an integer.', 'vk-dynamic-if-block')
+														: __('Save the custom field values as Y-m-d H:i:s.', 'vk-dynamic-if-block')
+												}
+												className="vkdif__refer-cf-name"
+											/>
+											{!periodReferCustomField && (
+												<div className="vkdif__alert vkdif__alert-warning">
+													{__('Enter the name of the custom field you wish to reference.', 'vk-dynamic-if-block')}
+												</div>
+											)}
+										</>
+									)}
+								</>
+							)}
+
+						</BaseControl>
+						<ToggleControl
+							label={__('Exclusion designation', 'vk-dynamic-if-block')}
+							checked={exclusion}
+							onChange={(checked) => setAttributes({ exclusion: checked })}
+						/>
+					</PanelBody>
 				</InspectorControls>
 				<div className="vk-dynamic-if-block__label">{labels_string}</div>
 
