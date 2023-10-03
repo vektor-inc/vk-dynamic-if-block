@@ -16,8 +16,8 @@ use VektorInc\VK_Helpers\VkHelpers;
  */
 function vk_dynamic_if_block_render( $attributes, $content ) {
 	$attributes_default = array(
-		'ifPageType'                => 'none',
-		'ifPostType'                => 'none',
+		'ifPageType'                => array(),
+		'ifPostType'                => array(),
 		'userRole'                  => array(),
 		'customFieldName'           => '',
 		'customFieldRule'           => 'valueExists',
@@ -36,27 +36,57 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 
 	$display_by_page_type = false;
 
-	if (
-		is_front_page() && 'is_front_page' === $attributes['ifPageType'] ||
-		is_single() && 'is_single' === $attributes['ifPageType'] ||
-		is_page() && 'is_page' === $attributes['ifPageType'] ||
-		is_singular() && 'is_singular' === $attributes['ifPageType'] ||
-		is_home() && ! is_front_page() && 'is_home' === $attributes['ifPageType'] ||
-		is_post_type_archive() && 'is_post_type_archive' === $attributes['ifPageType'] ||
-		is_category() && 'is_category' === $attributes['ifPageType'] ||
-		is_tag() && 'is_tag' === $attributes['ifPageType'] ||
-		is_tax() && 'is_tax' === $attributes['ifPageType'] ||
-		is_year() && 'is_year' === $attributes['ifPageType'] ||
-		is_month() && 'is_month' === $attributes['ifPageType'] ||
-		is_date() && 'is_date' === $attributes['ifPageType'] ||
-		is_author() && 'is_author' === $attributes['ifPageType'] ||
-		is_search() && 'is_search' === $attributes['ifPageType'] ||
-		is_404() && 'is_404' === $attributes['ifPageType'] ||
-		is_archive() && 'is_archive' === $attributes['ifPageType'] ||
-		'none' === $attributes['ifPageType']
-	) {
-		$display_by_page_type = true;
+	$current_page_type = '';
+
+	if ( is_front_page() ) {
+		$current_page_type = 'is_front_page';
+	} elseif ( is_single() ) {
+		$current_page_type = 'is_single';
+	} elseif ( is_page() ) {
+		$current_page_type = 'is_page';
+	} elseif ( is_singular() ) {
+		$current_page_type = 'is_singular';
+	} elseif ( is_home() && ! is_front_page() ) {
+		$current_page_type = 'is_home';
+	} elseif ( is_post_type_archive() ) {
+		$current_page_type = 'is_post_type_archive';
+	} elseif ( is_category() ) {
+		$current_page_type = 'is_category';
+	} elseif ( is_tag() ) {
+		$current_page_type = 'is_tag';
+	} elseif ( is_tax() ) {
+		$current_page_type = 'is_tax';
+	} elseif ( is_year() ) {
+		$current_page_type = 'is_year';
+	} elseif ( is_month() ) {
+		$current_page_type = 'is_month';
+	} elseif ( is_date() ) {
+		$current_page_type = 'is_date';
+	} elseif ( is_author() ) {
+		$current_page_type = 'is_author';
+	} elseif ( is_archive() ) {
+		$current_page_type = 'is_archive';
+	} elseif ( is_search() ) {
+		$current_page_type = 'is_search';
+	} elseif ( is_404() ) {
+		$current_page_type = 'is_404';
 	}
+
+	if (!is_array($attributes['ifPageType'])) {
+		$attributes['ifPageType'] = array($attributes['ifPageType']);
+	}
+
+	if ( ! isset( $attributes['ifPageType'] ) || empty( $attributes['ifPageType'] ) ) {
+		$display_by_page_type = true;
+		// var_dump($attributes);
+	} else {
+		if ( in_array( $current_page_type, $attributes['ifPageType'] ) ) {
+			$display_by_page_type = true;
+		} else {
+			$display_by_page_type = false;
+		}
+	}
+
 
 	// Post Type Condition Check //////////////////////////////////.
 
@@ -71,12 +101,19 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		$post_type_slug = get_post_type();
 	}
 
-	if ( 'none' === $attributes['ifPostType'] ) {
-		$display_by_post_type = true;
-	} elseif ( $post_type_slug === $attributes['ifPostType'] ) {
+	if (!is_array($attributes['ifPostType'])) {
+		$attributes['ifPostType'] = array($attributes['ifPostType']);
+	}
+	if (!isset($attributes['ifPostType']) || empty($attributes['ifPostType'])) {
 		$display_by_post_type = true;
 	} else {
-		$display_by_post_type = false;
+		if ( in_array('none', $attributes['ifPostType']) ) {
+			$display_by_post_type = true;
+		} elseif ( in_array($post_type_slug, $attributes['ifPostType']) ) {
+			$display_by_post_type = true;
+		} else {
+			$display_by_post_type = false;
+		}
 	}
 
 	// User Role Condition Check //////////////////////////////////.
@@ -320,12 +357,7 @@ function get_user_roles() {
 
 function vk_dynamic_if_block_set_localize_script() {
 
-	$post_type_select_options = array(
-		array(
-			'label' => __( 'No restriction', 'vk-dynamic-if-block' ),
-			'value' => 'none',
-		),
-	);
+	$post_type_select_options = array();
 
 	// Default Post Type.
 	$post_types_all = array(
