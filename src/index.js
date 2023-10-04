@@ -98,6 +98,26 @@ registerBlockType('vk-blocks/dynamic-if', {
 			['core/paragraph', {}],
 		];
 
+		// // 前バージョンとの互換処理
+		// useEffect(() => {
+		// 	if (
+		// 		ifPageType !== undefined &&
+		// 		ifPageType !== null &&
+		// 		ifPageType !== 'none' &&
+		// 		!Array.isArray(ifPageType)
+		// 	) {
+		// 		setAttributes({ ifPageType: [ifPageType] });
+		// 	}
+		// 	if (
+		// 		ifPostType !== undefined &&
+		// 		ifPostType !== null &&
+		// 		ifPostType !== 'none' &&
+		// 		!Array.isArray(ifPostType)
+		// 	) {
+		// 		setAttributes({ ifPostType: [ifPostType] });
+		// 	}
+		// })
+
 		const userRolesObj = vk_dynamic_if_block_localize_data.userRoles || {};
 		const userRoles = Object.keys(userRolesObj).map(key => ({
 			value: key,

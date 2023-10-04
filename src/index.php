@@ -35,57 +35,37 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 	// Page Type Condition Check //////////////////////////////////.
 
 	$display_by_page_type = false;
+	$current_page_types = [];
 
-	$current_page_type = '';
-
-	if ( is_front_page() ) {
-		$current_page_type = 'is_front_page';
-	} elseif ( is_single() ) {
-		$current_page_type = 'is_single';
-	} elseif ( is_page() ) {
-		$current_page_type = 'is_page';
-	} elseif ( is_singular() ) {
-		$current_page_type = 'is_singular';
-	} elseif ( is_home() && ! is_front_page() ) {
-		$current_page_type = 'is_home';
-	} elseif ( is_post_type_archive() ) {
-		$current_page_type = 'is_post_type_archive';
-	} elseif ( is_category() ) {
-		$current_page_type = 'is_category';
-	} elseif ( is_tag() ) {
-		$current_page_type = 'is_tag';
-	} elseif ( is_tax() ) {
-		$current_page_type = 'is_tax';
-	} elseif ( is_year() ) {
-		$current_page_type = 'is_year';
-	} elseif ( is_month() ) {
-		$current_page_type = 'is_month';
-	} elseif ( is_date() ) {
-		$current_page_type = 'is_date';
-	} elseif ( is_author() ) {
-		$current_page_type = 'is_author';
-	} elseif ( is_archive() ) {
-		$current_page_type = 'is_archive';
-	} elseif ( is_search() ) {
-		$current_page_type = 'is_search';
-	} elseif ( is_404() ) {
-		$current_page_type = 'is_404';
+	$page_types = array(
+        'is_front_page'        => is_front_page(),
+        'is_single'            => is_single(),
+        'is_page'              => is_page(),
+        'is_singular'          => is_singular(),
+        'is_home'              => is_home() && ! is_front_page(),
+        'is_post_type_archive' => is_post_type_archive(),
+        'is_category'          => is_category(),
+        'is_tag'               => is_tag(),
+        'is_tax'               => is_tax(),
+        'is_year'              => is_year(),
+        'is_month'             => is_month(),
+        'is_date'              => is_date(),
+        'is_author'            => is_author(),
+        'is_archive'           => is_archive(),
+        'is_search'            => is_search(),
+        'is_404'               => is_404(),
+    );
+	foreach ($page_types as $type => $condition) {
+		if ($condition) {
+			$current_page_types[] = $type;
+		}
 	}
 
 	if (!is_array($attributes['ifPageType'])) {
 		$attributes['ifPageType'] = array($attributes['ifPageType']);
 	}
 
-	if ( ! isset( $attributes['ifPageType'] ) || empty( $attributes['ifPageType'] ) ) {
-		$display_by_page_type = true;
-		// var_dump($attributes);
-	} else {
-		if ( in_array( $current_page_type, $attributes['ifPageType'] ) ) {
-			$display_by_page_type = true;
-		} else {
-			$display_by_page_type = false;
-		}
-	}
+	$display_by_page_type = empty($attributes['ifPageType']) || in_array('none', $attributes['ifPageType']) || array_intersect($current_page_types, $attributes['ifPageType']);
 
 
 	// Post Type Condition Check //////////////////////////////////.
@@ -101,20 +81,9 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		$post_type_slug = get_post_type();
 	}
 
-	if (!is_array($attributes['ifPostType'])) {
-		$attributes['ifPostType'] = array($attributes['ifPostType']);
-	}
-	if (!isset($attributes['ifPostType']) || empty($attributes['ifPostType'])) {
-		$display_by_post_type = true;
-	} else {
-		if ( in_array('none', $attributes['ifPostType']) ) {
-			$display_by_post_type = true;
-		} elseif ( in_array($post_type_slug, $attributes['ifPostType']) ) {
-			$display_by_post_type = true;
-		} else {
-			$display_by_post_type = false;
-		}
-	}
+	$attributes['ifPostType'] = is_array($attributes['ifPostType']) ? $attributes['ifPostType'] : array($attributes['ifPostType']);
+
+	$display_by_post_type = empty($attributes['ifPostType']) || in_array('none', $attributes['ifPostType']) || in_array($post_type_slug, $attributes['ifPostType']);
 
 	// User Role Condition Check //////////////////////////////////.
 
