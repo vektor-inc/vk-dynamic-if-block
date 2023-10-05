@@ -98,25 +98,30 @@ registerBlockType('vk-blocks/dynamic-if', {
 			['core/paragraph', {}],
 		];
 
-		// // 前バージョンとの互換処理
-		// useEffect(() => {
-		// 	if (
-		// 		ifPageType !== undefined &&
-		// 		ifPageType !== null &&
-		// 		ifPageType !== 'none' &&
-		// 		!Array.isArray(ifPageType)
-		// 	) {
-		// 		setAttributes({ ifPageType: [ifPageType] });
-		// 	}
-		// 	if (
-		// 		ifPostType !== undefined &&
-		// 		ifPostType !== null &&
-		// 		ifPostType !== 'none' &&
-		// 		!Array.isArray(ifPostType)
-		// 	) {
-		// 		setAttributes({ ifPostType: [ifPostType] });
-		// 	}
-		// })
+		// 前バージョンとの互換処理
+		useEffect(() => {
+			// ifPageTypeの互換性処理
+			if (
+				ifPageType !== undefined &&
+				ifPageType !== null &&
+				ifPageType !== 'none' &&
+				typeof ifPageType === 'string'
+			) {
+				console.log('action');
+				setAttributes({ ifPageType: [ifPageType] });
+			}
+
+			// ifPostTypeの互換性処理
+			if (
+				ifPostType !== undefined &&
+				ifPostType !== null &&
+				ifPostType !== 'none' &&
+				typeof ifPostType === 'string'
+			) {
+				console.log('action');
+				setAttributes({ ifPostType: [ifPostType] });
+			}
+		}, []);
 
 		const userRolesObj = vk_dynamic_if_block_localize_data.userRoles || {};
 		const userRoles = Object.keys(userRolesObj).map(key => ({
