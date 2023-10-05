@@ -107,7 +107,6 @@ registerBlockType('vk-blocks/dynamic-if', {
 				ifPageType !== 'none' &&
 				typeof ifPageType === 'string'
 			) {
-				console.log('action');
 				setAttributes({ ifPageType: [ifPageType] });
 			}
 
@@ -118,7 +117,6 @@ registerBlockType('vk-blocks/dynamic-if', {
 				ifPostType !== 'none' &&
 				typeof ifPostType === 'string'
 			) {
-				console.log('action');
 				setAttributes({ ifPostType: [ifPostType] });
 			}
 		}, []);
