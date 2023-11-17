@@ -6,12 +6,12 @@
 	"textdomain": "vk-dynamic-if-block",
 	"attributes": {
 		"ifPageType": {
-			"type": "string",
-			"default": "none"
+			"type": "array",
+			"default": []
 		},
 		"ifPostType": {
-			"type": "string",
-			"default": "none"
+			"type": "array",
+			"default": []
 		},
 		"userRole": {
 			"type": "array",

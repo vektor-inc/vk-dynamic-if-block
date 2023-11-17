@@ -16,8 +16,8 @@ use VektorInc\VK_Helpers\VkHelpers;
  */
 function vk_dynamic_if_block_render( $attributes, $content ) {
 	$attributes_default = array(
-		'ifPageType'                => 'none',
-		'ifPostType'                => 'none',
+		'ifPageType'                => array(),
+		'ifPostType'                => array(),
 		'userRole'                  => array(),
 		'customFieldName'           => '',
 		'customFieldRule'           => 'valueExists',
@@ -35,28 +35,38 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 	// Page Type Condition Check //////////////////////////////////.
 
 	$display_by_page_type = false;
+	$current_page_types = [];
 
-	if (
-		is_front_page() && 'is_front_page' === $attributes['ifPageType'] ||
-		is_single() && 'is_single' === $attributes['ifPageType'] ||
-		is_page() && 'is_page' === $attributes['ifPageType'] ||
-		is_singular() && 'is_singular' === $attributes['ifPageType'] ||
-		is_home() && ! is_front_page() && 'is_home' === $attributes['ifPageType'] ||
-		is_post_type_archive() && 'is_post_type_archive' === $attributes['ifPageType'] ||
-		is_category() && 'is_category' === $attributes['ifPageType'] ||
-		is_tag() && 'is_tag' === $attributes['ifPageType'] ||
-		is_tax() && 'is_tax' === $attributes['ifPageType'] ||
-		is_year() && 'is_year' === $attributes['ifPageType'] ||
-		is_month() && 'is_month' === $attributes['ifPageType'] ||
-		is_date() && 'is_date' === $attributes['ifPageType'] ||
-		is_author() && 'is_author' === $attributes['ifPageType'] ||
-		is_search() && 'is_search' === $attributes['ifPageType'] ||
-		is_404() && 'is_404' === $attributes['ifPageType'] ||
-		is_archive() && 'is_archive' === $attributes['ifPageType'] ||
-		'none' === $attributes['ifPageType']
-	) {
-		$display_by_page_type = true;
+	$page_types = array(
+        'is_front_page'        => is_front_page(),
+        'is_single'            => is_single(),
+        'is_page'              => is_page(),
+        'is_singular'          => is_singular(),
+        'is_home'              => is_home() && ! is_front_page(),
+        'is_post_type_archive' => is_post_type_archive(),
+        'is_category'          => is_category(),
+        'is_tag'               => is_tag(),
+        'is_tax'               => is_tax(),
+        'is_year'              => is_year(),
+        'is_month'             => is_month(),
+        'is_date'              => is_date(),
+        'is_author'            => is_author(),
+        'is_archive'           => is_archive(),
+        'is_search'            => is_search(),
+        'is_404'               => is_404(),
+    );
+	foreach ($page_types as $type => $condition) {
+		if ($condition) {
+			$current_page_types[] = $type;
+		}
 	}
+
+	if (!is_array($attributes['ifPageType'])) {
+		$attributes['ifPageType'] = array($attributes['ifPageType']);
+	}
+
+	$display_by_page_type = empty($attributes['ifPageType']) || in_array('none', $attributes['ifPageType']) || array_intersect($current_page_types, $attributes['ifPageType']);
+
 
 	// Post Type Condition Check //////////////////////////////////.
 
@@ -71,13 +81,9 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		$post_type_slug = get_post_type();
 	}
 
-	if ( 'none' === $attributes['ifPostType'] ) {
-		$display_by_post_type = true;
-	} elseif ( $post_type_slug === $attributes['ifPostType'] ) {
-		$display_by_post_type = true;
-	} else {
-		$display_by_post_type = false;
-	}
+	$attributes['ifPostType'] = is_array($attributes['ifPostType']) ? $attributes['ifPostType'] : array($attributes['ifPostType']);
+
+	$display_by_post_type = empty($attributes['ifPostType']) || in_array('none', $attributes['ifPostType']) || in_array($post_type_slug, $attributes['ifPostType']);
 
 	// User Role Condition Check //////////////////////////////////.
 
@@ -320,12 +326,7 @@ function get_user_roles() {
 
 function vk_dynamic_if_block_set_localize_script() {
 
-	$post_type_select_options = array(
-		array(
-			'label' => __( 'No restriction', 'vk-dynamic-if-block' ),
-			'value' => 'none',
-		),
-	);
+	$post_type_select_options = array();
 
 	// Default Post Type.
 	$post_types_all = array(
