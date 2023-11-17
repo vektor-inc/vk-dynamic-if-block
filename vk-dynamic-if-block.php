@@ -57,3 +57,24 @@ if ( ! function_exists( 'vk_dynamic_if_block_set_script_translations' ) ) {
 	}
 	add_action( 'enqueue_block_editor_assets', 'vk_dynamic_if_block_set_script_translations' );
 }
+
+if ( ! function_exists( 'vk_blocks_set_wp_version' ) ) {
+	/**
+	 * VK Blocks Set WP Version
+	 */
+	function vk_blocks_set_wp_version() {
+		global $wp_version;
+
+		// RC版の場合ハイフンを削除.
+		if ( strpos( $wp_version, '-' ) !== false ) {
+			$_wp_version = strstr( $wp_version, '-', true );
+		} else {
+			$_wp_version = $wp_version;
+		}
+
+		echo '<script>',
+			'var wpVersion = "' . esc_attr( $_wp_version ) . '";',
+		'</script>';
+	}
+	add_action( 'admin_head', 'vk_blocks_set_wp_version');
+}

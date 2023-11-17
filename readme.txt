@@ -35,6 +35,8 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+[ Specification Change ]Fix WordPress 6.3 transforms settings.
+
 = 0.6.3 =
 [ Fix ] Fixed a bug related to the period setting when referencing a custom field.
 
