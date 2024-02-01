@@ -1017,7 +1017,6 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				$actual = vk_dynamic_if_block_render( $test['attribute'], $test['content'] );
 			}
 
-
 			print 'Page : ' . esc_html( $test['name'] ) . PHP_EOL;
 			print 'go_to : ' . esc_html( $test['go_to'] ) . PHP_EOL;
 			if ( isset( $test['test_meta'] ) && isset( $test['test_meta']['post_id'] ) ) {
