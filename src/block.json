@@ -48,6 +48,10 @@
 		"periodReferCustomField": {
 			"type": "string",
 			"default": ""
+		},
+		"showOnlyLoginUser": {
+			"type": "boolean",
+			"default": false
 		}
 	},
 	"supports": {
