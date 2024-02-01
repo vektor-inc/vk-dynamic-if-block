@@ -35,6 +35,7 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+[ Add Function ] Added condition to display only to login user.
 [ Specification Change ]Fix WordPress 6.3 transforms settings.
 
 = 0.6.3 =
