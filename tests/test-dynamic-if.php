@@ -656,6 +656,28 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'expected'   => '',
 			),
 			/******************************************
+			* Login User Only */
+			array(
+				'name'      => 'Only login user can view',
+				'go_to'     => get_permalink( $test_posts['parent_page_id'] ),
+				'attribute' => array(
+					'showOnlyLoginUser' => true,
+				),
+				'is_login'  => true,
+				'content'   => 'Only login user can view',
+				'expected'  => 'Only login user can view',
+			),
+			array(
+				'name'      => 'Only login user can view',
+				'go_to'     => get_permalink( $test_posts['parent_page_id'] ),
+				'attribute' => array(
+					'showOnlyLoginUser' => true,
+				),
+				'is_login'  => false,
+				'content'   => 'Only login user can view',
+				'expected'  => '',
+			),
+			/******************************************
 			 * Display Period */
 			// not specified
 			array(
@@ -987,9 +1009,14 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 			if ( isset( $test['user_roles'] ) ) {
 				$test['attribute']['test_user_roles'] = $test['user_roles'];
 				$actual = vk_dynamic_if_block_render( $test['attribute'], $test['content'] );
+			} elseif ( isset( $test['is_login'] )) {
+				wp_set_current_user($test['is_login'] ? 1 : 0);
+				$actual = vk_dynamic_if_block_render( $test['attribute'], $test['content'] );
+				wp_set_current_user(0);
 			} else {
 				$actual = vk_dynamic_if_block_render( $test['attribute'], $test['content'] );
 			}
+
 
 			print 'Page : ' . esc_html( $test['name'] ) . PHP_EOL;
 			print 'go_to : ' . esc_html( $test['go_to'] ) . PHP_EOL;
