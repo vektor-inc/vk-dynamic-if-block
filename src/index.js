@@ -303,7 +303,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						</BaseControl>
 						<ToggleControl
 							label={ __(
-								'Displayed only for logged-in users.,
+								'Displayed only for logged-in users.',
 								'vk-dynamic-if-block'
 							) }
 							checked={ showOnlyLoginUser }
