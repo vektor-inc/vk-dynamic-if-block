@@ -37,7 +37,7 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 = 0.7.0 =
 [ Add Function ] Added condition to display only to login user.
-[ Specification Change ]Fix WordPress 6.3 transforms settings.
+[ Specification Change ] Fix WordPress 6.3 transforms settings.
 
 = 0.6.3 =
 [ Fix ] Fixed a bug related to the period setting when referencing a custom field.
