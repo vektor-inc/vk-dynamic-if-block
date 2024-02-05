@@ -5,8 +5,8 @@
  * Description: A dynamic block displays its Inner Blocks based on specified conditions, such as whether the current page is the front page or a single post, the post type, or the value of a Custom Field.
  * Author: Vektor,Inc.
  * Author URI: https://vektor-inc.co.jp/en/
- * Version: 0.6.3
- * Stable tag: 0.6.3
+ * Version: 0.7.0
+ * Stable tag: 0.7.0
  * License: GPL-2.0-or-later
  * Text Domain: vk-dynamic-if-block
  *
@@ -76,5 +76,5 @@ if ( ! function_exists( 'vk_blocks_set_wp_version' ) ) {
 			'var wpVersion = "' . esc_attr( $_wp_version ) . '";',
 		'</script>';
 	}
-	add_action( 'admin_head', 'vk_blocks_set_wp_version');
+	add_action( 'admin_head', 'vk_blocks_set_wp_version' );
 }
