@@ -27,6 +27,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		'periodSpecificationMethod' => 'direct',
 		'periodDisplayValue'        => '',
 		'periodReferCustomField'    => '',
+		'showOnlyLoginUser'             => '',
 	);
 	$attributes         = array_merge( $attributes_default, $attributes );
 
@@ -280,9 +281,18 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		}
 	}
 
+	// Login user Check //////////////////////////////////.
+
+	$display_by_login_user = true; // デフォルトで表示を許可
+
+	// ユーザーがログインしているか、またはログインユーザーのみの表示が不要な場合に表示を許可
+	if ( $attributes['showOnlyLoginUser'] && !is_user_logged_in() ) {
+		$display_by_login_user = false;
+	}
+
 	// Merge Condition Check //////////////////////////////////.
 
-	if ( $display_by_post_type && $display_by_page_type && $display_by_custom_field && $display_by_user_role && $display_by_period ) {
+	if ( $display_by_post_type && $display_by_page_type && $display_by_custom_field && $display_by_user_role && $display_by_period && $display_by_login_user ) {
 		$display = true;
 	}
 
