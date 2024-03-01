@@ -18,6 +18,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 	$attributes_default = array(
 		'ifPageType'                => 'none',
 		'ifPostType'                => 'none',
+		'ifLanguage'                => 'none',
 		'userRole'                  => array(),
 		'customFieldName'           => '',
 		'customFieldRule'           => 'valueExists',
@@ -78,6 +79,15 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		$display_by_post_type = true;
 	} else {
 		$display_by_post_type = false;
+	}
+
+	// Language Condition Check //////////////////////////////////.
+	/**
+	 * @since 0.8.0
+	 */
+	$display_by_language = false;
+	if (  empty( $attributes['ifLanguage'] ) || 'none' === $attributes['ifLanguage'] || $attributes['ifLanguage'] === get_locale()  ){
+		$display_by_language = true;
 	}
 
 	// User Role Condition Check //////////////////////////////////.
@@ -292,7 +302,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 
 	// Merge Condition Check //////////////////////////////////.
 
-	if ( $display_by_post_type && $display_by_page_type && $display_by_custom_field && $display_by_user_role && $display_by_period && $display_by_login_user ) {
+	if ( $display_by_post_type && $display_by_language && $display_by_page_type && $display_by_custom_field && $display_by_user_role && $display_by_period && $display_by_login_user ) {
 		$display = true;
 	}
 
@@ -364,12 +374,36 @@ function vk_dynamic_if_block_set_localize_script() {
 		);
 	}
 
+	// Languages //////////////////////////////////.
+	$language_select_options   = array();
+	// WordPress.orgのAPIから利用可能な言語リストを取得
+	$response = wp_remote_get( 'https://api.wordpress.org/translations/core/1.0/' );
+	if ( ! is_wp_error( $response ) ) {
+		$body      = wp_remote_retrieve_body( $response );
+		$languages = json_decode( $body, true )['translations'];
+	
+		// デフォルトを追加
+		$language_select_options[] = array(
+			'label' => 'Unspecified',
+			'value' => '',
+		);
+	
+		// 各言語に対してオプション配列を追加
+		foreach ( $languages as $language ) {
+			$language_select_options[] = array(
+				'label' => $language['native_name'],
+				'value' => $language['language'],
+			);
+		}
+	}
+
 	// The wp_localize_script() function is used to add custom JavaScript data to a script handle.
 	wp_localize_script(
 		'vk-dynamic-if-block', // Script handle.
 		'vk_dynamic_if_block_localize_data', // JS object name.
 		array(
 			'postTypeSelectOptions' => $post_type_select_options,
+			'languageSelectOptions' => $language_select_options,
 			'userRoles'             => get_user_roles(),
 		)
 	);

@@ -4,7 +4,7 @@ Tags: dynamic block, if, Conditional branch, Conditional Display, Custom Field, 
 Requires at least: 6.0
 Tested up to: 6.2
 Requires PHP: 7.4
-Stable tag: 0.7.0
+Stable tag: 0.8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,6 +34,9 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 3. Dynamic If block in the site editor.
 
 == Changelog ==
+
+= 0.8.0 =
+[ Add Function ] Add a conditional branching function based on language.
 
 = 0.7.0 =
 [ Add Function ] Added condition to display only to login user.
