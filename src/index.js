@@ -32,6 +32,10 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			type: 'string',
 			default: 'none',
 		},
+		ifLanguage: {
+			type: 'string',
+			default: 'none',
+		},
 		userRole: {
 			type: 'array',
 			default: [],
@@ -81,6 +85,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 		const {
 			ifPageType,
 			ifPostType,
+			ifLanguage,
 			userRole,
 			customFieldName,
 			customFieldRule,
@@ -206,6 +211,10 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			labels.push( ifPageType );
 		}
 
+		if ( ifLanguage !== 'none' ) {
+			labels.push( ifLanguage );
+		}
+
 		if ( ifPostType !== 'none' ) {
 			labels.push( ifPostType );
 		}
@@ -260,6 +269,16 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							}
 							onChange={ ( value ) =>
 								setAttributes( { ifPostType: value } )
+							}
+						/>
+						<SelectControl
+							label={ __( 'Languages', 'vk-dynamic-if-block' ) }
+							value={ ifLanguage }
+							options={
+								vk_dynamic_if_block_localize_data.languageSelectOptions
+							}
+							onChange={ ( value ) =>
+								setAttributes( { ifLanguage: value } )
 							}
 						/>
 						<BaseControl

@@ -985,7 +985,45 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				),
 				'content'   => 'Display Period [ deadline / referCustomField / not date]( true )',
 				'expected'  => 'Display Period [ deadline / referCustomField / not date]( true )',
-			)
+			),
+			/******************************************
+			* Language */
+			array(
+				'name'      => 'Visible all languages (null)',
+				'go_to'     => home_url(),
+				'attribute' => array(
+					'ifLanguage' => null,
+				),
+				'content'   => 'Visible all languages',
+				'expected'  => 'Visible all languages',
+			),
+			array(
+				'name'      => 'Visible all languages ()',
+				'go_to'     => home_url(),
+				'attribute' => array(
+					'ifLanguage' => '',
+				),
+				'content'   => 'Visible all languages',
+				'expected'  => 'Visible all languages',
+			),
+			array(
+				'name'      => 'Visible on en_US',
+				'go_to'     => home_url(),
+				'attribute' => array(
+					'ifLanguage' => 'en_US',
+				),
+				'content'   => 'en_US',
+				'expected'  => 'en_US',
+			),
+			array(
+				'name'      => 'Unvisible on en_US',
+				'go_to'     => home_url(),
+				'attribute' => array(
+					'ifLanguage' => 'ja',
+				),
+				'content'   => 'Unvisible',
+				'expected'  => '',
+			),
 		);
 
 		foreach ( $tests as $test ) {
@@ -1018,6 +1056,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 			}
 
 			print 'Page : ' . esc_html( $test['name'] ) . PHP_EOL;
+			print 'locale : ' . esc_html( get_locale() ) . PHP_EOL;
 			print 'go_to : ' . esc_html( $test['go_to'] ) . PHP_EOL;
 			if ( isset( $test['test_meta'] ) && isset( $test['test_meta']['post_id'] ) ) {
 				print 'meta : ' . esc_html( get_post_meta( $test['test_meta']['post_id'], $test['test_meta']['meta_key'], true ) ) . PHP_EOL;

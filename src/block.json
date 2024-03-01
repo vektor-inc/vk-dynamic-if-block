@@ -13,6 +13,10 @@
 			"type": "string",
 			"default": "none"
 		},
+		"ifLanguage": {
+			"type": "string",
+			"default": "none"
+		},
 		"userRole": {
 			"type": "array",
 			"default": []
