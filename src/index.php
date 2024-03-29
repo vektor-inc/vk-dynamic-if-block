@@ -375,19 +375,22 @@ function vk_dynamic_if_block_set_localize_script() {
 	}
 
 	// Languages //////////////////////////////////.
-	$language_select_options   = array();
+	$language_select_options   = array(
+		array(
+			'label' => __( 'Unspecified', 'vk-dynamic-if-block' ),
+			'value' => '',
+		),
+		array(
+			'label' => 'English (United States)',
+			'value' => 'en_US',
+		)
+	);
 	// WordPress.orgのAPIから利用可能な言語リストを取得
 	$response = wp_remote_get( 'https://api.wordpress.org/translations/core/1.0/' );
 	if ( ! is_wp_error( $response ) ) {
 		$body      = wp_remote_retrieve_body( $response );
 		$languages = json_decode( $body, true )['translations'];
-	
-		// デフォルトを追加
-		$language_select_options[] = array(
-			'label' => 'Unspecified',
-			'value' => '',
-		);
-	
+
 		// 各言語に対してオプション配列を追加
 		foreach ( $languages as $language ) {
 			$language_select_options[] = array(
