@@ -1,8 +1,8 @@
 === VK Dynamic If Block ===
-Contributors: vektor-inc,kurudrive,doshimaf
+Contributors: vektor-inc,kurudrive,doshimaf,toro_unit
 Tags: dynamic block, if, Conditional branch, Conditional Display, Custom Field, Full Site Editing
 Requires at least: 6.0
-Tested up to: 6.2
+Tested up to: 6.5
 Requires PHP: 7.4
 Stable tag: 0.8.0
 License: GPLv2 or later
@@ -34,6 +34,9 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 3. Dynamic If block in the site editor.
 
 == Changelog ==
+
+= 0.8.1 =
+[ Bug Fix ] Fixed an issue where en_US could not be specified in the language selection options.
 
 = 0.8.0 =
 [ Add Function ] Add a conditional branching function based on language.
