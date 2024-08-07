@@ -26,11 +26,24 @@ if ( file_exists( $autoload_path ) ) {
 
 function vk_dynamic_if_block_enqueue_scripts() {
 
+	$script_dependencies = include plugin_dir_path( __FILE__ ) . '/build/index.asset.php';
+
+	// WordPress 6.5 以下の対策
+	if ( ! wp_script_is( 'react-jsx-runtime', 'registered' ) ) {
+		wp_enqueue_script(
+			'react-jsx-runtime',
+			plugins_url( 'build/react-jsx-runtime.js', __FILE__ ),
+			array( 'react' ),
+			'18.3.1',
+			true
+		);
+	}
+
 	$handle = 'vk-dynamic-if-block';
 	wp_enqueue_script(
 		$handle,
 		plugins_url( 'build/index.js', __FILE__ ),
-		array( 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-i18n', 'wp-components' ),
+		$script_dependencies['dependencies'],
 		filemtime( plugin_dir_path( __FILE__ ) . 'build/index.js' )
 	);
 
