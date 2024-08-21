@@ -15,7 +15,7 @@ jobs:
         strategy:
             matrix:
                 php-versions: ['8.1']
-                wp-versions: ['6.2']
+                wp-versions: ['6.6']
         services:
             mysql:
                 image: mysql:5.7
@@ -28,13 +28,10 @@ jobs:
                     MYSQL_PASSWORD: wordpress
         steps:
             - uses: actions/checkout@v3
-            - name: Read .node-version
-              run: echo "{NODEVERSION}={$(cat .node-version)}" >> $GITHUB_OUTPUT
-              id: nodenv
             - name: Setup Node.js (.node-version)
               uses: actions/setup-node@v3
               with:
-                  node-version: '${{ steps.nodenv.outputs.NODEVERSION }}'
+                  node-version: 20.x
             - name: Cache multiple paths
               uses: actions/cache@v3
               with:
@@ -69,13 +66,10 @@ jobs:
       needs: [php_unit]
       steps:
       - uses: actions/checkout@main
-      - name: Read .node-version
-        run: echo "##[set-output name=NODEVERSION;]$(cat .node-version)"
-        id: nodenv
       - name: Setup Node.js (.node-version)
         uses: actions/setup-node@v3
         with:
-            node-version: '${{ steps.nodenv.outputs.NODEVERSION }}'
+            node-version: 20.x
       - name: Install NPM Scripts
         run: npm install
       - name: Install Composer Packages
