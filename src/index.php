@@ -20,6 +20,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		'ifPostType'                => 'none',
 		'ifLanguage'                => 'none',
 		'userRole'                  => array(),
+		'postAuthor'                => 0,
 		'customFieldName'           => '',
 		'customFieldRule'           => 'valueExists',
 		'customFieldValue'          => '',
@@ -51,7 +52,8 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		is_year() && 'is_year' === $attributes['ifPageType'] ||
 		is_month() && 'is_month' === $attributes['ifPageType'] ||
 		is_date() && 'is_date' === $attributes['ifPageType'] ||
-		is_author() && 'is_author' === $attributes['ifPageType'] ||
+		empty( $attributes['postAuthor'] ) && 'is_author' === $attributes['ifPageType'] && is_author() ||
+		! empty( $attributes['postAuthor'] ) && 'is_author' === $attributes['ifPageType'] && is_author( $attributes['postAuthor'] ) ||
 		is_search() && 'is_search' === $attributes['ifPageType'] ||
 		is_404() && 'is_404' === $attributes['ifPageType'] ||
 		is_archive() && 'is_archive' === $attributes['ifPageType'] ||
@@ -400,6 +402,21 @@ function vk_dynamic_if_block_set_localize_script() {
 		}
 	}
 
+	//ユーザー（ ID, Name ）
+	$users = get_users();
+	$user_select_options = array(
+		array(
+			'label' => __( 'Unspecified', 'vk-dynamic-if-block' ),
+			'value' => 0,
+		),
+	);
+	foreach ( $users as $user ) {
+		$user_select_options[] = array(
+			'label' => $user->display_name,
+			'value' => $user->ID,
+		);
+	}
+
 	// The wp_localize_script() function is used to add custom JavaScript data to a script handle.
 	wp_localize_script(
 		'vk-dynamic-if-block', // Script handle.
@@ -408,6 +425,7 @@ function vk_dynamic_if_block_set_localize_script() {
 			'postTypeSelectOptions' => $post_type_select_options,
 			'languageSelectOptions' => $language_select_options,
 			'userRoles'             => get_user_roles(),
+			'userSelectOptions'     => $user_select_options,
 		)
 	);
 }

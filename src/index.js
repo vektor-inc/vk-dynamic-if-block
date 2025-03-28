@@ -40,6 +40,10 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			type: 'array',
 			default: [],
 		},
+		postAuthor: {
+			type: 'number',
+			default: 0,
+		},
 		customFieldName: {
 			type: 'string',
 			default: '',
@@ -87,6 +91,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			ifPostType,
 			ifLanguage,
 			userRole,
+			postAuthor,
 			customFieldName,
 			customFieldRule,
 			customFieldValue,
@@ -205,6 +210,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			label: __( userRolesObj[ key ], 'vk-dynamic-if-block' ),
 		} ) );
 
+		const userSelectOptions = vk_dynamic_if_block_localize_data.userSelectOptions || []; // eslint-disable-line no-undef
+
 		let labels = [];
 
 		if ( ifPageType !== 'none' ) {
@@ -261,6 +268,21 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 								setAttributes( { ifPageType: value } )
 							}
 						/>
+						{
+							ifPageType === 'is_author' && (
+								<SelectControl
+									label={ __(
+										'Author',
+										'vk-dynamic-if-block'
+									) }
+									value={ postAuthor }
+									options={ userSelectOptions }
+									onChange={ ( value ) =>
+										setAttributes( { postAuthor: Number(value) } )
+									}
+								/>
+							)
+						}
 						<SelectControl
 							label={ __( 'Post Type', 'vk-dynamic-if-block' ) }
 							value={ ifPostType }
