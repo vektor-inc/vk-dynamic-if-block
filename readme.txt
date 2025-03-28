@@ -34,7 +34,7 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 3. Dynamic If block in the site editor.
 
 == Changelog ==
-
+[ Feature Addition ][ Author Archive ] Allow specifying the author.
 [ Specification change ] Fixed the zoom-out toggle not always displaying in the editor toolbar (updated blocks.json API version from 2 to 3).
 
 = 0.8.1 =
