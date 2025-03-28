@@ -27,7 +27,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 			'user_pass'    => 'password',
 			'display_name' => 'Vektor, Inc.',
 		);
-		$test_users['test_user'] = wp_insert_user( $userdata, $userdata['user_pass'] );
+		$test_users['test_user_01'] = wp_insert_user( $userdata, $userdata['user_pass'] );
+
+		// テスト用ユーザーを発行.
+		$userdata                = array(
+			'user_login'   => 'kurudrive',
+			'user_url'     => 'https://vektor-inc.co.jp',
+			'user_pass'    => 'password',
+			'display_name' => 'Kuru Drive',
+		);
+		$test_users['test_user_02'] = wp_insert_user( $userdata, $userdata['user_pass'] );
 
 		return $test_users;
 	}
@@ -106,11 +115,24 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 		/******************************************
 		 * テスト用投稿の登録 */
 
-		// 通常の投稿 Test Post を投稿.
+		// 通常の投稿 Test Post を投稿. ( ユーザー: test_user_01 )
 		$post                  = array(
-			'post_title'    => 'Test Post',
+			'post_title'    => 'Test Post 01',
 			'post_status'   => 'publish',
-			'post_author'   => $test_users['test_user'],
+			'post_author'   => $test_users['test_user_01'],
+			'post_content'  => 'content',
+			'post_category' => array( $test_posts['parent_category_id'] ),
+		);
+		$test_posts['post_id'] = wp_insert_post( $post );
+		// 投稿にカテゴリー指定.
+		wp_set_object_terms( $test_posts['post_id'], 'child_category', 'category' );
+		wp_set_object_terms( $test_posts['post_id'], 'test_tag_name', 'post_tag' );
+
+		// 通常の投稿 Test Post を投稿. ( ユーザー: test_user_02 )
+		$post                  = array(
+			'post_title'    => 'Test Post 02',
+			'post_status'   => 'publish',
+			'post_author'   => $test_users['test_user_02'],
 			'post_content'  => 'content',
 			'post_category' => array( $test_posts['parent_category_id'] ),
 		);
@@ -124,7 +146,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 			'post_title'   => 'Parent Page',
 			'post_type'    => 'page',
 			'post_status'  => 'publish',
-			'post_author'  => $test_users['test_user'],
+			'post_author'  => $test_users['test_user_01'],
 			'post_content' => 'content',
 		);
 		$test_posts['parent_page_id'] = wp_insert_post( $post );
@@ -134,7 +156,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 			'post_title'   => 'Child Page',
 			'post_type'    => 'page',
 			'post_status'  => 'publish',
-			'post_author'  => $test_users['test_user'],
+			'post_author'  => $test_users['test_user_01'],
 			'post_content' => 'content',
 			'post_parent'  => $test_posts['parent_page_id'],
 
@@ -146,7 +168,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 			'post_title'   => 'Post Top',
 			'post_type'    => 'page',
 			'post_status'  => 'publish',
-			'post_author'  => $test_users['test_user'],
+			'post_author'  => $test_users['test_user_01'],
 			'post_content' => 'content',
 		);
 		$test_posts['home_page_id'] = wp_insert_post( $post );
@@ -156,7 +178,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 			'post_title'   => 'Front Page',
 			'post_type'    => 'page',
 			'post_status'  => 'publish',
-			'post_author'  => $test_users['test_user'],
+			'post_author'  => $test_users['test_user_01'],
 			'post_content' => 'content',
 		);
 		$test_posts['front_page_id'] = wp_insert_post( $post );
@@ -166,7 +188,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 			'post_title'   => 'Event Test Post',
 			'post_type'    => 'event',
 			'post_status'  => 'publish',
-			'post_author'  => $test_users['test_user'],
+			'post_author'  => $test_users['test_user_01'],
 			'post_content' => 'content',
 			'post_date'    => date( 'Y-m-d', strtotime( '-5 days', strtotime( date( 'Y-m-d' ) ) ) ),
 		);
@@ -445,6 +467,26 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				),
 				'content'   => 'Author Archive page',
 				'expected'  => 'Author Archive page',
+			),
+			array(
+				'name'      => 'Author archive page',
+				'go_to'     => get_author_posts_url( 1 ),
+				'attribute' => array(
+					'ifPageType' => 'is_author',
+					'postAuthor' => 1,
+				),
+				'content'   => 'Author Archive page',
+				'expected'  => 'Author Archive page',
+			),
+			array(
+				'name'      => 'Author archive page',
+				'go_to'     => get_author_posts_url( 1 ),
+				'attribute' => array(
+					'ifPageType' => 'is_author',
+					'postAuthor' => 2,
+				),
+				'content'   => 'Author Archive page',
+				'expected'  => '',
 			),
 			// single.
 			array(
