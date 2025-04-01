@@ -63,7 +63,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 
 	// Author Condition Check
 	$display_by_author = false;
-	if ( empty( $attributes['postAuthor'] ) && 'is_author' === $attributes['ifPageType'] && is_author() ) {
+	if ( empty( $attributes['postAuthor'] ) ) {
 		$display_by_author = true;
 	} elseif ( ! empty( $attributes['postAuthor'] ) && 'is_author' === $attributes['ifPageType'] && is_author( $attributes['postAuthor'] ) ) {
 		$display_by_author = true;
