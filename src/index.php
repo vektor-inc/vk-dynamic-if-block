@@ -52,14 +52,23 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		is_year() && 'is_year' === $attributes['ifPageType'] ||
 		is_month() && 'is_month' === $attributes['ifPageType'] ||
 		is_date() && 'is_date' === $attributes['ifPageType'] ||
-		empty( $attributes['postAuthor'] ) && 'is_author' === $attributes['ifPageType'] && is_author() ||
-		! empty( $attributes['postAuthor'] ) && 'is_author' === $attributes['ifPageType'] && is_author( $attributes['postAuthor'] ) ||
+		is_author() && 'is_author' === $attributes['ifPageType'] ||
 		is_search() && 'is_search' === $attributes['ifPageType'] ||
 		is_404() && 'is_404' === $attributes['ifPageType'] ||
 		is_archive() && 'is_archive' === $attributes['ifPageType'] ||
 		'none' === $attributes['ifPageType']
 	) {
 		$display_by_page_type = true;
+	}
+
+	// Author Condition Check
+	$display_by_author = false;
+	if ( empty( $attributes['postAuthor'] ) && 'is_author' === $attributes['ifPageType'] && is_author() ) {
+		$display_by_author = true;
+	} elseif ( ! empty( $attributes['postAuthor'] ) && 'is_author' === $attributes['ifPageType'] && is_author( $attributes['postAuthor'] ) ) {
+		$display_by_author = true;
+	} elseif ( ! empty( $attributes['postAuthor'] ) && 'is_author' !== $attributes['ifPageType'] && is_singular() && get_the_author_meta( 'ID' ) === $attributes['postAuthor'] ) {
+		$display_by_author = true;
 	}
 
 	// Post Type Condition Check //////////////////////////////////.
@@ -304,7 +313,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 
 	// Merge Condition Check //////////////////////////////////.
 
-	if ( $display_by_post_type && $display_by_language && $display_by_page_type && $display_by_custom_field && $display_by_user_role && $display_by_period && $display_by_login_user ) {
+	if ( $display_by_post_type && $display_by_author && $display_by_language && $display_by_page_type && $display_by_custom_field && $display_by_user_role && $display_by_period && $display_by_login_user ) {
 		$display = true;
 	}
 
