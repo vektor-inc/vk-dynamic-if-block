@@ -21,6 +21,10 @@
 			"type": "array",
 			"default": []
 		},
+		"postAuthor": {
+			"type": "number",
+			"default": 0
+		},
 		"customFieldName": {
 			"type": "string",
 			"default": ""
