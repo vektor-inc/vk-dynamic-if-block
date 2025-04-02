@@ -12,6 +12,30 @@
 class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 
 	/**
+     * テストで利用するユーザーの配列
+     *
+     * @var array
+     */
+    protected static $test_users = [];
+
+    /**
+     * テストで利用する投稿やタクソノミーなどの配列
+     *
+     * @var array
+     */
+    protected static $test_posts = [];
+
+    /**
+     * クラス全体のセットアップ
+     *
+     * @param WP_UnitTest_Factory $factory
+     */
+    public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+        self::$test_users = self::create_test_users();
+        self::$test_posts = self::create_test_posts();
+    }
+
+	/**
 	 * PHP Unit テストにあたって、ユーザーを登録します。
 	 *
 	 * @return array $test_users : 作成したユーザーidを配列で返します。
@@ -27,7 +51,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 			'user_pass'    => 'password',
 			'display_name' => 'Vektor, Inc.',
 		);
-		$test_users['test_user_01'] = wp_insert_user( $userdata, $userdata['user_pass'] );
+		$user = get_user_by('login', $userdata['user_login']);
+		if ( $user ) {
+			$test_users['test_user_01'] = $user->ID;
+		} else {
+			$test_users['test_user_01'] = wp_insert_user( $userdata, $userdata['user_pass'] );
+		}
 
 		// テスト用ユーザーを発行.
 		$userdata                = array(
@@ -36,7 +65,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 			'user_pass'    => 'password',
 			'display_name' => 'Kuru Drive',
 		);
-		$test_users['test_user_02'] = wp_insert_user( $userdata, $userdata['user_pass'] );
+		$user = get_user_by('login', $userdata['user_login']);
+		if ( $user ) {
+			$test_users['test_user_02'] = $user->ID;
+		} else {
+			$test_users['test_user_02'] = wp_insert_user( $userdata, $userdata['user_pass'] );
+		}
 
 		return $test_users;
 	}
@@ -49,7 +83,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 	public static function create_test_posts() {
 
 		$test_posts = array();
-		$test_users = self::create_test_users();
+		$test_users = self::$test_users;
 
 		/******************************************
 		 * カテゴリーの登録 */
@@ -212,7 +246,8 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 		print PHP_EOL;
 
 		// Create test posts.
-		$test_posts = self::create_test_posts();
+		$test_posts = self::$test_posts;
+		$test_users = self::$test_users;
 
 		$tests = array(
 			/******************************************
@@ -416,6 +451,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'content'   => 'Single',
 				'expected'  => 'Single',
 			),
+			array(
+				'name'      => 'Single',
+				'go_to'     => get_permalink( $test_posts['post_id'] ),
+				'attribute' => array(
+					'ifPageType' => 'is_single',
+					'postAuthor' => $test_users['test_user_02'],
+				),
+				'content'   => 'Single',
+				'expected'  => 'Single',
+			),
 			/******************************************
 			* Post Type Event */
 			// Post Type Archive page.
@@ -461,7 +506,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 			// Author archive page.
 			array(
 				'name'      => 'Author archive page',
-				'go_to'     => get_author_posts_url( 1 ),
+				'go_to'     => get_author_posts_url( $test_users['test_user_01'] ),
 				'attribute' => array(
 					'ifPageType' => 'is_author',
 				),
@@ -470,20 +515,20 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 			),
 			array(
 				'name'      => 'Author archive page',
-				'go_to'     => get_author_posts_url( 1 ),
+				'go_to'     => get_author_posts_url( $test_users['test_user_01'] ),
 				'attribute' => array(
 					'ifPageType' => 'is_author',
-					'postAuthor' => 1,
+					'postAuthor' => $test_users['test_user_01'],
 				),
 				'content'   => 'Author Archive page',
 				'expected'  => 'Author Archive page',
 			),
 			array(
 				'name'      => 'Author archive page',
-				'go_to'     => get_author_posts_url( 1 ),
+				'go_to'     => get_author_posts_url( $test_users['test_user_01'] ),
 				'attribute' => array(
 					'ifPageType' => 'is_author',
-					'postAuthor' => 2,
+					'postAuthor' => $test_users['test_user_02'],
 				),
 				'content'   => 'Author Archive page',
 				'expected'  => '',

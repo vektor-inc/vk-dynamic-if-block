@@ -63,11 +63,12 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 
 	// Author Condition Check
 	$display_by_author = false;
+	$author_id         = intval(  get_post_field( 'post_author', get_the_ID() ) );
 	if ( empty( $attributes['postAuthor'] ) ) {
 		$display_by_author = true;
 	} elseif ( ! empty( $attributes['postAuthor'] ) && 'is_author' === $attributes['ifPageType'] && is_author( $attributes['postAuthor'] ) ) {
 		$display_by_author = true;
-	} elseif ( ! empty( $attributes['postAuthor'] ) && 'is_author' !== $attributes['ifPageType'] && is_singular() && get_the_author_meta( 'ID' ) === $attributes['postAuthor'] ) {
+	} elseif ( ! empty( $attributes['postAuthor'] ) && 'is_author' !== $attributes['ifPageType'] && is_singular() && $author_id === $attributes['postAuthor'] ) {
 		$display_by_author = true;
 	}
 
