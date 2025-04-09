@@ -208,15 +208,15 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 		let labels = [];
 
 		if ( ifPageType !== 'none' ) {
-			labels.push( exclusion ? `! ${ifPageType}` : ifPageType );
+			labels.push( ifPostType );
 		}
 
 		if ( ifLanguage !== 'none' ) {
-			labels.push( exclusion ? `! ${ifLanguage}` : ifLanguage );
+			labels.push( ifLanguage );
 		}
 
 		if ( ifPostType !== 'none' ) {
-			labels.push( exclusion ? `! ${ifPostType}` : ifPostType );
+			labels.push( ifPostType );
 		}
 		if ( userRole.length > 0 ) {
 			userRole.forEach( ( roleValue ) => {
