@@ -208,7 +208,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 		let labels = [];
 
 		if ( ifPageType !== 'none' ) {
-			labels.push( ifPostType );
+			labels.push( ifPageType );
 		}
 
 		if ( ifLanguage !== 'none' ) {
