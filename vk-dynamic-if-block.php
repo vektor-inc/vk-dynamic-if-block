@@ -5,8 +5,8 @@
  * Description: A dynamic block displays its Inner Blocks based on specified conditions, such as whether the current page is the front page or a single post, the post type, or the value of a Custom Field.
  * Author: Vektor,Inc.
  * Author URI: https://vektor-inc.co.jp/en/
- * Version: 0.8.3
- * Stable tag: 0.8.3
+ * Version: 0.8.4
+ * Stable tag: 0.8.4
  * License: GPL-2.0-or-later
  * Text Domain: vk-dynamic-if-block
  *
