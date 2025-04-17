@@ -2,7 +2,7 @@
 Contributors: vektor-inc,kurudrive,doshimaf,toro_unit
 Tags: dynamic block, if, Conditional branch, Conditional Display, Custom Field, Full Site Editing
 Requires at least: 6.0
-Tested up to: 6.5
+Tested up to: 6.8
 Requires PHP: 7.4
 Stable tag: 0.8.3
 License: GPLv2 or later
