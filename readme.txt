@@ -2,9 +2,9 @@
 Contributors: vektor-inc,kurudrive,doshimaf,toro_unit
 Tags: dynamic block, if, Conditional branch, Conditional Display, Custom Field, Full Site Editing
 Requires at least: 6.0
-Tested up to: 6.5
+Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 0.8.3
+Stable tag: 0.8.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -35,7 +35,10 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+
 [ Feature Addition ][ Author Archive ] Allow specifying the author.
+
+= 0.8.4 =
 [ Add Function ] Add exclusion indicator to condition labels.
 
 = 0.8.3 =
