@@ -249,6 +249,9 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 		}
 
 		let labels_string = labels.join( ' / ' );
+		if ( exclusion && labels.length > 0 ) {
+			labels_string = '! ' + labels_string;
+		}
 
 		return (
 			<div { ...useBlockProps( { className: blockClassName } ) }>
