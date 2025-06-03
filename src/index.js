@@ -268,21 +268,17 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 								setAttributes( { ifPageType: value } )
 							}
 						/>
-						{
-							ifPageType === 'is_author' && (
-								<SelectControl
-									label={ __(
-										'Author',
-										'vk-dynamic-if-block'
-									) }
-									value={ postAuthor }
-									options={ userSelectOptions }
-									onChange={ ( value ) =>
-										setAttributes( { postAuthor: Number(value) } )
-									}
-								/>
-							)
-						}
+						<SelectControl
+							label={ __(
+								'Author',
+								'vk-dynamic-if-block'
+							) }
+							value={ postAuthor }
+							options={ userSelectOptions }
+							onChange={ ( value ) =>
+								setAttributes( { postAuthor: Number(value) } )
+							}
+						/>
 						<SelectControl
 							label={ __( 'Post Type', 'vk-dynamic-if-block' ) }
 							value={ ifPostType }
