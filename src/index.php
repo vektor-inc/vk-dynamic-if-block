@@ -20,6 +20,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		'ifPostType'                => 'none',
 		'ifLanguage'                => 'none',
 		'userRole'                  => array(),
+		'postAuthor'                => 0,
 		'customFieldName'           => '',
 		'customFieldRule'           => 'valueExists',
 		'customFieldValue'          => '',
@@ -58,6 +59,17 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		'none' === $attributes['ifPageType']
 	) {
 		$display_by_page_type = true;
+	}
+
+	// Author Condition Check
+	$display_by_author = false;
+	$author_id         = intval( get_post_field( 'post_author', get_the_ID() ) );
+	if ( empty( $attributes['postAuthor'] ) ) {
+		$display_by_author = true;
+	} elseif ( ! empty( $attributes['postAuthor'] ) && 'is_author' === $attributes['ifPageType'] && is_author( $attributes['postAuthor'] ) ) {
+		$display_by_author = true;
+	} elseif ( ! empty( $attributes['postAuthor'] ) && 'is_author' !== $attributes['ifPageType'] && is_singular() && $author_id === $attributes['postAuthor'] ) {
+		$display_by_author = true;
 	}
 
 	// Post Type Condition Check //////////////////////////////////.
@@ -302,7 +314,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 
 	// Merge Condition Check //////////////////////////////////.
 
-	if ( $display_by_post_type && $display_by_language && $display_by_page_type && $display_by_custom_field && $display_by_user_role && $display_by_period && $display_by_login_user ) {
+	if ( $display_by_post_type && $display_by_author && $display_by_language && $display_by_page_type && $display_by_custom_field && $display_by_user_role && $display_by_period && $display_by_login_user ) {
 		$display = true;
 	}
 
@@ -400,6 +412,21 @@ function vk_dynamic_if_block_set_localize_script() {
 		}
 	}
 
+	//ユーザー（ ID, Name ）
+	$users = get_users();
+	$user_select_options = array(
+		array(
+			'label' => __( 'Unspecified', 'vk-dynamic-if-block' ),
+			'value' => 0,
+		),
+	);
+	foreach ( $users as $user ) {
+		$user_select_options[] = array(
+			'label' => $user->display_name,
+			'value' => $user->ID,
+		);
+	}
+
 	// The wp_localize_script() function is used to add custom JavaScript data to a script handle.
 	wp_localize_script(
 		'vk-dynamic-if-block', // Script handle.
@@ -408,6 +435,7 @@ function vk_dynamic_if_block_set_localize_script() {
 			'postTypeSelectOptions' => $post_type_select_options,
 			'languageSelectOptions' => $language_select_options,
 			'userRoles'             => get_user_roles(),
+			'userSelectOptions'     => $user_select_options,
 		)
 	);
 }
