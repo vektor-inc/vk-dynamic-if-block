@@ -846,7 +846,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				};
 			}
 
-			let labelsString = groupLabels.join(` OR `);
+			let labelsString = groupLabels.join(` ${conditionOperator.toUpperCase()} `);
 			if (exclusion && groupLabels.length > 0) {
 				labelsString = __('!', 'vk-dynamic-if-block') + ' ' + labelsString;
 			}
@@ -935,6 +935,17 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 								>
 									{ __( 'Add Condition', 'vk-dynamic-if-block' ) }
 								</Button>
+								{ conditions.length > 1 && (
+									<SelectControl
+										label={ __( 'Condition Operator', 'vk-dynamic-if-block' ) }
+										value={ conditionOperator }
+										options={ [
+											{ label: 'AND', value: 'and' },
+											{ label: 'OR', value: 'or' }
+										] }
+										onChange={ ( value ) => setAttributes( { conditionOperator: value } ) }
+									/>
+								) }
 								<ToggleControl
 									label={ __( 'Exclusion designation', 'vk-dynamic-if-block' ) }
 									checked={ exclusion }
