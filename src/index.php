@@ -16,306 +16,49 @@ use VektorInc\VK_Helpers\VkHelpers;
  */
 function vk_dynamic_if_block_render( $attributes, $content ) {
 	$attributes_default = array(
-		'ifPageType'                => 'none',
-		'ifPostType'                => 'none',
-		'ifLanguage'                => 'none',
-		'userRole'                  => array(),
-		'postAuthor'                => 0,
-		'customFieldName'           => '',
-		'customFieldRule'           => 'valueExists',
-		'customFieldValue'          => '',
-		'exclusion'                 => false,
-		'periodDisplaySetting'      => 'none',
-		'periodSpecificationMethod' => 'direct',
-		'periodDisplayValue'        => '',
-		'periodReferCustomField'    => '',
-		'showOnlyLoginUser'             => '',
+		'groups'     => array(),
+		'conditions' => array(), // 後方互換性のため残す
+		'exclusion'  => false,
 	);
 	$attributes         = array_merge( $attributes_default, $attributes );
 
-	$display = false;
-
-	// Page Type Condition Check //////////////////////////////////.
-
-	$display_by_page_type = false;
-
-	if (
-		is_front_page() && 'is_front_page' === $attributes['ifPageType'] ||
-		is_single() && 'is_single' === $attributes['ifPageType'] ||
-		is_page() && 'is_page' === $attributes['ifPageType'] ||
-		is_singular() && 'is_singular' === $attributes['ifPageType'] ||
-		is_home() && ! is_front_page() && 'is_home' === $attributes['ifPageType'] ||
-		is_post_type_archive() && 'is_post_type_archive' === $attributes['ifPageType'] ||
-		is_category() && 'is_category' === $attributes['ifPageType'] ||
-		is_tag() && 'is_tag' === $attributes['ifPageType'] ||
-		is_tax() && 'is_tax' === $attributes['ifPageType'] ||
-		is_year() && 'is_year' === $attributes['ifPageType'] ||
-		is_month() && 'is_month' === $attributes['ifPageType'] ||
-		is_date() && 'is_date' === $attributes['ifPageType'] ||
-		is_author() && 'is_author' === $attributes['ifPageType'] ||
-		is_search() && 'is_search' === $attributes['ifPageType'] ||
-		is_404() && 'is_404' === $attributes['ifPageType'] ||
-		is_archive() && 'is_archive' === $attributes['ifPageType'] ||
-		'none' === $attributes['ifPageType']
-	) {
-		$display_by_page_type = true;
+	// 新しいグループ構造の処理
+	if ( ! empty( $attributes['groups'] ) ) {
+		return vk_dynamic_if_block_render_with_groups( $attributes, $content );
 	}
 
-	// Author Condition Check
-	$display_by_author = false;
-	$author_id         = intval( get_post_field( 'post_author', get_the_ID() ) );
-	if ( empty( $attributes['postAuthor'] ) ) {
-		$display_by_author = true;
-	} elseif ( ! empty( $attributes['postAuthor'] ) && 'is_author' === $attributes['ifPageType'] && is_author( $attributes['postAuthor'] ) ) {
-		$display_by_author = true;
-	} elseif ( ! empty( $attributes['postAuthor'] ) && 'is_author' !== $attributes['ifPageType'] && is_singular() && $author_id === $attributes['postAuthor'] ) {
-		$display_by_author = true;
+	// 既存のブロックとの互換性のための移行処理
+	if ( empty( $attributes['conditions'] ) ) {
+		$attributes['conditions'] = vk_dynamic_if_block_migrate_old_attributes( $attributes );
 	}
 
-	// Post Type Condition Check //////////////////////////////////.
-
-	$display_by_post_type = false;
-
-	// vendorファイルの配信・読み込みミス時のフォールバック
-	// Fallback for vendor files failed to deliver or load.
-	if ( class_exists( 'VkHelpers' ) ) {
-		$post_type_info = VkHelpers::get_post_type_info();
-		$post_type_slug = $post_type_info['slug'];
-	} else {
-		$post_type_slug = get_post_type();
+	// 新しい条件配列構造の処理
+	if ( empty( $attributes['conditions'] ) ) {
+		// 条件が設定されていない場合は常に表示
+		return $content;
 	}
 
-	if ( 'none' === $attributes['ifPostType'] ) {
-		$display_by_post_type = true;
-	} elseif ( $post_type_slug === $attributes['ifPostType'] ) {
-		$display_by_post_type = true;
-	} else {
-		$display_by_post_type = false;
-	}
+	$display = true;
+	$previous_result = null;
 
-	// Language Condition Check //////////////////////////////////.
-	/**
-	 * @since 0.8.0
-	 */
-	$display_by_language = false;
-	if (  empty( $attributes['ifLanguage'] ) || 'none' === $attributes['ifLanguage'] || $attributes['ifLanguage'] === get_locale()  ){
-		$display_by_language = true;
-	}
+	foreach ( $attributes['conditions'] as $index => $condition ) {
+		$current_result = vk_dynamic_if_block_evaluate_condition( $condition );
 
-	// User Role Condition Check //////////////////////////////////.
-
-	$display_by_user_role = false;
-
-	// PHPUnit用のユーザーロール情報がある場合はそれを設定.
-	if ( ! empty( $attributes['test_user_roles'] ) ) {
-		$user_roles = $attributes['test_user_roles'];
-	} else {
-		$current_user = wp_get_current_user();
-		$user_roles   = (array) $current_user->roles;
-	}
-
-	if ( ! isset( $attributes['userRole'] ) || empty( $attributes['userRole'] ) ) {
-		$display_by_user_role = true;
-	} else {
-		if ( is_user_logged_in() || $user_roles ) {
-
-			// Check if any of the user's roles match the selected roles.
-			foreach ( $user_roles as $role ) {
-				if ( in_array( $role, $attributes['userRole'] ) ) {
-					$display_by_user_role = true;
-					break;
-				}
-			}
+		if ( $index === 0 ) {
+			// 最初の条件
+			$display = $current_result;
 		} else {
-			$display_by_user_role = false;
-		}
-	}
-
-	// Custom Field Condition Check //////////////////////////////////.
-
-	$display_by_custom_field = false;
-
-	if ( ! $attributes['customFieldName'] ) {
-		$display_by_custom_field = true;
-	} elseif ( $attributes['customFieldName'] ) {
-
-		if ( get_the_ID() ) {
-			$get_value = get_post_meta( get_the_ID(), $attributes['customFieldName'], true );
-			if ( 'valueExists' === $attributes['customFieldRule'] || empty( $attributes['customFieldRule'] ) ) {
-				if ( $get_value || '0' === $get_value ) {
-					$display_by_custom_field = true;
-				} else {
-					$display_by_custom_field = false;
-				}
-			} elseif ( 'valueEquals' === $attributes['customFieldRule'] ) {
-				if ( $get_value === $attributes['customFieldValue'] ) {
-					$display_by_custom_field = true;
-				} else {
-					$display_by_custom_field = false;
-				}
+			// 2番目以降の条件はオペレーターに基づいて結合
+			$operator = isset( $condition['operator'] ) ? $condition['operator'] : 'and';
+			
+			if ( $operator === 'and' ) {
+				$display = $display && $current_result;
+			} else { // 'or'
+				$display = $display || $current_result;
 			}
 		}
-	}
 
-	// Display period Check //////////////////////////////////.
-
-	$display_by_period = false;
-
-	if ( 'none' === $attributes['periodDisplaySetting'] ) {
-		$display_by_period = true;
-	} elseif ( 'deadline' === $attributes['periodDisplaySetting'] ) {
-		if ( 'direct' === $attributes['periodSpecificationMethod'] ) {
-
-			// 時間指定がない場合(日付までで時間が入力されていない場合)に時間を自動指定.
-			if ( $attributes['periodDisplayValue'] === date( 'Y-m-d', strtotime( $attributes['periodDisplayValue'] ) ) ) {
-				$attributes['periodDisplayValue'] .= ' 23:59';
-			}
-
-			// 日付のフォーマットを Y-m-d H:i に指定.
-			if ( $attributes['periodDisplayValue'] !== date( 'Y-m-d H:i', strtotime( $attributes['periodDisplayValue'] ) ) ) {
-				$attributes['periodDisplayValue'] = date( 'Y-m-d H:i', strtotime( $attributes['periodDisplayValue'] ) );
-			}
-
-			if ( $attributes['periodDisplayValue'] > current_time( 'Y-m-d H:i' ) ) {
-				$display_by_period = true;
-			} else {
-				$display_by_period = false;
-			}
-		} elseif ( 'referCustomField' === $attributes['periodSpecificationMethod'] ) {
-			if ( ! empty( $attributes['periodReferCustomField'] ) ) {
-				$get_refer_value = get_post_meta( get_the_ID(), $attributes['periodReferCustomField'], true );
-
-				// Check if $get_refer_value matches the date format.
-				$check_date_ymd     = DateTime::createFromFormat( 'Y-m-d', $get_refer_value );
-				$check_date_ymd_hi  = DateTime::createFromFormat( 'Y-m-d H:i', $get_refer_value );
-				$check_date_ymd_his = DateTime::createFromFormat( 'Y-m-d H:i:s', $get_refer_value );
-
-				if ( $check_date_ymd || $check_date_ymd_hi || $check_date_ymd_his ) {
-
-					if ( $check_date_ymd ) {
-						// If it's only 'Y-m-d' format, append the time as 23:59.
-						$get_refer_value .= ' 23:59:59';
-					}
-
-					if ( $check_date_ymd_hi ) {
-						// If it's only 'Y-m-d H:s' format, append the time as 23:59:59.
-						$get_refer_value .= ':59';
-					}
-
-					if ( $get_refer_value > current_time( 'Y-m-d H:i:s' ) ) {
-						$display_by_period = true;
-					} else {
-						$display_by_period = false;
-					}
-				} else {
-					// This means the value doesn't match either date formats
-					$display_by_period = true;
-				}
-			} else {
-				$display_by_period = true;
-			}
-		}
-	} elseif ( 'startline' === $attributes['periodDisplaySetting'] ) {
-		if ( 'direct' === $attributes['periodSpecificationMethod'] ) {
-
-			// 時間指定がない場合に時間を自動指定.
-			if ( $attributes['periodDisplayValue'] === date( 'Y-m-d', strtotime( $attributes['periodDisplayValue'] ) ) ) {
-				$attributes['periodDisplayValue'] .= ' 00:00';
-			}
-
-			// 日付のフォーマットを Y-m-d H:i に指定.
-			if ( $attributes['periodDisplayValue'] !== date( 'Y-m-d H:i', strtotime( $attributes['periodDisplayValue'] ) ) ) {
-				$attributes['periodDisplayValue'] = date( 'Y-m-d H:i', strtotime( $attributes['periodDisplayValue'] ) );
-			}
-
-			if ( $attributes['periodDisplayValue'] <= current_time( 'Y-m-d H:i' ) ) {
-				$display_by_period = true;
-			} else {
-				$display_by_period = false;
-			}
-		} elseif ( 'referCustomField' === $attributes['periodSpecificationMethod'] ) {
-			if ( ! empty( $attributes['periodReferCustomField'] ) ) {
-				$get_refer_value = get_post_meta( get_the_ID(), $attributes['periodReferCustomField'], true );
-
-				// Check if $get_refer_value matches the date format.
-				$check_date_ymd     = DateTime::createFromFormat( 'Y-m-d', $get_refer_value );
-				$check_date_ymd_hi  = DateTime::createFromFormat( 'Y-m-d H:i', $get_refer_value );
-				$check_date_ymd_his = DateTime::createFromFormat( 'Y-m-d H:i:s', $get_refer_value );
-
-				if ( $check_date_ymd || $check_date_ymd_hi || $check_date_ymd_his ) {
-
-					if ( $check_date_ymd ) {
-						// If it's only 'Y-m-d' format, append the time as 00:00:00.
-						$get_refer_value .= ' 00:00:00';
-					}
-
-					if ( $check_date_ymd_hi ) {
-						// If it's only 'Y-m-d H:i' format, append the time as 00:00:00.
-						$get_refer_value .= ':00';
-					}
-
-					if ( $get_refer_value <= current_time( 'Y-m-d H:i:s' ) ) {
-						$display_by_period = true;
-					} else {
-						$display_by_period = false;
-					}
-				} else {
-					// This means the value doesn't match either date formats.
-					$display_by_period = true;
-				}
-			} else {
-				$display_by_period = true;
-			}
-		}
-	} elseif ( 'daysSincePublic' === $attributes['periodDisplaySetting'] ) {
-		if ( 'direct' === $attributes['periodSpecificationMethod'] ) {
-			$days_since_public = intval( $attributes['periodDisplayValue'] );
-			$post_publish_date = get_post_time( 'U', true, get_the_ID() );
-			$current_time      = current_time( 'timestamp' );
-
-			if ( $current_time >= $post_publish_date + ( $days_since_public * 86400 ) ) {
-				$display_by_period = false;
-			} else {
-				$display_by_period = true;
-			}
-		} elseif ( 'referCustomField' === $attributes['periodSpecificationMethod'] ) {
-			if ( ! empty( $attributes['periodReferCustomField'] ) ) {
-				$get_refer_value = get_post_meta( get_the_ID(), $attributes['periodReferCustomField'], true );
-
-				// Check if $get_refer_value is numeric.
-				if ( is_numeric( $get_refer_value ) ) {
-					$days_since_public = intval( $get_refer_value );
-					$post_publish_date = get_post_time( 'U', true, get_the_ID() );
-					$current_time      = current_time( 'timestamp' );
-
-					if ( $current_time >= $post_publish_date + ( $days_since_public * 86400 ) ) {
-						$display_by_period = false;
-					} else {
-						$display_by_period = true;
-					}
-				} else {
-					// This means the value is not numeric.
-					$display_by_period = true;
-				}
-			} else {
-				$display_by_period = true;
-			}
-		}
-	}
-
-	// Login user Check //////////////////////////////////.
-
-	$display_by_login_user = true; // デフォルトで表示を許可
-
-	// ユーザーがログインしているか、またはログインユーザーのみの表示が不要な場合に表示を許可
-	if ( $attributes['showOnlyLoginUser'] && !is_user_logged_in() ) {
-		$display_by_login_user = false;
-	}
-
-	// Merge Condition Check //////////////////////////////////.
-
-	if ( $display_by_post_type && $display_by_author && $display_by_language && $display_by_page_type && $display_by_custom_field && $display_by_user_role && $display_by_period && $display_by_login_user ) {
-		$display = true;
+		$previous_result = $current_result;
 	}
 
 	/**
@@ -332,7 +75,572 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 	} else {
 		return '';
 	}
+}
 
+/**
+ * グループ構造を使用したブロックのレンダリング
+ *
+ * @param array  $attributes ブロックの属性
+ * @param string $content ブロックの内容
+ * @return string レンダリング結果
+ */
+function vk_dynamic_if_block_render_with_groups( $attributes, $content ) {
+	$groups = $attributes['groups'];
+	$groupOperator = isset( $attributes['groupOperator'] ) ? $attributes['groupOperator'] : 'and';
+	$exclusion = $attributes['exclusion'];
+
+	if ( empty( $groups ) ) {
+		// グループが設定されていない場合は常に表示
+		return $content;
+	}
+
+	$display = true;
+	$group_results = array();
+
+	// 各グループを評価
+	foreach ( $groups as $group_index => $group ) {
+		$conditions = isset( $group['conditions'] ) ? $group['conditions'] : array();
+		$operator = isset( $group['operator'] ) ? $group['operator'] : 'and';
+
+		if ( empty( $conditions ) ) {
+			// グループに条件がない場合は常にtrue
+			$group_results[] = true;
+			continue;
+		}
+
+		$group_result = true;
+		$condition_results = array();
+
+		// グループ内の各条件を評価
+		foreach ( $conditions as $condition_index => $condition ) {
+			$condition_result = vk_dynamic_if_block_evaluate_condition( $condition );
+			$condition_results[] = $condition_result;
+
+			if ( $condition_index === 0 ) {
+				// 最初の条件
+				$group_result = $condition_result;
+			} else {
+				// 2番目以降の条件は常にANDで結合
+				$group_result = $group_result && $condition_result;
+			}
+		}
+
+		$group_results[] = $group_result;
+	}
+
+	// グループ間はgroupOperatorに基づいて結合
+	foreach ( $group_results as $group_index => $group_result ) {
+		if ( $group_index === 0 ) {
+			// 最初のグループ
+			$display = $group_result;
+		} else {
+			// 2番目以降のグループはgroupOperatorに基づいて結合
+			if ( $groupOperator === 'and' ) {
+				$display = $display && $group_result;
+			} else { // 'or'
+				$display = $display || $group_result;
+			}
+		}
+	}
+
+	/**
+	 * Exclusion
+	 *
+	 * @since 0.3.0
+	 */
+	if ( $exclusion ) {
+		$display = ! $display;
+	}
+
+	if ( $display ) {
+		return $content;
+	} else {
+		return '';
+	}
+}
+
+/**
+ * 古い属性形式から新しい条件配列形式への移行処理
+ *
+ * @param array $attributes ブロックの属性
+ * @return array 移行後の条件配列
+ */
+function vk_dynamic_if_block_migrate_old_attributes( $attributes ) {
+	$conditions = array();
+
+	// ページタイプの移行
+	if ( isset( $attributes['ifPageType'] ) && $attributes['ifPageType'] !== 'none' ) {
+		$conditions[] = array(
+			'id' => 'migrated_page_type_' . time(),
+			'type' => 'pageType',
+			'values' => array(
+				'ifPageType' => array( $attributes['ifPageType'] ),
+			),
+		);
+	}
+
+	// 投稿タイプの移行
+	if ( isset( $attributes['ifPostType'] ) && $attributes['ifPostType'] !== 'none' ) {
+		$conditions[] = array(
+			'id' => 'migrated_post_type_' . time(),
+			'type' => 'postType',
+			'values' => array(
+				'ifPostType' => array( $attributes['ifPostType'] ),
+			),
+		);
+	}
+
+	// 言語の移行
+	if ( isset( $attributes['ifLanguage'] ) && $attributes['ifLanguage'] !== 'none' ) {
+		$conditions[] = array(
+			'id' => 'migrated_language_' . time(),
+			'type' => 'language',
+			'values' => array(
+				'ifLanguage' => array( $attributes['ifLanguage'] ),
+			),
+		);
+	}
+
+	// ユーザー権限の移行
+	if ( isset( $attributes['userRole'] ) && ! empty( $attributes['userRole'] ) ) {
+		$conditions[] = array(
+			'id' => 'migrated_user_role_' . time(),
+			'type' => 'userRole',
+			'values' => array(
+				'userRole' => $attributes['userRole'],
+			),
+		);
+	}
+
+	// 投稿者の移行
+	if ( isset( $attributes['postAuthor'] ) && $attributes['postAuthor'] > 0 ) {
+		$conditions[] = array(
+			'id' => 'migrated_post_author_' . time(),
+			'type' => 'postAuthor',
+			'values' => array(
+				'postAuthor' => array( $attributes['postAuthor'] ),
+			),
+		);
+	}
+
+	// カスタムフィールドの移行
+	if ( isset( $attributes['customFieldName'] ) && ! empty( $attributes['customFieldName'] ) ) {
+		$custom_field_values = array(
+			'customFieldName' => $attributes['customFieldName'],
+		);
+		
+		if ( isset( $attributes['customFieldRule'] ) ) {
+			$custom_field_values['customFieldRule'] = $attributes['customFieldRule'];
+		}
+		
+		if ( isset( $attributes['customFieldValue'] ) ) {
+			$custom_field_values['customFieldValue'] = $attributes['customFieldValue'];
+		}
+
+		$conditions[] = array(
+			'id' => 'migrated_custom_field_' . time(),
+			'type' => 'customField',
+			'values' => $custom_field_values,
+		);
+	}
+
+	// 表示期間の移行
+	if ( isset( $attributes['periodDisplaySetting'] ) && $attributes['periodDisplaySetting'] !== 'none' ) {
+		$period_values = array(
+			'periodDisplaySetting' => $attributes['periodDisplaySetting'],
+		);
+		
+		if ( isset( $attributes['periodSpecificationMethod'] ) ) {
+			$period_values['periodSpecificationMethod'] = $attributes['periodSpecificationMethod'];
+		}
+		
+		if ( isset( $attributes['periodDisplayValue'] ) ) {
+			$period_values['periodDisplayValue'] = $attributes['periodDisplayValue'];
+		}
+		
+		if ( isset( $attributes['periodReferCustomField'] ) ) {
+			$period_values['periodReferCustomField'] = $attributes['periodReferCustomField'];
+		}
+
+		$conditions[] = array(
+			'id' => 'migrated_period_' . time(),
+			'type' => 'period',
+			'values' => $period_values,
+		);
+	}
+
+	// ログインユーザーの移行
+	if ( isset( $attributes['showOnlyLoginUser'] ) && $attributes['showOnlyLoginUser'] ) {
+		$conditions[] = array(
+			'id' => 'migrated_login_user_' . time(),
+			'type' => 'loginUser',
+			'values' => array(
+				'showOnlyLoginUser' => $attributes['showOnlyLoginUser'],
+			),
+		);
+	}
+
+	return $conditions;
+}
+
+/**
+ * 個別の条件を評価する関数
+ *
+ * @param array $condition 条件の配列
+ * @return bool 条件を満たすかどうか
+ */
+function vk_dynamic_if_block_evaluate_condition( $condition ) {
+	$type = isset( $condition['type'] ) ? $condition['type'] : '';
+	$values = isset( $condition['values'] ) ? $condition['values'] : array();
+
+	switch ( $type ) {
+		case 'pageType':
+			return vk_dynamic_if_block_check_page_type( $values );
+		case 'postType':
+			return vk_dynamic_if_block_check_post_type( $values );
+		case 'language':
+			return vk_dynamic_if_block_check_language( $values );
+		case 'userRole':
+			return vk_dynamic_if_block_check_user_role( $values );
+		case 'postAuthor':
+			return vk_dynamic_if_block_check_post_author( $values );
+		case 'customField':
+			return vk_dynamic_if_block_check_custom_field( $values );
+		case 'period':
+			return vk_dynamic_if_block_check_period( $values );
+		case 'loginUser':
+			return vk_dynamic_if_block_check_login_user( $values );
+		default:
+			return true;
+	}
+}
+
+/**
+ * ページタイプの条件チェック
+ */
+function vk_dynamic_if_block_check_page_type( $values ) {
+	$ifPageType = isset( $values['ifPageType'] ) ? $values['ifPageType'] : array();
+
+	// 配列でない場合は配列に変換（後方互換性のため）
+	if ( ! is_array( $ifPageType ) ) {
+		$ifPageType = array( $ifPageType );
+	}
+
+	// 空の場合は制限なし
+	if ( empty( $ifPageType ) ) {
+		return true;
+	}
+
+	// 複数のページタイプのいずれかに一致するかチェック
+	foreach ( $ifPageType as $page_type ) {
+		if ( 'none' === $page_type ) {
+			return true;
+		}
+
+		if (
+			is_front_page() && 'is_front_page' === $page_type ||
+			is_single() && 'is_single' === $page_type ||
+			is_page() && 'is_page' === $page_type ||
+			is_singular() && 'is_singular' === $page_type ||
+			is_home() && ! is_front_page() && 'is_home' === $page_type ||
+			is_post_type_archive() && 'is_post_type_archive' === $page_type ||
+			is_category() && 'is_category' === $page_type ||
+			is_tag() && 'is_tag' === $page_type ||
+			is_tax() && 'is_tax' === $page_type ||
+			is_year() && 'is_year' === $page_type ||
+			is_month() && 'is_month' === $page_type ||
+			is_date() && 'is_date' === $page_type ||
+			is_author() && 'is_author' === $page_type ||
+			is_search() && 'is_search' === $page_type ||
+			is_404() && 'is_404' === $page_type ||
+			is_archive() && 'is_archive' === $page_type
+		) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * 投稿タイプの条件チェック
+ */
+function vk_dynamic_if_block_check_post_type( $values ) {
+	$ifPostType = isset( $values['ifPostType'] ) ? $values['ifPostType'] : array();
+
+	// 配列でない場合は配列に変換（後方互換性のため）
+	if ( ! is_array( $ifPostType ) ) {
+		$ifPostType = array( $ifPostType );
+	}
+
+	// 空の場合は制限なし
+	if ( empty( $ifPostType ) ) {
+		return true;
+	}
+
+	// vendorファイルの配信・読み込みミス時のフォールバック
+	if ( class_exists( 'VkHelpers' ) ) {
+		$post_type_info = VkHelpers::get_post_type_info();
+		$post_type_slug = $post_type_info['slug'];
+	} else {
+		$post_type_slug = get_post_type();
+	}
+
+	// 複数の投稿タイプのいずれかに一致するかチェック
+	foreach ( $ifPostType as $post_type ) {
+		if ( 'none' === $post_type ) {
+			return true;
+		}
+
+		if ( $post_type_slug === $post_type ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * 言語の条件チェック
+ */
+function vk_dynamic_if_block_check_language( $values ) {
+	$ifLanguage = isset( $values['ifLanguage'] ) ? $values['ifLanguage'] : array();
+
+	// 配列でない場合は配列に変換（後方互換性のため）
+	if ( ! is_array( $ifLanguage ) ) {
+		$ifLanguage = array( $ifLanguage );
+	}
+
+	// 空の場合は制限なし
+	if ( empty( $ifLanguage ) ) {
+		return true;
+	}
+
+	$current_locale = get_locale();
+
+	// 複数の言語のいずれかに一致するかチェック
+	foreach ( $ifLanguage as $language ) {
+		if ( empty( $language ) || 'none' === $language ) {
+			return true;
+		}
+
+		if ( $language === $current_locale ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * ユーザー権限の条件チェック
+ */
+function vk_dynamic_if_block_check_user_role( $values ) {
+	$userRole = isset( $values['userRole'] ) ? $values['userRole'] : array();
+
+	if ( empty( $userRole ) ) {
+		return true;
+	}
+
+	$current_user = wp_get_current_user();
+	$user_roles   = (array) $current_user->roles;
+
+	if ( is_user_logged_in() || $user_roles ) {
+		foreach ( $user_roles as $role ) {
+			if ( in_array( $role, $userRole ) ) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+/**
+ * 投稿者の条件チェック
+ */
+function vk_dynamic_if_block_check_post_author( $values ) {
+	$postAuthor = isset( $values['postAuthor'] ) ? $values['postAuthor'] : array();
+
+	// 配列でない場合は配列に変換（後方互換性のため）
+	if ( ! is_array( $postAuthor ) ) {
+		$postAuthor = array( $postAuthor );
+	}
+
+	// 空の場合は制限なし
+	if ( empty( $postAuthor ) ) {
+		return true;
+	}
+
+	$author_id = intval( get_post_field( 'post_author', get_the_ID() ) );
+	
+	// 複数の投稿者のいずれかに一致するかチェック
+	foreach ( $postAuthor as $author ) {
+		$author = intval( $author );
+		
+		if ( $author === 0 ) {
+			return true;
+		}
+
+		if ( is_author( $author ) ) {
+			return true;
+		} elseif ( is_singular() && $author_id === $author ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * カスタムフィールドの条件チェック
+ */
+function vk_dynamic_if_block_check_custom_field( $values ) {
+	$customFieldName = isset( $values['customFieldName'] ) ? $values['customFieldName'] : '';
+	$customFieldRule = isset( $values['customFieldRule'] ) ? $values['customFieldRule'] : 'valueExists';
+	$customFieldValue = isset( $values['customFieldValue'] ) ? $values['customFieldValue'] : '';
+
+	if ( empty( $customFieldName ) ) {
+		return true;
+	}
+
+	if ( get_the_ID() ) {
+		$get_value = get_post_meta( get_the_ID(), $customFieldName, true );
+		
+		if ( 'valueExists' === $customFieldRule || empty( $customFieldRule ) ) {
+			return $get_value || '0' === $get_value;
+		} elseif ( 'valueEquals' === $customFieldRule ) {
+			return $get_value === $customFieldValue;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * 表示期間の条件チェック
+ */
+function vk_dynamic_if_block_check_period( $values ) {
+	$periodDisplaySetting = isset( $values['periodDisplaySetting'] ) ? $values['periodDisplaySetting'] : 'none';
+	$periodSpecificationMethod = isset( $values['periodSpecificationMethod'] ) ? $values['periodSpecificationMethod'] : 'direct';
+	$periodDisplayValue = isset( $values['periodDisplayValue'] ) ? $values['periodDisplayValue'] : '';
+	$periodReferCustomField = isset( $values['periodReferCustomField'] ) ? $values['periodReferCustomField'] : '';
+
+	if ( 'none' === $periodDisplaySetting ) {
+		return true;
+	}
+
+	if ( 'deadline' === $periodDisplaySetting ) {
+		return vk_dynamic_if_block_check_deadline( $periodSpecificationMethod, $periodDisplayValue, $periodReferCustomField );
+	} elseif ( 'startline' === $periodDisplaySetting ) {
+		return vk_dynamic_if_block_check_startline( $periodSpecificationMethod, $periodDisplayValue, $periodReferCustomField );
+	} elseif ( 'daysSincePublic' === $periodDisplaySetting ) {
+		return vk_dynamic_if_block_check_days_since_public( $periodSpecificationMethod, $periodDisplayValue, $periodReferCustomField );
+	}
+
+	return true;
+}
+
+/**
+ * 期限の条件チェック
+ */
+function vk_dynamic_if_block_check_deadline( $method, $value, $refer_field ) {
+	if ( 'direct' === $method ) {
+		if ( $value === date( 'Y-m-d', strtotime( $value ) ) ) {
+			$value .= ' 23:59';
+		}
+		if ( $value !== date( 'Y-m-d H:i', strtotime( $value ) ) ) {
+			$value = date( 'Y-m-d H:i', strtotime( $value ) );
+		}
+		return $value > current_time( 'Y-m-d H:i' );
+	} elseif ( 'referCustomField' === $method ) {
+		if ( ! empty( $refer_field ) ) {
+			$get_refer_value = get_post_meta( get_the_ID(), $refer_field, true );
+			$check_date_ymd = DateTime::createFromFormat( 'Y-m-d', $get_refer_value );
+			$check_date_ymd_hi = DateTime::createFromFormat( 'Y-m-d H:i', $get_refer_value );
+			$check_date_ymd_his = DateTime::createFromFormat( 'Y-m-d H:i:s', $get_refer_value );
+
+			if ( $check_date_ymd || $check_date_ymd_hi || $check_date_ymd_his ) {
+				if ( $check_date_ymd ) {
+					$get_refer_value .= ' 23:59:59';
+				}
+				if ( $check_date_ymd_hi ) {
+					$get_refer_value .= ':59';
+				}
+				return $get_refer_value > current_time( 'Y-m-d H:i:s' );
+			}
+		}
+	}
+	return true;
+}
+
+/**
+ * 開始日の条件チェック
+ */
+function vk_dynamic_if_block_check_startline( $method, $value, $refer_field ) {
+	if ( 'direct' === $method ) {
+		if ( $value === date( 'Y-m-d', strtotime( $value ) ) ) {
+			$value .= ' 00:00';
+		}
+		if ( $value !== date( 'Y-m-d H:i', strtotime( $value ) ) ) {
+			$value = date( 'Y-m-d H:i', strtotime( $value ) );
+		}
+		return $value <= current_time( 'Y-m-d H:i' );
+	} elseif ( 'referCustomField' === $method ) {
+		if ( ! empty( $refer_field ) ) {
+			$get_refer_value = get_post_meta( get_the_ID(), $refer_field, true );
+			$check_date_ymd = DateTime::createFromFormat( 'Y-m-d', $get_refer_value );
+			$check_date_ymd_hi = DateTime::createFromFormat( 'Y-m-d H:i', $get_refer_value );
+			$check_date_ymd_his = DateTime::createFromFormat( 'Y-m-d H:i:s', $get_refer_value );
+
+			if ( $check_date_ymd || $check_date_ymd_hi || $check_date_ymd_his ) {
+				if ( $check_date_ymd ) {
+					$get_refer_value .= ' 00:00:00';
+				}
+				if ( $check_date_ymd_hi ) {
+					$get_refer_value .= ':00';
+				}
+				return $get_refer_value <= current_time( 'Y-m-d H:i:s' );
+			}
+		}
+	}
+	return true;
+}
+
+/**
+ * 公開日からの日数の条件チェック
+ */
+function vk_dynamic_if_block_check_days_since_public( $method, $value, $refer_field ) {
+	if ( 'direct' === $method ) {
+		$days_since_public = intval( $value );
+		$post_publish_date = get_post_time( 'U', true, get_the_ID() );
+		$current_time = current_time( 'timestamp' );
+		return $current_time < $post_publish_date + ( $days_since_public * 86400 );
+	} elseif ( 'referCustomField' === $method ) {
+		if ( ! empty( $refer_field ) ) {
+			$get_refer_value = get_post_meta( get_the_ID(), $refer_field, true );
+			if ( is_numeric( $get_refer_value ) ) {
+				$days_since_public = intval( $get_refer_value );
+				$post_publish_date = get_post_time( 'U', true, get_the_ID() );
+				$current_time = current_time( 'timestamp' );
+				return $current_time < $post_publish_date + ( $days_since_public * 86400 );
+			}
+		}
+	}
+	return true;
+}
+
+/**
+ * ログインユーザーの条件チェック
+ */
+function vk_dynamic_if_block_check_login_user( $values ) {
+	$showOnlyLoginUser = isset( $values['showOnlyLoginUser'] ) ? $values['showOnlyLoginUser'] : false;
+
+	if ( ! $showOnlyLoginUser ) {
+		return true;
+	}
+
+	return is_user_logged_in();
 }
 
 function vk_dynamic_if_block_register_dynamic() {

@@ -5,6 +5,47 @@
 	"category": "theme",
 	"textdomain": "vk-dynamic-if-block",
 	"attributes": {
+		"groups": {
+			"type": "array",
+			"default": [
+				{
+					"id": "default-group",
+					"name": "Group 1",
+					"conditions": [
+						{
+							"id": 1,
+							"type": "pageType",
+							"values": {}
+						}
+					],
+					"operator": "and"
+				}
+			]
+		},
+		"conditions": {
+			"type": "array",
+			"default": [
+				{
+					"id": "default-condition",
+					"name": "Condition 1",
+					"conditions": [
+						{
+							"id": 1,
+							"type": "pageType",
+							"values": {}
+						}
+					]
+				}
+			]
+		},
+		"conditionOperator": {
+			"type": "string",
+			"default": "and"
+		},
+		"exclusion": {
+			"type": "boolean",
+			"default": false
+		},
 		"ifPageType": {
 			"type": "string",
 			"default": "none"
@@ -36,10 +77,6 @@
 		"customFieldValue": {
 			"type": "string",
 			"default": ""
-		},
-		"exclusion": {
-			"type": "boolean",
-			"default": false
 		},
 		"periodDisplaySetting": {
 			"type": "string",
