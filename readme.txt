@@ -35,8 +35,8 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
-[ Specification change ] Changed the UI to specify the condition branching method at the beginning
 [ Add Function ][ Author Archive ] Allow specifying the author.
+[ Specification change ] Changed the UI to specify the condition branching method at the beginning
 
 = 0.8.4 =
 [ Add Function ] Add exclusion indicator to condition labels.
