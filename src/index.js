@@ -244,97 +244,114 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			{
 				value: 'none',
 				label: __( 'No restriction', 'vk-dynamic-if-block' ),
+				simpleLabel: __( 'No restriction', 'vk-dynamic-if-block' )
 			},
 			{
 				value: 'is_front_page',
 				label:
 					__( 'Front Page', 'vk-dynamic-if-block' ) +
 					' ( is_front_page() )',
+				simpleLabel: __( 'Front Page', 'vk-dynamic-if-block' )
 			},
 			{
 				value: 'is_single',
 				label:
 					__( 'Single', 'vk-dynamic-if-block' ) + ' ( is_single() )',
+				simpleLabel: __( 'Single', 'vk-dynamic-if-block' )
 			},
 			{
 				value: 'is_page',
 				label: __( 'Page', 'vk-dynamic-if-block' ) + ' ( is_page() )',
+				simpleLabel: __( 'Page', 'vk-dynamic-if-block' )
 			},
 			{
 				value: 'is_singular',
 				label:
 					__( 'Singular', 'vk-dynamic-if-block' ) +
 					' ( is_singular() )',
+				simpleLabel: __( 'Singular', 'vk-dynamic-if-block' )
 			},
 			{
 				value: 'is_home',
 				label:
 					__( 'Post Top', 'vk-dynamic-if-block' ) +
 					' ( is_home() && ! is_front_page() )',
+				simpleLabel: __( 'Post Top', 'vk-dynamic-if-block' )
 			},
 			{
 				value: 'is_post_type_archive',
 				label:
 					__( 'Post Type Archive', 'vk-dynamic-if-block' ) +
 					' ( is_post_type_archive() )',
+				simpleLabel: __( 'Post Type Archive', 'vk-dynamic-if-block' )
 			},
 			{
 				value: 'is_category',
 				label:
 					__( 'Category Archive', 'vk-dynamic-if-block' ) +
 					' ( is_category() )',
+				simpleLabel: __( 'Category Archive', 'vk-dynamic-if-block' )
 			},
 			{
 				value: 'is_tag',
 				label:
 					__( 'Tag Archive', 'vk-dynamic-if-block' ) +
 					' ( is_tag() )',
+				simpleLabel: __( 'Tag Archive', 'vk-dynamic-if-block' )
 			},
 			{
 				value: 'is_tax',
 				label:
 					__( 'Taxonomy Archive', 'vk-dynamic-if-block' ) +
 					' ( is_tax() )',
+				simpleLabel: __( 'Taxonomy Archive', 'vk-dynamic-if-block' )
 			},
 			{
 				value: 'is_year',
 				label:
 					__( 'Yearly Archive', 'vk-dynamic-if-block' ) +
 					' ( is_year() )',
+				simpleLabel: __( 'Yearly Archive', 'vk-dynamic-if-block' )
 			},
 			{
 				value: 'is_month',
 				label:
 					__( 'Monthly Archive', 'vk-dynamic-if-block' ) +
 					' ( is_month() )',
+				simpleLabel: __( 'Monthly Archive', 'vk-dynamic-if-block' )
 			},
 			{
 				value: 'is_date',
 				label:
 					__( 'Daily Archive', 'vk-dynamic-if-block' ) +
 					' ( is_date() )',
+				simpleLabel: __( 'Daily Archive', 'vk-dynamic-if-block' )
 			},
 			{
 				value: 'is_author',
 				label:
 					__( 'Author Archive', 'vk-dynamic-if-block' ) +
 					' ( is_author() )',
+				simpleLabel: __( 'Author Archive', 'vk-dynamic-if-block' )
 			},
 			{
 				value: 'is_archive',
 				label:
 					__( 'Archive', 'vk-dynamic-if-block' ) +
 					' ( is_archive() )',
+				simpleLabel: __( 'Archive', 'vk-dynamic-if-block' )
 			},
 			{
 				value: 'is_search',
 				label:
 					__( 'Search Result', 'vk-dynamic-if-block' ) +
 					' ( is_search() )',
+				simpleLabel: __( 'Search Result', 'vk-dynamic-if-block' )
 			},
 			{
 				value: 'is_404',
 				label: __( '404', 'vk-dynamic-if-block' ) + ' ( is_404() )',
+				simpleLabel: __( '404', 'vk-dynamic-if-block' )
 			},
 		];
 
@@ -434,11 +451,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						<BaseControl
 							__nextHasNoMarginBottom
 							className="dynamic-if-page-type"
-							label={ __( 'Page Type', 'vk-dynamic-if-block' ) }
-							help={ __(
-								'If unchecked, no restrictions are imposed by page type',
-								'vk-dynamic-if-block'
-							) }
 						>
 							{ ifPageTypes.map( ( pageType, pageTypeIndex ) => {
 								const selectedPageTypes = values.ifPageType || [];
@@ -465,11 +477,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						<BaseControl
 							__nextHasNoMarginBottom
 							className="dynamic-if-post-type"
-							label={ __( 'Post Type', 'vk-dynamic-if-block' ) }
-							help={ __(
-								'If unchecked, no restrictions are imposed by post type',
-								'vk-dynamic-if-block'
-							) }
 						>
 							{ vk_dynamic_if_block_localize_data.postTypeSelectOptions.map( ( postType, postTypeIndex ) => {
 								const selectedPostTypes = values.ifPostType || [];
@@ -496,11 +503,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						<BaseControl
 							__nextHasNoMarginBottom
 							className="dynamic-if-language"
-							label={ __( 'Language', 'vk-dynamic-if-block' ) }
-							help={ __(
-								'If unchecked, no restrictions are imposed by language',
-								'vk-dynamic-if-block'
-							) }
 						>
 							{ vk_dynamic_if_block_localize_data.languageSelectOptions.map( ( language, languageIndex ) => {
 								const selectedLanguages = values.ifLanguage || [];
@@ -527,11 +529,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						<BaseControl
 							__nextHasNoMarginBottom
 							className="dynamic-if-user-role"
-							label={ __( 'User Role', 'vk-dynamic-if-block' ) }
-							help={ __(
-								'If unchecked, no restrictions are imposed by user role',
-								'vk-dynamic-if-block'
-							) }
 						>
 							{ userRoles.map( ( role, roleIndex ) => {
 								const selectedRoles = values.userRole || [];
@@ -558,11 +555,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						<BaseControl
 							__nextHasNoMarginBottom
 							className="dynamic-if-post-author"
-							label={ __( 'Author', 'vk-dynamic-if-block' ) }
-							help={ __(
-								'If unchecked, no restrictions are imposed by author',
-								'vk-dynamic-if-block'
-							) }
 						>
 							{ userSelectOptions.map( ( user, userIndex ) => {
 								const selectedAuthors = values.postAuthor || [];
@@ -788,7 +780,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						const selected = condition.values.ifPageType || [];
 						label = selected.map(val => {
 							const opt = ifPageTypes.find(o => o.value === val);
-							return opt ? opt.label : val;
+							return opt ? opt.simpleLabel : val;
 						}).join(' or ');
 						break;
 					}
