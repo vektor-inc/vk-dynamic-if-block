@@ -35,8 +35,7 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
-
-[ Feature Addition ][ Author Archive ] Allow specifying the author.
+[ Add Function ][ Author Archive ] Allow specifying the author.
 
 = 0.8.4 =
 [ Add Function ] Add exclusion indicator to condition labels.
