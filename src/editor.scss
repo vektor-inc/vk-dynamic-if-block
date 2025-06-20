@@ -75,6 +75,20 @@
 	margin-bottom: 15px;
 }
 
+// チェックボックスリストが長くなった場合にスクロールさせる
+.dynamic-if-page-type,
+.dynamic-if-post-type,
+.dynamic-if-language,
+.dynamic-if-user-role,
+.dynamic-if-post-author {
+	max-height: 200px;
+	overflow-y: auto;
+	border: 1px solid #e0e0e0;
+	padding: 10px;
+	border-radius: 2px;
+	background-color: #fafafa;
+}
+
 .vkdif .vkdif__refer-cf-name {
 	margin-bottom: 0;
 	& .components-base-control__help {
@@ -84,7 +98,7 @@
 
 .vkdif__group {
     position: relative;
-    padding: 1.5rem;
+    padding: 1.5rem 1rem;
 	margin-bottom: 1.5rem;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -119,15 +133,12 @@
 .vkdif__group-conditions {
 	.vkdif__condition {
 		margin-bottom: 0;
-		padding: 10px 0;
-		border: none;
-		border-radius: 0;
-		background-color: transparent;
+		padding: 1rem 0;
 	}
 }
 
 .vkdif__condition-header {
-    margin-bottom: 1em;
+    margin-bottom: 1rem;
 
 	.components-base-control {
 		width: 100%;
@@ -190,8 +201,8 @@
 
 // alert
 .vkdif__alert {
-	padding: 1em;
-	margin: 0.5em auto;
+	padding: 1rem;
+	margin: 0.5rem auto;
 	border-radius: 3px;
 	p {
 		margin: 0;
