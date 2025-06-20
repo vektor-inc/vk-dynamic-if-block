@@ -723,24 +723,55 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'expected'  => 'No restrictions on viewers',
 			),
 			array(
-				'name'       => 'Editor can view',
-				'go_to'      => get_permalink( $test_posts['parent_page_id'] ),
-				'attribute'  => array(
-					'userRole' => array( 'editor' ),
+				'name'      => 'Editor can view',
+				'go_to'     => home_url(),
+				'user'      => 'editor',
+				'attribute' => array(
+					'conditions' => array(
+						array(
+							'type' => 'userRole',
+							'values' => array(
+								'userRole' => array( 'editor' ),
+							),
+						),
+					),
 				),
-				'user_roles' => array( 'editor' ),
-				'content'    => 'Editor can view',
-				'expected'   => 'Editor can view',
+				'content'   => 'Editor can view',
+				'expected'  => 'Editor can view',
 			),
 			array(
-				'name'       => 'Editor can not view',
-				'go_to'      => get_permalink( $test_posts['parent_page_id'] ),
-				'attribute'  => array(
-					'userRole' => array( 'administrator' ),
+				'name'      => 'Subscriber can not view',
+				'go_to'     => home_url(),
+				'user'      => 'subscriber',
+				'attribute' => array(
+					'conditions' => array(
+						array(
+							'type' => 'userRole',
+							'values' => array(
+								'userRole' => array( 'editor' ),
+							),
+						),
+					),
 				),
-				'user_roles' => array( 'editor' ),
-				'content'    => 'Editor can not view',
-				'expected'   => '',
+				'content'   => 'Subscriber can not view',
+				'expected'  => '',
+			),
+			array(
+				'name'      => 'Not log-in user can not view',
+				'go_to'     => home_url(),
+				'user'      => 'not-log-in',
+				'attribute' => array(
+					'conditions' => array(
+						array(
+							'type' => 'userRole',
+							'values' => array(
+								'userRole' => array( 'editor' ),
+							),
+						),
+					),
+				),
+				'content'   => 'Not log-in user can not view',
+				'expected'  => '',
 			),
 			/******************************************
 			* Login User Only */
@@ -1131,13 +1162,23 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 
 			print PHP_EOL;
 			$this->go_to( $test['go_to'] );
-			if ( isset( $test['user_roles'] ) ) {
-				$test['attribute']['test_user_roles'] = $test['user_roles'];
+
+			if ( ! empty( $test['user'] ) ) {
+				print 'user : ' . get_current_user_id() . PHP_EOL;
+				if ( 'not-log-in' === $test['user'] ) {
+					// ログアウト.
+					wp_set_current_user( 0 );
+				} else {
+					$user = get_user_by( 'login', $test['user'] );
+					wp_set_current_user( $user->ID );
+				}
 				$actual = vk_dynamic_if_block_render( $test['attribute'], $test['content'] );
-			} elseif ( isset( $test['is_login'] )) {
-				wp_set_current_user($test['is_login'] ? 1 : 0);
+				// ユーザーをリセット.
+				wp_set_current_user( 0 );
+			} elseif ( isset( $test['is_login'] ) ) {
+				wp_set_current_user( $test['is_login'] ? 1 : 0 );
 				$actual = vk_dynamic_if_block_render( $test['attribute'], $test['content'] );
-				wp_set_current_user(0);
+				wp_set_current_user( 0 );
 			} else {
 				$actual = vk_dynamic_if_block_render( $test['attribute'], $test['content'] );
 			}
