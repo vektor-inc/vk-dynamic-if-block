@@ -14,7 +14,6 @@ import {
 	BaseControl,
 	Button,
 	__experimentalNumberControl as NumberControl,
-	Tooltip,
 } from '@wordpress/components';
 import { ReactComponent as Icon } from './icon.svg';
 import transforms from './transforms';
@@ -53,8 +52,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 	},
 	edit( { attributes, setAttributes } ) {
 		const { conditions, conditionOperator, exclusion } = attributes;
-		const [ showTooltip, setShowTooltip ] = useState( false );
-		const [ tooltipContent, setTooltipContent ] = useState( '' );
 
 		// 既存のブロックとの互換性のための移行処理
 		React.useEffect( () => {
@@ -725,49 +722,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			}
 		};
 
-		// 複数選択値を適切にフォーマットする関数
-		const formatMultipleValues = ( selectedValues, options, typeName ) => {
-			if ( selectedValues.length === 0 ) {
-				return { display: `All ${ typeName }`, tooltip: null };
-			}
-
-			if ( selectedValues.length === 1 ) {
-				const option = options.find( ( opt ) => opt.value === selectedValues[0] );
-				return { 
-					display: option ? option.label : selectedValues[0], 
-					tooltip: null 
-				};
-			}
-
-			// 複数選択の場合は最初の2個まで表示
-			const maxDisplay = 2;
-			const displayValues = selectedValues.slice( 0, maxDisplay );
-			const remainingCount = selectedValues.length - maxDisplay;
-
-			const displayLabels = displayValues.map( ( value ) => {
-				const option = options.find( ( opt ) => opt.value === value );
-				return option ? option.label : value;
-			} );
-
-			let displayText;
-			if ( remainingCount > 0 ) {
-				displayText = `${ displayLabels.join( ', ' ) } +${ remainingCount }`;
-			} else {
-				displayText = displayLabels.join( ', ' );
-			}
-
-			// ツールチップ用の全選択項目
-			const allLabels = selectedValues.map( ( value ) => {
-				const option = options.find( ( opt ) => opt.value === value );
-				return option ? option.label : value;
-			} );
-
-			return {
-				display: displayText,
-				tooltip: allLabels.join( '\n' )
-			};
-		};
-
 		const generateLabels = () => {
 			// グループごとにラベルを生成
 			const groupLabels = conditions.map((group) => {
@@ -832,10 +786,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			}).filter(Boolean);
 
 			if (groupLabels.length === 0) {
-				return {
-					display: __('No conditions set', 'vk-dynamic-if-block'),
-					tooltip: null
-				};
+				return __('No conditions set', 'vk-dynamic-if-block');
 			}
 
 			let labelsString = groupLabels.join(` ${conditionOperator.toUpperCase()} `);
@@ -843,10 +794,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				labelsString = __('!', 'vk-dynamic-if-block') + ' ' + labelsString;
 			}
 
-			return {
-				display: labelsString,
-				tooltip: null
-			};
+			return labelsString;
 		};
 
 		const blockClassName = 'vk-dynamic-if-block';
@@ -950,27 +898,9 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					</PanelBody>
 				</InspectorControls>
 				<div className="vk-dynamic-if-block__label">
-					<span 
-						className={ generateLabels().tooltip ? 'vk-dynamic-if-block__label--has-tooltip' : '' }
-						onMouseEnter={ () => {
-							if ( generateLabels().tooltip ) {
-								setTooltipContent( generateLabels().tooltip );
-								setShowTooltip( true );
-							}
-						} }
-						onMouseLeave={ () => {
-							setShowTooltip( false );
-						} }
-					>
-						{ generateLabels().display || __( 'No conditions set', 'vk-dynamic-if-block' ) }
+					<span>
+						{ generateLabels() || __( 'No conditions set', 'vk-dynamic-if-block' ) }
 					</span>
-					{ showTooltip && tooltipContent && (
-						<div className="vk-dynamic-if-block__tooltip">
-							{ tooltipContent.split( '\n' ).map( ( line, index ) => (
-								<div key={ index }>{ line }</div>
-							) ) }
-						</div>
-					) }
 				</div>
 
 				<InnerBlocks template={ MY_TEMPLATE } />

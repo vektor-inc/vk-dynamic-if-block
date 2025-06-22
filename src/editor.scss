@@ -16,54 +16,6 @@
 	text-align: left;
 	background-color: #e5e5e5;
 	z-index: 10000;
-
-	&--has-tooltip {
-		cursor: help;
-		border-bottom: 1px dotted #666;
-		
-		&:hover {
-			background-color: #f0f0f0;
-		}
-	}
-}
-
-.vk-dynamic-if-block__tooltip {
-	position: absolute;
-	top: 100%;
-	right: 0;
-	background: #333;
-	color: white;
-	padding: 8px 12px;
-	border-radius: 4px;
-	font-size: 11px;
-	white-space: nowrap;
-	z-index: 10001;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-	margin-top: 4px;
-	
-	&::before {
-		content: '';
-		position: absolute;
-		top: -4px;
-		right: 8px;
-		width: 0;
-		height: 0;
-		border-left: 4px solid transparent;
-		border-right: 4px solid transparent;
-		border-bottom: 4px solid #333;
-	}
-	
-	div {
-		margin: 2px 0;
-		
-		&:first-child {
-			margin-top: 0;
-		}
-		
-		&:last-child {
-			margin-bottom: 0;
-		}
-	}
 }
 
 // 複数選択用のチェックボックススタイル
