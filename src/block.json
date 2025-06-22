@@ -42,10 +42,6 @@
 			"type": "string",
 			"default": "and"
 		},
-		"exclusion": {
-			"type": "boolean",
-			"default": false
-		},
 		"ifPageType": {
 			"type": "string",
 			"default": "none"
@@ -77,6 +73,10 @@
 		"customFieldValue": {
 			"type": "string",
 			"default": ""
+		},
+		"exclusion": {
+			"type": "boolean",
+			"default": false
 		},
 		"periodDisplaySetting": {
 			"type": "string",
