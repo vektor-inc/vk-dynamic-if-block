@@ -17,7 +17,7 @@ import {
 } from '@wordpress/components';
 import { ReactComponent as Icon } from './icon.svg';
 import transforms from './transforms';
-import React, { useState } from 'react';
+import React from 'react';
 
 registerBlockType( 'vk-blocks/dynamic-if', {
 	apiVersion: 3,
@@ -73,134 +73,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				setAttributes( { conditions: newConditions } );
 			}
 		}, [] );
-
-		const migrateOldAttributes = ( oldAttributes ) => {
-			const migratedConditions = [];
-
-			// ページタイプの移行
-			if ( oldAttributes.ifPageType && oldAttributes.ifPageType !== 'none' ) {
-				migratedConditions.push( {
-					id: Date.now() + Math.random(),
-					type: 'pageType',
-					values: {
-						ifPageType: [ oldAttributes.ifPageType ],
-					},
-				} );
-			}
-
-			// 投稿タイプの移行
-			if ( oldAttributes.ifPostType && oldAttributes.ifPostType !== 'none' ) {
-				migratedConditions.push( {
-					id: Date.now() + Math.random(),
-					type: 'postType',
-					values: {
-						ifPostType: [ oldAttributes.ifPostType ],
-					},
-				} );
-			}
-
-			// 言語の移行
-			if ( oldAttributes.ifLanguage && oldAttributes.ifLanguage !== 'none' ) {
-				migratedConditions.push( {
-					id: Date.now() + Math.random(),
-					type: 'language',
-					values: {
-						ifLanguage: [ oldAttributes.ifLanguage ],
-					},
-				} );
-			}
-
-			// ユーザー権限の移行
-			if ( oldAttributes.userRole && oldAttributes.userRole.length > 0 ) {
-				migratedConditions.push( {
-					id: Date.now() + Math.random(),
-					type: 'userRole',
-					values: {
-						userRole: oldAttributes.userRole,
-					},
-				} );
-			}
-
-			// 投稿者の移行
-			if ( oldAttributes.postAuthor && oldAttributes.postAuthor > 0 ) {
-				migratedConditions.push( {
-					id: Date.now() + Math.random(),
-					type: 'postAuthor',
-					values: {
-						postAuthor: [ oldAttributes.postAuthor ],
-					},
-				} );
-			}
-
-			// カスタムフィールドの移行
-			if ( oldAttributes.customFieldName ) {
-				const customFieldValues = {
-					customFieldName: oldAttributes.customFieldName,
-				};
-				
-				if ( oldAttributes.customFieldRule ) {
-					customFieldValues.customFieldRule = oldAttributes.customFieldRule;
-				}
-				
-				if ( oldAttributes.customFieldValue ) {
-					customFieldValues.customFieldValue = oldAttributes.customFieldValue;
-				}
-
-				migratedConditions.push( {
-					id: Date.now() + Math.random(),
-					type: 'customField',
-					values: customFieldValues,
-				} );
-			}
-
-			// 表示期間の移行
-			if ( oldAttributes.periodDisplaySetting && oldAttributes.periodDisplaySetting !== 'none' ) {
-				const periodValues = {
-					periodDisplaySetting: oldAttributes.periodDisplaySetting,
-				};
-				
-				if ( oldAttributes.periodSpecificationMethod ) {
-					periodValues.periodSpecificationMethod = oldAttributes.periodSpecificationMethod;
-				}
-				
-				if ( oldAttributes.periodDisplayValue ) {
-					periodValues.periodDisplayValue = oldAttributes.periodDisplayValue;
-				}
-				
-				if ( oldAttributes.periodReferCustomField ) {
-					periodValues.periodReferCustomField = oldAttributes.periodReferCustomField;
-				}
-
-				migratedConditions.push( {
-					id: Date.now() + Math.random(),
-					type: 'period',
-					values: periodValues,
-				} );
-			}
-
-			// ログインユーザーの移行
-			if ( oldAttributes.showOnlyLoginUser ) {
-				migratedConditions.push( {
-					id: Date.now() + Math.random(),
-					type: 'loginUser',
-					values: {
-						showOnlyLoginUser: oldAttributes.showOnlyLoginUser,
-					},
-				} );
-			}
-
-			// 移行された条件がある場合はグループとして返す
-			if ( migratedConditions.length > 0 ) {
-				return [ {
-					id: 'migrated-group',
-					name: 'Group 1',
-					conditions: migratedConditions,
-					operator: 'and'
-				} ];
-			}
-
-			return [];
-		};
 
 		const conditionTypes = [
 			{
@@ -405,16 +277,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			setAttributes( { conditions: [ ...conditions, newGroup ] } );
 		};
 
-		const removeCondition = ( groupIndex, conditionIndex ) => {
-			const newConditions = [ ...conditions ];
-			newConditions[ groupIndex ].conditions.splice( conditionIndex, 1 );
-			// グループに条件がなくなった場合はグループごと削除
-			if ( newConditions[ groupIndex ].conditions.length === 0 ) {
-				newConditions.splice( groupIndex, 1 );
-			}
-			setAttributes( { conditions: newConditions } );
-		};
-
 		const updateCondition = ( groupIndex, conditionIndex, updates ) => {
 			const newConditions = [ ...conditions ];
 			newConditions[ groupIndex ].conditions[ conditionIndex ] = { 
@@ -433,18 +295,12 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			setAttributes( { conditions: newConditions } );
 		};
 
-		const updateGroup = ( groupIndex, updates ) => {
-			const newConditions = [ ...conditions ];
-			newConditions[ groupIndex ] = { ...newConditions[ groupIndex ], ...updates };
-			setAttributes( { conditions: newConditions } );
-		};
-
 		const renderConditionSettings = ( condition, groupIndex, conditionIndex ) => {
 			const { type, values } = condition;
 
 			switch ( type ) {
 				case 'pageType':
-		return (
+					return (
 						<BaseControl
 							__nextHasNoMarginBottom
 							className="dynamic-if-page-type"
