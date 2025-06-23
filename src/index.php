@@ -11,9 +11,9 @@ use VektorInc\VK_Helpers\VkHelpers;
 /**
  * Block Render function
  *
- * @param  array  $attributes : Block attributes.
- * @param  string $content    : Block inner content.
- * @return string $return : Return HTML.
+ * @param array  $attributes : Block attributes.
+ * @param string $content : Block inner content.
+ * @return string Return HTML.
  */
 
 function vk_dynamic_if_block_render($attributes, $content)
@@ -83,9 +83,9 @@ function vk_dynamic_if_block_render($attributes, $content)
 /**
  * グループ構造を使用したブロックのレンダリング
  *
- * @param  array  $attributes ブロックの属性
- * @param  string $content    ブロックの内容
- * @return string レンダリング結果
+ * @param array  $attributes : Block attributes.
+ * @param string $content : Block inner content.
+ * @return string Return HTML.
  */
 function vk_dynamic_if_block_render_with_groups($attributes, $content)
 {
@@ -166,8 +166,8 @@ function vk_dynamic_if_block_render_with_groups($attributes, $content)
 /**
  * 古い属性形式から新しい条件配列形式への移行処理
  *
- * @param  array $attributes ブロックの属性
- * @return array 移行後の条件配列
+ * @param array $attributes : Block attributes.
+ * @return array Migrated conditions array.
  */
 function vk_dynamic_if_block_migrate_old_attributes($attributes)
 {
@@ -291,8 +291,8 @@ function vk_dynamic_if_block_migrate_old_attributes($attributes)
 /**
  * 個別の条件を評価する関数
  *
- * @param  array $condition 条件の配列
- * @return bool 条件を満たすかどうか
+ * @param array $condition : Condition array.
+ * @return bool Whether the condition is met.
  */
 function vk_dynamic_if_block_evaluate_condition($condition)
 {
@@ -323,6 +323,9 @@ function vk_dynamic_if_block_evaluate_condition($condition)
 
 /**
  * ページタイプの条件チェック
+ *
+ * @param array $values : Condition values.
+ * @return bool Whether the page type condition is met.
  */
 function vk_dynamic_if_block_check_page_type($values)
 {
@@ -371,6 +374,9 @@ function vk_dynamic_if_block_check_page_type($values)
 
 /**
  * 投稿タイプの条件チェック
+ *
+ * @param array $values : Condition values.
+ * @return bool Whether the post type condition is met.
  */
 function vk_dynamic_if_block_check_post_type($values)
 {
@@ -410,6 +416,9 @@ function vk_dynamic_if_block_check_post_type($values)
 
 /**
  * 言語の条件チェック
+ *
+ * @param array $values : Condition values.
+ * @return bool Whether the language condition is met.
  */
 function vk_dynamic_if_block_check_language($values)
 {
@@ -443,6 +452,9 @@ function vk_dynamic_if_block_check_language($values)
 
 /**
  * ユーザー権限の条件チェック
+ *
+ * @param array $values : Condition values.
+ * @return bool Whether the user role condition is met.
  */
 function vk_dynamic_if_block_check_user_role($values)
 {
@@ -468,6 +480,9 @@ function vk_dynamic_if_block_check_user_role($values)
 
 /**
  * 投稿者の条件チェック
+ *
+ * @param array $values : Condition values.
+ * @return bool Whether the post author condition is met.
  */
 function vk_dynamic_if_block_check_post_author($values)
 {
@@ -505,6 +520,9 @@ function vk_dynamic_if_block_check_post_author($values)
 
 /**
  * カスタムフィールドの条件チェック
+ *
+ * @param array $values : Condition values.
+ * @return bool Whether the custom field condition is met.
  */
 function vk_dynamic_if_block_check_custom_field($values)
 {
@@ -531,6 +549,9 @@ function vk_dynamic_if_block_check_custom_field($values)
 
 /**
  * 表示期間の条件チェック
+ *
+ * @param array $values : Condition values.
+ * @return bool Whether the period condition is met.
  */
 function vk_dynamic_if_block_check_period($values)
 {
@@ -556,6 +577,11 @@ function vk_dynamic_if_block_check_period($values)
 
 /**
  * 期限の条件チェック
+ *
+ * @param string $method : Specification method.
+ * @param string $value : Display value.
+ * @param string $refer_field : Referenced custom field name.
+ * @return bool Whether the deadline condition is met.
  */
 function vk_dynamic_if_block_check_deadline($method, $value, $refer_field)
 {
@@ -590,6 +616,11 @@ function vk_dynamic_if_block_check_deadline($method, $value, $refer_field)
 
 /**
  * 開始日の条件チェック
+ *
+ * @param string $method : Specification method.
+ * @param string $value : Display value.
+ * @param string $refer_field : Referenced custom field name.
+ * @return bool Whether the startline condition is met.
  */
 function vk_dynamic_if_block_check_startline($method, $value, $refer_field)
 {
@@ -624,6 +655,11 @@ function vk_dynamic_if_block_check_startline($method, $value, $refer_field)
 
 /**
  * 公開日からの日数の条件チェック
+ *
+ * @param string $method : Specification method.
+ * @param string $value : Display value.
+ * @param string $refer_field : Referenced custom field name.
+ * @return bool Whether the days since public condition is met.
  */
 function vk_dynamic_if_block_check_days_since_public($method, $value, $refer_field)
 {
@@ -648,6 +684,9 @@ function vk_dynamic_if_block_check_days_since_public($method, $value, $refer_fie
 
 /**
  * ログインユーザーの条件チェック
+ *
+ * @param array $values : Condition values.
+ * @return bool Whether the login user condition is met.
  */
 function vk_dynamic_if_block_check_login_user($values)
 {
