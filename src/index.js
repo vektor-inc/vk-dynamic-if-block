@@ -588,6 +588,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				switch (condition.type) {
 					case 'pageType': {
 						const selected = condition.values.ifPageType || [];
+						if (selected.length === 0) return null;
 						label = selected.map(val => {
 							const opt = ifPageTypes.find(o => o.value === val);
 							return opt ? opt.simpleLabel : val;
@@ -596,6 +597,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					}
 					case 'postType': {
 						const selected = condition.values.ifPostType || [];
+						if (selected.length === 0) return null;
 						label = selected.map(val => {
 							const opt = vk_dynamic_if_block_localize_data.postTypeSelectOptions.find(o => o.value === val);
 							return opt ? opt.label : val;
@@ -604,6 +606,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					}
 					case 'language': {
 						const selected = condition.values.ifLanguage || [];
+						if (selected.length === 0) return null;
 						label = selected.map(val => {
 							const opt = vk_dynamic_if_block_localize_data.languageSelectOptions.find(o => o.value === val);
 							return opt ? opt.label : val;
@@ -612,6 +615,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					}
 					case 'userRole': {
 						const selected = condition.values.userRole || [];
+						if (selected.length === 0) return null;
 						label = selected.map(val => {
 							const opt = userRoles.find(o => o.value === val);
 							return opt ? opt.label : val;
@@ -620,6 +624,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					}
 					case 'postAuthor': {
 						const selected = condition.values.postAuthor || [];
+						if (selected.length === 0) return null;
 						label = selected.map(val => {
 							const opt = userSelectOptions.find(o => o.value === val);
 							return opt ? opt.label : val;
@@ -627,18 +632,21 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						break;
 					}
 					case 'customField':
-						label = condition.values.customFieldName || 'Custom Field';
+						if (!condition.values.customFieldName) return null;
+						label = condition.values.customFieldName;
 						break;
 					case 'period':
-						label = condition.values.periodDisplaySetting || 'Period';
+						if (!condition.values.periodDisplaySetting || condition.values.periodDisplaySetting === 'none') return null;
+						label = condition.values.periodDisplaySetting;
 						break;
 					case 'loginUser':
+						if (!condition.values.showOnlyLoginUser) return null;
 						label = __('Login User Only', 'vk-dynamic-if-block');
 						break;
 					default:
 						label = condition.type;
 				}
-				return `[${label}]`;
+				return label ? `[${label}]` : null;
 			}).filter(Boolean);
 
 			if (groupLabels.length === 0) {
