@@ -35,6 +35,8 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+[ Specific Change ][ Author Archive ] Changed to target only users with the role of Contributor or higher who have at least one published article.
+
 = 0.8.5 =
 [ Add Function ][ Author Archive ] Allow specifying the author.
 [ Bug Fix ] Fix readme typo
