@@ -415,7 +415,7 @@ function vk_dynamic_if_block_set_localize_script() {
 	$post_types = get_post_types( array( 'public' => true ), 'names' );
 
 	$users = get_users( [
-		'role__in' => [ 'contributor', 'author', 'editor', 'administrator' ],
+		'role__in' => array( 'contributor', 'author', 'editor', 'administrator' ),
 	] );
 
 	$user_select_options = array(
