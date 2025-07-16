@@ -413,7 +413,14 @@ function vk_dynamic_if_block_set_localize_script() {
 	}
 
 	//ユーザー（ ID, Name ）
-	$users = get_users();
+	$users = get_users(
+		array(
+			'fields'   => array( 'ID', 'display_name' ),
+			'orderby'  => 'display_name',
+			'order'    => 'ASC',
+			'role__in' => array( 'contributor', 'author', 'editor', 'administrator' ),
+		)
+	);
 	$user_select_options = array(
 		array(
 			'label' => __( 'Unspecified', 'vk-dynamic-if-block' ),
