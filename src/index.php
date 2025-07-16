@@ -412,7 +412,7 @@ function vk_dynamic_if_block_set_localize_script() {
 		}
 	}
 
-	$post_types = get_post_types( [ 'public' => true ], 'names' );
+	$post_types = get_post_types( array( 'public' => true ), 'names' );
 
 	$users = get_users( [
 		'role__in' => [ 'contributor', 'author', 'editor', 'administrator' ],
