@@ -412,15 +412,12 @@ function vk_dynamic_if_block_set_localize_script() {
 		}
 	}
 
-	//ユーザー（ ID, Name ）
-	$users = get_users(
-		array(
-			'fields'   => array( 'ID', 'display_name' ),
-			'orderby'  => 'display_name',
-			'order'    => 'ASC',
-			'role__in' => array( 'contributor', 'author', 'editor', 'administrator' ),
-		)
-	);
+	$post_types = get_post_types( [ 'public' => true ], 'names' );
+
+	$users = get_users( [
+		'role__in' => [ 'contributor', 'author', 'editor', 'administrator' ],
+	] );
+
 	$user_select_options = array(
 		array(
 			'label' => __( 'Unspecified', 'vk-dynamic-if-block' ),
@@ -428,10 +425,19 @@ function vk_dynamic_if_block_set_localize_script() {
 		),
 	);
 	foreach ( $users as $user ) {
-		$user_select_options[] = array(
-			'label' => $user->display_name,
-			'value' => $user->ID,
-		);
+		$has_published = false;
+		foreach ( $post_types as $post_type ) {
+			if ( count_user_posts( $user->ID, $post_type, true ) > 0 ) {
+				$has_published = true;
+				break;
+			}
+		}
+		if ( $has_published ) {
+			$user_select_options[] = array(
+				'label' => $user->display_name,
+				'value' => $user->ID,
+			);
+		}
 	}
 
 	// The wp_localize_script() function is used to add custom JavaScript data to a script handle.
