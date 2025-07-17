@@ -842,11 +842,15 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			}).filter(Boolean);
 
 			if (groupLabels.length === 0) {
+				// 条件がなくても除外指定がある場合は「! No conditions set」と表示
+				if (exclusion) {
+					return __('!', 'vk-dynamic-if-block') + ' ' + __('No conditions set', 'vk-dynamic-if-block');
+				}
 				return __('No conditions set', 'vk-dynamic-if-block');
 			}
 
 			let labelsString = groupLabels.join(` ${conditionOperator.toUpperCase()} `);
-			if (exclusion && groupLabels.length > 0) {
+			if (exclusion) {
 				labelsString = __('!', 'vk-dynamic-if-block') + ' ' + labelsString;
 			}
 
@@ -865,13 +869,25 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					>
 						{ conditions.length === 0 ? (
 							<div>
-								<p>{ __( 'No conditions set. Add a condition to control display.', 'vk-dynamic-if-block' ) }</p>
-								<Button
-									variant="primary"
-									onClick={ addCondition }
+								<BaseControl
+									__nextHasNoMarginBottom
+									className="dynamic-if-add-condition"
 								>
-									{ __( 'Add Condition', 'vk-dynamic-if-block' ) }
-								</Button>
+									<p>{ __( 'No conditions set. Add a condition to control display.', 'vk-dynamic-if-block' ) }</p>
+									<Button
+										variant="primary"
+										onClick={ addCondition }
+									>
+										{ __( 'Add Condition', 'vk-dynamic-if-block' ) }
+									</Button>
+								</BaseControl>
+								<ToggleControl
+									label={ __( 'Exclusion designation', 'vk-dynamic-if-block' ) }
+									checked={ exclusion }
+									onChange={ ( checked ) =>
+										setAttributes( { exclusion: checked } )
+									}
+								/>
 							</div>
 						) : (
 							<>
@@ -924,13 +940,18 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 										</Button>
 									</div>
 								) ) }
-								<Button
-									variant="secondary"
-									onClick={ addConditionGroup }
-									className="vkdif__add-condition"
+								<BaseControl
+									__nextHasNoMarginBottom
+									className="dynamic-if-add-condition"
 								>
-									{ __( 'Add Condition', 'vk-dynamic-if-block' ) }
-								</Button>
+									<Button
+										variant="secondary"
+										onClick={ addConditionGroup }
+										className="vkdif__add-condition"
+									>
+										{ __( 'Add Condition', 'vk-dynamic-if-block' ) }
+									</Button>
+								</BaseControl>
 								{ conditions.length > 1 && (
 									<SelectControl
 										label={ __( 'Condition Operator', 'vk-dynamic-if-block' ) }
