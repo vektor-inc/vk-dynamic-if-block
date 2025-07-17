@@ -806,6 +806,9 @@ function vk_dynamic_if_block_set_localize_script()
 		}
 	}
 
+	// 現在のサイト言語を取得
+	$current_site_language = get_locale();
+
 	// The wp_localize_script() function is used to add custom JavaScript data to a script handle.
 	wp_localize_script(
 		'vk-dynamic-if-block', // Script handle.
@@ -815,6 +818,7 @@ function vk_dynamic_if_block_set_localize_script()
 			'languageSelectOptions' => $language_select_options,
 			'userRoles'             => get_user_roles(),
 			'userSelectOptions'     => $user_select_options,
+			'currentSiteLanguage'   => $current_site_language,
 		)
 	);
 }
