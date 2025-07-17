@@ -303,7 +303,9 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						ifPageTypes,
 						values.ifPageType,
 						'ifPageType',
-						'dynamic-if-page-type'
+						'dynamic-if-page-type',
+						groupIndex,
+						conditionIndex
 					);
 
 				case 'postType':
@@ -311,7 +313,9 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						vk_dynamic_if_block_localize_data.postTypeSelectOptions,
 						values.ifPostType,
 						'ifPostType',
-						'dynamic-if-post-type'
+						'dynamic-if-post-type',
+						groupIndex,
+						conditionIndex
 					);
 
 				case 'language':
@@ -368,7 +372,9 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						userRoles,
 						values.userRole,
 						'userRole',
-						'dynamic-if-user-role'
+						'dynamic-if-user-role',
+						groupIndex,
+						conditionIndex
 					);
 
 				case 'postAuthor':
@@ -376,7 +382,9 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						userSelectOptions,
 						values.postAuthor,
 						'postAuthor',
-						'dynamic-if-post-author'
+						'dynamic-if-post-author',
+						groupIndex,
+						conditionIndex
 					);
 
 				case 'customField':
