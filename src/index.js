@@ -374,14 +374,14 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			setAttributes( { conditions: newConditions } );
 		};
 
-		const addCondition = () => {
+		const addConditionGroup = () => {
 			// すでに使われているCondition Typeを取得
 			const usedTypes = conditions.map(g => g.conditions[0]?.type).filter(Boolean);
 			// 未使用のCondition Typeを取得
 			const availableTypes = conditionTypes.map(opt => opt.value).filter(val => !usedTypes.includes(val));
 			// 最初の未使用タイプ、なければ'pageType'をデフォルト
 			const firstType = availableTypes[0] || 'pageType';
-			const newCondition = {
+			const newConditionGroup = {
 				id: Date.now(),
 				name: `Condition ${ conditions.length + 1 }`,
 				conditions: [
@@ -393,7 +393,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				],
 				operator: 'or',
 			};
-			setAttributes( { conditions: [ ...conditions, newCondition ] } );
+			setAttributes( { conditions: [ ...conditions, newConditionGroup ] } );
 		};
 
 		const updateCondition = ( groupIndex, conditionIndex, updates ) => {
@@ -853,7 +853,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 								) ) }
 								<Button
 									variant="secondary"
-									onClick={ addCondition }
+									onClick={ addConditionGroup }
 									className="vkdif__add-condition"
 								>
 									{ __( 'Add Condition', 'vk-dynamic-if-block' ) }
