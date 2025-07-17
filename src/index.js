@@ -464,60 +464,50 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			setAttributes( { conditions: newConditions } );
 		};
 
+		// 共通のチェックボックスレンダラー
+		const renderCheckboxGroup = (options, selectedValues, valueKey, className) => (
+			<BaseControl
+				__nextHasNoMarginBottom
+				className={className}
+			>
+				{options.map((option, index) => {
+					const selected = selectedValues || [];
+					return (
+						<CheckboxControl
+							__nextHasNoMarginBottom
+							key={index}
+							label={option.label}
+							checked={selected.includes(option.value)}
+							onChange={(isChecked) => {
+								const newValues = isChecked
+									? [...selected, option.value]
+									: selected.filter(v => v !== option.value);
+								updateConditionValue(groupIndex, conditionIndex, valueKey, newValues);
+							}}
+						/>
+					);
+				})}
+			</BaseControl>
+		);
+
 		const renderConditionSettings = ( condition, groupIndex, conditionIndex ) => {
 			const { type, values } = condition;
 
 			switch ( type ) {
 				case 'pageType':
-					return (
-						<BaseControl
-							__nextHasNoMarginBottom
-							className="dynamic-if-page-type"
-						>
-							{ ifPageTypes.map( ( pageType, pageTypeIndex ) => {
-								const selectedPageTypes = values.ifPageType || [];
-								return (
-									<CheckboxControl
-										__nextHasNoMarginBottom
-										key={ pageTypeIndex }
-										label={ pageType.label }
-										checked={ selectedPageTypes.includes( pageType.value ) }
-										onChange={ ( isChecked ) => {
-											const newPageTypes = isChecked
-												? [ ...selectedPageTypes, pageType.value ]
-												: selectedPageTypes.filter( ( p ) => p !== pageType.value );
-											updateConditionValue( groupIndex, conditionIndex, 'ifPageType', newPageTypes );
-										} }
-									/>
-								);
-							} ) }
-						</BaseControl>
+					return renderCheckboxGroup(
+						ifPageTypes,
+						values.ifPageType,
+						'ifPageType',
+						'dynamic-if-page-type'
 					);
 
 				case 'postType':
-					return (
-						<BaseControl
-							__nextHasNoMarginBottom
-							className="dynamic-if-post-type"
-						>
-							{ vk_dynamic_if_block_localize_data.postTypeSelectOptions.map( ( postType, postTypeIndex ) => {
-								const selectedPostTypes = values.ifPostType || [];
-								return (
-									<CheckboxControl
-										__nextHasNoMarginBottom
-										key={ postTypeIndex }
-										label={ postType.label }
-										checked={ selectedPostTypes.includes( postType.value ) }
-										onChange={ ( isChecked ) => {
-											const newPostTypes = isChecked
-												? [ ...selectedPostTypes, postType.value ]
-												: selectedPostTypes.filter( ( p ) => p !== postType.value );
-											updateConditionValue( groupIndex, conditionIndex, 'ifPostType', newPostTypes );
-										} }
-									/>
-								);
-							} ) }
-						</BaseControl>
+					return renderCheckboxGroup(
+						vk_dynamic_if_block_localize_data.postTypeSelectOptions,
+						values.ifPostType,
+						'ifPostType',
+						'dynamic-if-post-type'
 					);
 
 				case 'language':
@@ -570,55 +560,19 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					);
 
 				case 'userRole':
-					return (
-						<BaseControl
-							__nextHasNoMarginBottom
-							className="dynamic-if-user-role"
-						>
-							{ userRoles.map( ( role, roleIndex ) => {
-								const selectedRoles = values.userRole || [];
-								return (
-									<CheckboxControl
-										__nextHasNoMarginBottom
-										key={ roleIndex }
-										label={ role.label }
-										checked={ selectedRoles.includes( role.value ) }
-										onChange={ ( isChecked ) => {
-											const newRoles = isChecked
-												? [ ...selectedRoles, role.value ]
-												: selectedRoles.filter( ( r ) => r !== role.value );
-											updateConditionValue( groupIndex, conditionIndex, 'userRole', newRoles );
-										} }
-									/>
-								);
-							} ) }
-						</BaseControl>
+					return renderCheckboxGroup(
+						userRoles,
+						values.userRole,
+						'userRole',
+						'dynamic-if-user-role'
 					);
 
 				case 'postAuthor':
-					return (
-						<BaseControl
-							__nextHasNoMarginBottom
-							className="dynamic-if-post-author"
-						>
-							{ userSelectOptions.map( ( user, userIndex ) => {
-								const selectedAuthors = values.postAuthor || [];
-								return (
-									<CheckboxControl
-										__nextHasNoMarginBottom
-										key={ userIndex }
-										label={ user.label }
-										checked={ selectedAuthors.includes( user.value ) }
-										onChange={ ( isChecked ) => {
-											const newAuthors = isChecked
-												? [ ...selectedAuthors, user.value ]
-												: selectedAuthors.filter( ( a ) => a !== user.value );
-											updateConditionValue( groupIndex, conditionIndex, 'postAuthor', newAuthors );
-										} }
-									/>
-								);
-							} ) }
-						</BaseControl>
+					return renderCheckboxGroup(
+						userSelectOptions,
+						values.postAuthor,
+						'postAuthor',
+						'dynamic-if-post-author'
 					);
 
 				case 'customField':
@@ -770,6 +724,16 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			}
 		};
 
+		// 共通のラベル生成関数
+		const generateLabelFromValues = (values, options, valueKey, operator = 'or', useSimpleLabel = false) => {
+			const selected = values[valueKey] || [];
+			if (selected.length === 0) return null;
+			return selected.map(val => {
+				const opt = options.find(o => o.value === val);
+				return opt ? (useSimpleLabel ? opt.simpleLabel : opt.label) : val;
+			}).join(operator === 'and' ? ' and ' : ' or ');
+		};
+
 		const generateLabels = () => {
 			// グループごとにラベルを生成
 			const groupLabels = conditions.map((group) => {
@@ -777,52 +741,23 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				if (groupConditions.length === 0) return null;
 				const condition = groupConditions[0];
 				let label = '';
+
 				switch (condition.type) {
-					case 'pageType': {
-						const selected = condition.values.ifPageType || [];
-						if (selected.length === 0) return null;
-						label = selected.map(val => {
-							const opt = ifPageTypes.find(o => o.value === val);
-							return opt ? opt.simpleLabel : val;
-						}).join(' or ');
+					case 'pageType':
+						label = generateLabelFromValues(condition.values, ifPageTypes, 'ifPageType', 'or', true);
 						break;
-					}
-					case 'postType': {
-						const selected = condition.values.ifPostType || [];
-						if (selected.length === 0) return null;
-						label = selected.map(val => {
-							const opt = vk_dynamic_if_block_localize_data.postTypeSelectOptions.find(o => o.value === val);
-							return opt ? opt.label : val;
-						}).join(' or ');
+					case 'postType':
+						label = generateLabelFromValues(condition.values, vk_dynamic_if_block_localize_data.postTypeSelectOptions, 'ifPostType');
 						break;
-					}
-					case 'language': {
-						const selected = condition.values.ifLanguage || [];
-						if (selected.length === 0) return null;
-						label = selected.map(val => {
-							const opt = vk_dynamic_if_block_localize_data.languageSelectOptions.find(o => o.value === val);
-							return opt ? opt.label : val;
-						}).join(' or ');
+					case 'language':
+						label = generateLabelFromValues(condition.values, vk_dynamic_if_block_localize_data.languageSelectOptions, 'ifLanguage');
 						break;
-					}
-					case 'userRole': {
-						const selected = condition.values.userRole || [];
-						if (selected.length === 0) return null;
-						label = selected.map(val => {
-							const opt = userRoles.find(o => o.value === val);
-							return opt ? opt.label : val;
-						}).join(operator === 'and' ? ' and ' : ' or ');
+					case 'userRole':
+						label = generateLabelFromValues(condition.values, userRoles, 'userRole', operator);
 						break;
-					}
-					case 'postAuthor': {
-						const selected = condition.values.postAuthor || [];
-						if (selected.length === 0) return null;
-						label = selected.map(val => {
-							const opt = userSelectOptions.find(o => o.value === val);
-							return opt ? opt.label : val;
-						}).join(operator === 'and' ? ' and ' : ' or ');
+					case 'postAuthor':
+						label = generateLabelFromValues(condition.values, userSelectOptions, 'postAuthor', operator);
 						break;
-					}
 					case 'customField':
 						if (!condition.values.customFieldName) return null;
 						label = condition.values.customFieldName;
