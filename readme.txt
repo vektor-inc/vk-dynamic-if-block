@@ -12,7 +12,7 @@ VK Dynamic If Block displays its Inner Blocks based on specified conditions, suc
 
 == Description ==
 
-VK Dynamic If Block is a custom WordPress block, primarily designed for FSE, that allows users to display Innder Block based on specified conditions. With this block, you can show or hide Inner Block depending on various conditions, such as whether the current page is the front page or a single post, the post type, or the value of a Custom Field.
+VK Dynamic If Block is a custom WordPress block, primarily designed for FSE, that allows users to display Inner Block based on specified conditions. With this block, you can show or hide Inner Block depending on various conditions, such as whether the current page is the front page or a single post, the post type, or the value of a Custom Field.
 
 == Installation ==
 
@@ -36,7 +36,7 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 == Changelog ==
 
 = 0.8.6 =
-[ Specific Change ][ Author Archive ] Changed to target only users with the role of Contributor or higher who have at least one published article.
+[ Specification change ][ Author Archive ] Changed to target only users with the role of Contributor or higher who have at least one published article.
 
 = 0.8.5 =
 [ Add Function ][ Author Archive ] Allow specifying the author.
