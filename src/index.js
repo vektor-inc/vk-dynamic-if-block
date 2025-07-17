@@ -25,27 +25,79 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 	icon: <Icon />,
 	transforms,
 	category: 'theme',
-	attributes: {
-		conditions: {
-			type: 'array',
-			default: [
-				{
-					id: 'default-group',
-					name: 'Group 1',
-					conditions: [],
-					operator: 'and'
-				}
-			],
-		},
-		conditionOperator: {
-			type: 'string',
-			default: 'and',
-		},
-		exclusion: {
-			type: 'boolean',
-			default: false,
-		},
-	},
+       attributes: {
+               conditions: {
+                       type: 'array',
+                       default: [
+                               {
+                                       id: 'default-group',
+                                       name: 'Group 1',
+                                       conditions: [],
+                                       operator: 'and',
+                               },
+                       ],
+               },
+               conditionOperator: {
+                       type: 'string',
+                       default: 'and',
+               },
+               exclusion: {
+                       type: 'boolean',
+                       default: false,
+               },
+               ifPageType: {
+                       type: 'string',
+                       default: 'none',
+               },
+               ifPostType: {
+                       type: 'string',
+                       default: 'none',
+               },
+               ifLanguage: {
+                       type: 'string',
+                       default: 'none',
+               },
+               userRole: {
+                       type: 'array',
+                       default: [],
+               },
+               postAuthor: {
+                       type: 'number',
+                       default: 0,
+               },
+               customFieldName: {
+                       type: 'string',
+                       default: '',
+               },
+               customFieldRule: {
+                       type: 'string',
+                       default: 'valueExists',
+               },
+               customFieldValue: {
+                       type: 'string',
+                       default: '',
+               },
+               periodDisplaySetting: {
+                       type: 'string',
+                       default: 'none',
+               },
+               periodSpecificationMethod: {
+                       type: 'string',
+                       default: 'direct',
+               },
+               periodDisplayValue: {
+                       type: 'string',
+                       default: '',
+               },
+               periodReferCustomField: {
+                       type: 'string',
+                       default: '',
+               },
+               showOnlyLoginUser: {
+                       type: 'boolean',
+                       default: false,
+               },
+       },
 	supports: {
 		html: false,
 		innerBlocks: true,
@@ -53,26 +105,93 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 	edit( { attributes, setAttributes } ) {
 		const { conditions, conditionOperator, exclusion } = attributes;
 
-		// 既存のブロックとの互換性のための移行処理
-		React.useEffect( () => {
-			if ( !conditions || conditions.length === 0 || (conditions[0] && conditions[0].conditions.length === 0) ) {
-				const newConditions = [
-					{
-						id: 'default-group',
-						name: 'Group 1',
-						conditions: [
-							{
-								id: Date.now(),
-								type: 'pageType',
-								values: {},
-							},
-						],
-						operator: 'and',
-					},
-				];
-				setAttributes( { conditions: newConditions } );
-			}
-		}, [] );
+               // 既存ブロックから新形式への移行処理
+               React.useEffect( () => {
+                       if ( !conditions || conditions.length === 0 || ( conditions[0] && conditions[0].conditions.length === 0 ) ) {
+                               const migrated = [];
+                               if ( attributes.ifPageType && attributes.ifPageType !== 'none' ) {
+                                       migrated.push( {
+                                               id: Date.now(),
+                                               type: 'pageType',
+                                               values: { ifPageType: Array.isArray( attributes.ifPageType ) ? attributes.ifPageType : [ attributes.ifPageType ] },
+                                       } );
+                               }
+                               if ( attributes.ifPostType && attributes.ifPostType !== 'none' ) {
+                                       migrated.push( {
+                                               id: Date.now() + 1,
+                                               type: 'postType',
+                                               values: { ifPostType: Array.isArray( attributes.ifPostType ) ? attributes.ifPostType : [ attributes.ifPostType ] },
+                                       } );
+                               }
+                               if ( attributes.ifLanguage && attributes.ifLanguage !== 'none' ) {
+                                       migrated.push( {
+                                               id: Date.now() + 2,
+                                               type: 'language',
+                                               values: { ifLanguage: Array.isArray( attributes.ifLanguage ) ? attributes.ifLanguage : [ attributes.ifLanguage ] },
+                                       } );
+                               }
+                               if ( attributes.userRole && attributes.userRole.length > 0 ) {
+                                       migrated.push( {
+                                               id: Date.now() + 3,
+                                               type: 'userRole',
+                                               values: { userRole: attributes.userRole },
+                                       } );
+                               }
+                               if ( attributes.postAuthor && attributes.postAuthor > 0 ) {
+                                       migrated.push( {
+                                               id: Date.now() + 4,
+                                               type: 'postAuthor',
+                                               values: { postAuthor: [ attributes.postAuthor ] },
+                                       } );
+                               }
+                               if ( attributes.customFieldName ) {
+                                       migrated.push( {
+                                               id: Date.now() + 5,
+                                               type: 'customField',
+                                               values: {
+                                                       customFieldName: attributes.customFieldName,
+                                                       ...( attributes.customFieldRule ? { customFieldRule: attributes.customFieldRule } : {} ),
+                                                       ...( attributes.customFieldValue ? { customFieldValue: attributes.customFieldValue } : {} ),
+                                               },
+                                       } );
+                               }
+                               if ( attributes.periodDisplaySetting && attributes.periodDisplaySetting !== 'none' ) {
+                                       migrated.push( {
+                                               id: Date.now() + 6,
+                                               type: 'period',
+                                               values: {
+                                                       periodDisplaySetting: attributes.periodDisplaySetting,
+                                                       ...( attributes.periodSpecificationMethod ? { periodSpecificationMethod: attributes.periodSpecificationMethod } : {} ),
+                                                       ...( attributes.periodDisplayValue ? { periodDisplayValue: attributes.periodDisplayValue } : {} ),
+                                                       ...( attributes.periodReferCustomField ? { periodReferCustomField: attributes.periodReferCustomField } : {} ),
+                                               },
+                                       } );
+                               }
+                               if ( attributes.showOnlyLoginUser ) {
+                                       migrated.push( {
+                                               id: Date.now() + 7,
+                                               type: 'loginUser',
+                                               values: { showOnlyLoginUser: attributes.showOnlyLoginUser },
+                                       } );
+                               }
+
+                               const newConditions = [
+                                       {
+                                               id: 'default-group',
+                                               name: 'Group 1',
+                                               conditions: migrated.length > 0 ? migrated : [
+                                                       {
+                                                               id: Date.now() + 8,
+                                                               type: 'pageType',
+                                                               values: {},
+                                                       },
+                                               ],
+                                               operator: 'and',
+                                       },
+                               ];
+                               setAttributes( { conditions: newConditions } );
+                       }
+               }, [] );
 
 		const conditionTypes = [
 			{
