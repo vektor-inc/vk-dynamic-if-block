@@ -18,6 +18,19 @@ import {
 import { ReactComponent as Icon } from './icon.svg';
 import transforms from './transforms';
 import React from 'react';
+import {
+	CONDITION_TYPE_LABELS,
+	PAGE_TYPE_DEFINITIONS,
+	CUSTOM_FIELD_RULES,
+	PERIOD_SETTINGS,
+	PERIOD_METHODS,
+	CONDITION_OPERATORS,
+	BLOCK_CONFIG,
+	createMigrationRules,
+	generateId,
+	createConditionGroup,
+	sortLanguages,
+} from './constants';
 
 registerBlockType( 'vk-blocks/dynamic-if', {
 	apiVersion: 3,
@@ -105,14 +118,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 	edit( { attributes, setAttributes } ) {
 		const { conditions, conditionOperator, exclusion } = attributes;
 
-               // 移行処理のヘルパー関数
-               const createConditionGroup = (type, values, groupIndex) => ({
-                       id: Date.now() + groupIndex,
-                       name: `Condition ${groupIndex}`,
-                       conditions: [{ id: Date.now() + groupIndex - 1, type, values }],
-                       operator: 'and',
-               });
-
                // 既存ブロックから新形式への移行処理
                React.useEffect( () => {
                        if ( !conditions || conditions.length === 0 || ( conditions[0] && conditions[0].conditions.length === 0 ) ) {
@@ -120,25 +125,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
                                let groupIndex = 1;
 
                                // 移行対象の条件を定義
-                               const migrationRules = [
-                                       { attr: 'ifPageType', type: 'pageType', key: 'ifPageType', condition: val => val && val !== 'none' },
-                                       { attr: 'ifPostType', type: 'postType', key: 'ifPostType', condition: val => val && val !== 'none' },
-                                       { attr: 'ifLanguage', type: 'language', key: 'ifLanguage', condition: val => val && val !== 'none' },
-                                       { attr: 'userRole', type: 'userRole', key: 'userRole', condition: val => val && val.length > 0 },
-                                       { attr: 'postAuthor', type: 'postAuthor', key: 'postAuthor', condition: val => val && val > 0 },
-                                       { attr: 'customFieldName', type: 'customField', key: null, condition: val => val, customValues: () => ({
-                                               customFieldName: attributes.customFieldName,
-                                               ...( attributes.customFieldRule ? { customFieldRule: attributes.customFieldRule } : {} ),
-                                               ...( attributes.customFieldValue ? { customFieldValue: attributes.customFieldValue } : {} ),
-                                       })},
-                                       { attr: 'periodDisplaySetting', type: 'period', key: null, condition: val => val && val !== 'none', customValues: () => ({
-                                               periodDisplaySetting: attributes.periodDisplaySetting,
-                                               ...( attributes.periodSpecificationMethod ? { periodSpecificationMethod: attributes.periodSpecificationMethod } : {} ),
-                                               ...( attributes.periodDisplayValue ? { periodDisplayValue: attributes.periodDisplayValue } : {} ),
-                                               ...( attributes.periodReferCustomField ? { periodReferCustomField: attributes.periodReferCustomField } : {} ),
-                                       })},
-                                       { attr: 'showOnlyLoginUser', type: 'loginUser', key: 'showOnlyLoginUser', condition: val => val },
-                               ];
+                               const migrationRules = createMigrationRules(attributes);
 
                                // 各条件を移行
                                migrationRules.forEach(rule => {
@@ -158,63 +145,20 @@ registerBlockType( 'vk-blocks/dynamic-if', {
                        }
                }, [] );
 
-		const conditionTypes = [
-			'pageType', 'postType', 'language', 'userRole', 'postAuthor', 'customField', 'period', 'loginUser'
-		].map(value => ({
+		const conditionTypes = Object.entries(CONDITION_TYPE_LABELS).map(([value, label]) => ({
 			value,
-			label: __(value === 'pageType' ? 'Page Type' : 
-					 value === 'postType' ? 'Post Type' : 
-					 value === 'language' ? 'Language' : 
-					 value === 'userRole' ? 'User Role' : 
-					 value === 'postAuthor' ? 'Post Author' : 
-					 value === 'customField' ? 'Custom Field' : 
-					 value === 'period' ? 'Display Period' : 
-					 'Login User Only', 'vk-dynamic-if-block'),
+			label: __(label, 'vk-dynamic-if-block'),
 		}));
 
-		const pageTypeDefinitions = [
-			{ value: 'none', label: 'No restriction' },
-			{ value: 'is_front_page', label: 'Front Page', func: 'is_front_page()' },
-			{ value: 'is_single', label: 'Single', func: 'is_single()' },
-			{ value: 'is_page', label: 'Page', func: 'is_page()' },
-			{ value: 'is_singular', label: 'Singular', func: 'is_singular()' },
-			{ value: 'is_home', label: 'Post Top', func: 'is_home() && ! is_front_page()' },
-			{ value: 'is_post_type_archive', label: 'Post Type Archive', func: 'is_post_type_archive()' },
-			{ value: 'is_category', label: 'Category Archive', func: 'is_category()' },
-			{ value: 'is_tag', label: 'Tag Archive', func: 'is_tag()' },
-			{ value: 'is_tax', label: 'Taxonomy Archive', func: 'is_tax()' },
-			{ value: 'is_year', label: 'Yearly Archive', func: 'is_year()' },
-			{ value: 'is_month', label: 'Monthly Archive', func: 'is_month()' },
-			{ value: 'is_date', label: 'Daily Archive', func: 'is_date()' },
-			{ value: 'is_author', label: 'Author Archive', func: 'is_author()' },
-			{ value: 'is_archive', label: 'Archive', func: 'is_archive()' },
-			{ value: 'is_search', label: 'Search Result', func: 'is_search()' },
-			{ value: 'is_404', label: '404', func: 'is_404()' },
-		];
 
-		const ifPageTypes = pageTypeDefinitions.map(def => ({
+
+		const ifPageTypes = PAGE_TYPE_DEFINITIONS.map(def => ({
 			value: def.value,
 			label: def.func ? __(def.label, 'vk-dynamic-if-block') + ` ( ${def.func} )` : __(def.label, 'vk-dynamic-if-block'),
 			simpleLabel: __(def.label, 'vk-dynamic-if-block'),
 		}));
 
-		// 定数定義
-		const CUSTOM_FIELD_RULES = [
-			{ value: 'valueExists', label: __( 'Value Exist ( !empty() )', 'vk-dynamic-if-block' ) },
-			{ value: 'valueEquals', label: __( 'Value Equals ( === )', 'vk-dynamic-if-block' ) },
-		];
 
-		const PERIOD_SETTINGS = [
-			{ value: 'none', label: __( 'No restriction', 'vk-dynamic-if-block' ) },
-			{ value: 'deadline', label: __( 'Set to display deadline', 'vk-dynamic-if-block' ) },
-			{ value: 'startline', label: __( 'Set to display startline', 'vk-dynamic-if-block' ) },
-			{ value: 'daysSincePublic', label: __( 'Number of days from the date of publication', 'vk-dynamic-if-block' ) },
-		];
-
-		const PERIOD_METHODS = [
-			{ value: 'direct', label: __( 'Direct input in this block', 'vk-dynamic-if-block' ) },
-			{ value: 'referCustomField', label: __( 'Refer to value of custom field', 'vk-dynamic-if-block' ) },
-		];
 
 		const userRoles = Object.entries(vk_dynamic_if_block_localize_data?.userRoles || {}).map(([key, label]) => ({
 			value: key,
@@ -224,7 +168,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 		const userSelectOptions = vk_dynamic_if_block_localize_data?.userSelectOptions || [];
 
 		const addCondition = () => {
-			const newCondition = { id: Date.now(), type: 'pageType', values: {} };
+			const newCondition = { id: generateId(), type: BLOCK_CONFIG.defaultConditionType, values: {} };
 			const newConditions = [ ...conditions ];
 			
 			if ( newConditions.length === 0 ) {
@@ -232,7 +176,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					id: 'default-group',
 					name: 'Condition 1',
 					conditions: [ newCondition ],
-					operator: 'and'
+					operator: BLOCK_CONFIG.defaultOperator
 				} );
 			} else {
 				newConditions[0].conditions.push( newCondition );
@@ -244,11 +188,11 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 		const addConditionGroup = () => {
 			const usedTypes = conditions.map(g => g.conditions[0]?.type).filter(Boolean);
 			const availableTypes = conditionTypes.map(opt => opt.value).filter(val => !usedTypes.includes(val));
-			const firstType = availableTypes[0] || 'pageType';
+			const firstType = availableTypes[0] || BLOCK_CONFIG.defaultConditionType;
 			const newConditionGroup = {
-				id: Date.now(),
+				id: generateId(),
 				name: `Condition ${ conditions.length + 1 }`,
-				conditions: [{ id: Date.now(), type: firstType, values: {} }],
+				conditions: [{ id: generateId(), type: firstType, values: {} }],
 				operator: 'or',
 			};
 			setAttributes( { conditions: [ ...conditions, newConditionGroup ] } );
@@ -309,18 +253,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			);
 		};
 
-		// 言語ソート関数
-		const sortLanguages = (languages = [], currentSiteLanguage = '') => {
-			return [...languages].sort((a, b) => {
-				if (a.value === '') return -1;
-				if (b.value === '') return 1;
-				if (a.value === currentSiteLanguage) return -1;
-				if (b.value === currentSiteLanguage) return 1;
-				if (a.value === 'en_US') return -1;
-				if (b.value === 'en_US') return 1;
-				return a.label.localeCompare(b.label);
-			});
-		};
+
 
 		const renderConditionSettings = ( condition = {}, groupIndex = 0, conditionIndex = 0 ) => {
 			const { type = '', values = {} } = condition;
@@ -496,11 +429,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			return exclusion ? `${__('!', 'vk-dynamic-if-block')} ${labelsString}` : labelsString;
 		};
 
-		const blockClassName = 'vk-dynamic-if-block';
-		const MY_TEMPLATE = [ [ 'core/paragraph', {} ] ];
-
 		return (
-			<div { ...useBlockProps( { className: blockClassName } ) }>
+			<div { ...useBlockProps( { className: BLOCK_CONFIG.className } ) }>
 				<InspectorControls>
 					<PanelBody
 						title={ __( 'Display Conditions', 'vk-dynamic-if-block' ) }
@@ -595,10 +525,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 									<SelectControl
 										label={ __( 'Condition Operator', 'vk-dynamic-if-block' ) }
 										value={ conditionOperator }
-										options={ [
-											{ label: 'AND', value: 'and' },
-											{ label: 'OR', value: 'or' }
-										] }
+										options={ CONDITION_OPERATORS }
 										onChange={ ( value ) => setAttributes( { conditionOperator: value } ) }
 									/>
 								) }
@@ -619,7 +546,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					</span>
 				</div>
 
-				<InnerBlocks template={ MY_TEMPLATE } />
+				<InnerBlocks template={ BLOCK_CONFIG.defaultTemplate } />
 			</div>
 		);
 	},
