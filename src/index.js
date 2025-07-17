@@ -105,138 +105,53 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 	edit( { attributes, setAttributes } ) {
 		const { conditions, conditionOperator, exclusion } = attributes;
 
+               // 移行処理のヘルパー関数
+               const createConditionGroup = (type, values, groupIndex) => ({
+                       id: Date.now() + groupIndex,
+                       name: `Condition ${groupIndex}`,
+                       conditions: [{ id: Date.now() + groupIndex - 1, type, values }],
+                       operator: 'and',
+               });
+
                // 既存ブロックから新形式への移行処理
                React.useEffect( () => {
                        if ( !conditions || conditions.length === 0 || ( conditions[0] && conditions[0].conditions.length === 0 ) ) {
                                const newConditions = [];
                                let groupIndex = 1;
 
-                               if ( attributes.ifPageType && attributes.ifPageType !== 'none' ) {
-                                       newConditions.push( {
-                                               id: Date.now() + groupIndex,
-                                               name: `Condition ${groupIndex}`,
-                                               conditions: [{
-                                                       id: Date.now(),
-                                                       type: 'pageType',
-                                                       values: { ifPageType: Array.isArray( attributes.ifPageType ) ? attributes.ifPageType : [ attributes.ifPageType ] },
-                                               }],
-                                               operator: 'and',
-                                       } );
-                                       groupIndex++;
-                               }
-                               if ( attributes.ifPostType && attributes.ifPostType !== 'none' ) {
-                                       newConditions.push( {
-                                               id: Date.now() + groupIndex,
-                                               name: `Condition ${groupIndex}`,
-                                               conditions: [{
-                                                       id: Date.now() + 1,
-                                                       type: 'postType',
-                                                       values: { ifPostType: Array.isArray( attributes.ifPostType ) ? attributes.ifPostType : [ attributes.ifPostType ] },
-                                               }],
-                                               operator: 'and',
-                                       } );
-                                       groupIndex++;
-                               }
-                               if ( attributes.ifLanguage && attributes.ifLanguage !== 'none' ) {
-                                       newConditions.push( {
-                                               id: Date.now() + groupIndex,
-                                               name: `Condition ${groupIndex}`,
-                                               conditions: [{
-                                                       id: Date.now() + 2,
-                                                       type: 'language',
-                                                       values: { ifLanguage: Array.isArray( attributes.ifLanguage ) ? attributes.ifLanguage : [ attributes.ifLanguage ] },
-                                               }],
-                                               operator: 'and',
-                                       } );
-                                       groupIndex++;
-                               }
-                               if ( attributes.userRole && attributes.userRole.length > 0 ) {
-                                       newConditions.push( {
-                                               id: Date.now() + groupIndex,
-                                               name: `Condition ${groupIndex}`,
-                                               conditions: [{
-                                                       id: Date.now() + 3,
-                                                       type: 'userRole',
-                                                       values: { userRole: attributes.userRole },
-                                               }],
-                                               operator: 'and',
-                                       } );
-                                       groupIndex++;
-                               }
-                               if ( attributes.postAuthor && attributes.postAuthor > 0 ) {
-                                       newConditions.push( {
-                                               id: Date.now() + groupIndex,
-                                               name: `Condition ${groupIndex}`,
-                                               conditions: [{
-                                                       id: Date.now() + 4,
-                                                       type: 'postAuthor',
-                                                       values: { postAuthor: [ attributes.postAuthor ] },
-                                               }],
-                                               operator: 'and',
-                                       } );
-                                       groupIndex++;
-                               }
-                               if ( attributes.customFieldName ) {
-                                       newConditions.push( {
-                                               id: Date.now() + groupIndex,
-                                               name: `Condition ${groupIndex}`,
-                                               conditions: [{
-                                                       id: Date.now() + 5,
-                                                       type: 'customField',
-                                                       values: {
-                                                               customFieldName: attributes.customFieldName,
-                                                               ...( attributes.customFieldRule ? { customFieldRule: attributes.customFieldRule } : {} ),
-                                                               ...( attributes.customFieldValue ? { customFieldValue: attributes.customFieldValue } : {} ),
-                                                       },
-                                               }],
-                                               operator: 'and',
-                                       } );
-                                       groupIndex++;
-                               }
-                               if ( attributes.periodDisplaySetting && attributes.periodDisplaySetting !== 'none' ) {
-                                       newConditions.push( {
-                                               id: Date.now() + groupIndex,
-                                               name: `Condition ${groupIndex}`,
-                                               conditions: [{
-                                                       id: Date.now() + 6,
-                                                       type: 'period',
-                                                       values: {
-                                                               periodDisplaySetting: attributes.periodDisplaySetting,
-                                                               ...( attributes.periodSpecificationMethod ? { periodSpecificationMethod: attributes.periodSpecificationMethod } : {} ),
-                                                               ...( attributes.periodDisplayValue ? { periodDisplayValue: attributes.periodDisplayValue } : {} ),
-                                                               ...( attributes.periodReferCustomField ? { periodReferCustomField: attributes.periodReferCustomField } : {} ),
-                                                       },
-                                               }],
-                                               operator: 'and',
-                                       } );
-                                       groupIndex++;
-                               }
-                               if ( attributes.showOnlyLoginUser ) {
-                                       newConditions.push( {
-                                               id: Date.now() + groupIndex,
-                                               name: `Condition ${groupIndex}`,
-                                               conditions: [{
-                                                       id: Date.now() + 7,
-                                                       type: 'loginUser',
-                                                       values: { showOnlyLoginUser: attributes.showOnlyLoginUser },
-                                               }],
-                                               operator: 'and',
-                                       } );
-                                       groupIndex++;
-                               }
+                               // 移行対象の条件を定義
+                               const migrationRules = [
+                                       { attr: 'ifPageType', type: 'pageType', key: 'ifPageType', condition: val => val && val !== 'none' },
+                                       { attr: 'ifPostType', type: 'postType', key: 'ifPostType', condition: val => val && val !== 'none' },
+                                       { attr: 'ifLanguage', type: 'language', key: 'ifLanguage', condition: val => val && val !== 'none' },
+                                       { attr: 'userRole', type: 'userRole', key: 'userRole', condition: val => val && val.length > 0 },
+                                       { attr: 'postAuthor', type: 'postAuthor', key: 'postAuthor', condition: val => val && val > 0 },
+                                       { attr: 'customFieldName', type: 'customField', key: null, condition: val => val, customValues: () => ({
+                                               customFieldName: attributes.customFieldName,
+                                               ...( attributes.customFieldRule ? { customFieldRule: attributes.customFieldRule } : {} ),
+                                               ...( attributes.customFieldValue ? { customFieldValue: attributes.customFieldValue } : {} ),
+                                       })},
+                                       { attr: 'periodDisplaySetting', type: 'period', key: null, condition: val => val && val !== 'none', customValues: () => ({
+                                               periodDisplaySetting: attributes.periodDisplaySetting,
+                                               ...( attributes.periodSpecificationMethod ? { periodSpecificationMethod: attributes.periodSpecificationMethod } : {} ),
+                                               ...( attributes.periodDisplayValue ? { periodDisplayValue: attributes.periodDisplayValue } : {} ),
+                                               ...( attributes.periodReferCustomField ? { periodReferCustomField: attributes.periodReferCustomField } : {} ),
+                                       })},
+                                       { attr: 'showOnlyLoginUser', type: 'loginUser', key: 'showOnlyLoginUser', condition: val => val },
+                               ];
+
+                               // 各条件を移行
+                               migrationRules.forEach(rule => {
+                                       const value = attributes[rule.attr];
+                                       if (rule.condition(value)) {
+                                               const values = rule.customValues ? rule.customValues() : { [rule.key]: Array.isArray(value) ? value : [value] };
+                                               newConditions.push(createConditionGroup(rule.type, values, groupIndex++));
+                                       }
+                               });
 
                                // 条件が1つもない場合は、デフォルトのCondition 1を作成
                                if (newConditions.length === 0) {
-                                       newConditions.push({
-                                               id: 'default-group',
-                                               name: 'Condition 1',
-                                               conditions: [{
-                                                       id: Date.now() + 8,
-                                                       type: 'pageType',
-                                                       values: {},
-                                               }],
-                                               operator: 'and',
-                                       });
+                                       newConditions.push(createConditionGroup('pageType', {}, 1));
                                }
 
                                setAttributes( { conditions: newConditions } );
@@ -244,39 +159,18 @@ registerBlockType( 'vk-blocks/dynamic-if', {
                }, [] );
 
 		const conditionTypes = [
-			{
-				value: 'pageType',
-				label: __( 'Page Type', 'vk-dynamic-if-block' ),
-			},
-			{
-				value: 'postType',
-				label: __( 'Post Type', 'vk-dynamic-if-block' ),
-			},
-			{
-				value: 'language',
-				label: __( 'Language', 'vk-dynamic-if-block' ),
-			},
-			{
-				value: 'userRole',
-				label: __( 'User Role', 'vk-dynamic-if-block' ),
-			},
-			{
-				value: 'postAuthor',
-				label: __( 'Post Author', 'vk-dynamic-if-block' ),
-			},
-			{
-				value: 'customField',
-				label: __( 'Custom Field', 'vk-dynamic-if-block' ),
-			},
-			{
-				value: 'period',
-				label: __( 'Display Period', 'vk-dynamic-if-block' ),
-			},
-			{
-				value: 'loginUser',
-				label: __( 'Login User Only', 'vk-dynamic-if-block' ),
-			},
-		];
+			'pageType', 'postType', 'language', 'userRole', 'postAuthor', 'customField', 'period', 'loginUser'
+		].map(value => ({
+			value,
+			label: __(value === 'pageType' ? 'Page Type' : 
+					 value === 'postType' ? 'Post Type' : 
+					 value === 'language' ? 'Language' : 
+					 value === 'userRole' ? 'User Role' : 
+					 value === 'postAuthor' ? 'Post Author' : 
+					 value === 'customField' ? 'Custom Field' : 
+					 value === 'period' ? 'Display Period' : 
+					 'Login User Only', 'vk-dynamic-if-block'),
+		}));
 
 		const ifPageTypes = [
 			{
