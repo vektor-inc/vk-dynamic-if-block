@@ -548,7 +548,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 								
 								return sortedLanguages.map((language, languageIndex) => {
 									const isCurrentSiteLanguage = language.value === currentSiteLanguage;
-									const label = isCurrentSiteLanguage ? `${language.label} (${__('Current Site Language', 'vk-dynamic-if-block')})` : language.label;
+									const label = isCurrentSiteLanguage ? `${language.label}` : language.label;
 									
 									return (
 										<CheckboxControl
