@@ -543,7 +543,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			return selected.map(val => {
 				const opt = options.find(o => o.value === val);
 				return opt ? (useSimpleLabel ? opt.simpleLabel : opt.label) : val;
-			}).join(operator === 'and' ? ' and ' : ' or ');
+			}).join(', ');
 		};
 
 		const generateLabels = () => {
