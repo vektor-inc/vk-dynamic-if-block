@@ -526,23 +526,46 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							__nextHasNoMarginBottom
 							className="dynamic-if-language"
 						>
-							{ vk_dynamic_if_block_localize_data.languageSelectOptions.map( ( language, languageIndex ) => {
+							{ (() => {
+								const allLanguages = vk_dynamic_if_block_localize_data.languageSelectOptions || [];
+								const currentSiteLanguage = vk_dynamic_if_block_localize_data.currentSiteLanguage || '';
 								const selectedLanguages = values.ifLanguage || [];
-								return (
-									<CheckboxControl
-										__nextHasNoMarginBottom
-										key={ languageIndex }
-										label={ language.label }
-										checked={ selectedLanguages.includes( language.value ) }
-										onChange={ ( isChecked ) => {
-											const newLanguages = isChecked
-												? [ ...selectedLanguages, language.value ]
-												: selectedLanguages.filter( ( l ) => l !== language.value );
-											updateConditionValue( groupIndex, conditionIndex, 'ifLanguage', newLanguages );
-										} }
-									/>
-								);
-							} ) }
+								
+								// 言語オプションを並び替えて、Unspecified、現在のサイト言語、その他の言語の順に表示
+								const sortedLanguages = allLanguages.sort((a, b) => {
+									// Unspecifiedを最上部に
+									if (a.value === '') return -1;
+									if (b.value === '') return 1;
+									// 現在のサイト言語を2番目に
+									if (a.value === currentSiteLanguage) return -1;
+									if (b.value === currentSiteLanguage) return 1;
+									// 英語を3番目に
+									if (a.value === 'en_US') return -1;
+									if (b.value === 'en_US') return 1;
+									// その他はアルファベット順
+									return a.label.localeCompare(b.label);
+								});
+								
+								return sortedLanguages.map((language, languageIndex) => {
+									const isCurrentSiteLanguage = language.value === currentSiteLanguage;
+									const label = isCurrentSiteLanguage ? `${language.label} (${__('Current Site Language', 'vk-dynamic-if-block')})` : language.label;
+									
+									return (
+										<CheckboxControl
+											__nextHasNoMarginBottom
+											key={ languageIndex }
+											label={ label }
+											checked={ selectedLanguages.includes(language.value) }
+											onChange={ ( isChecked ) => {
+												const newLanguages = isChecked
+													? [ ...selectedLanguages, language.value ]
+													: selectedLanguages.filter( ( l ) => l !== language.value );
+												updateConditionValue( groupIndex, conditionIndex, 'ifLanguage', newLanguages );
+											} }
+										/>
+									);
+								});
+							})() }
 						</BaseControl>
 					);
 
