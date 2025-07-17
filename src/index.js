@@ -108,87 +108,137 @@ registerBlockType( 'vk-blocks/dynamic-if', {
                // 既存ブロックから新形式への移行処理
                React.useEffect( () => {
                        if ( !conditions || conditions.length === 0 || ( conditions[0] && conditions[0].conditions.length === 0 ) ) {
-                               const migrated = [];
+                               const newConditions = [];
+                               let groupIndex = 1;
+
                                if ( attributes.ifPageType && attributes.ifPageType !== 'none' ) {
-                                       migrated.push( {
-                                               id: Date.now(),
-                                               type: 'pageType',
-                                               values: { ifPageType: Array.isArray( attributes.ifPageType ) ? attributes.ifPageType : [ attributes.ifPageType ] },
+                                       newConditions.push( {
+                                               id: Date.now() + groupIndex,
+                                               name: `Condition ${groupIndex}`,
+                                               conditions: [{
+                                                       id: Date.now(),
+                                                       type: 'pageType',
+                                                       values: { ifPageType: Array.isArray( attributes.ifPageType ) ? attributes.ifPageType : [ attributes.ifPageType ] },
+                                               }],
+                                               operator: 'and',
                                        } );
+                                       groupIndex++;
                                }
                                if ( attributes.ifPostType && attributes.ifPostType !== 'none' ) {
-                                       migrated.push( {
-                                               id: Date.now() + 1,
-                                               type: 'postType',
-                                               values: { ifPostType: Array.isArray( attributes.ifPostType ) ? attributes.ifPostType : [ attributes.ifPostType ] },
+                                       newConditions.push( {
+                                               id: Date.now() + groupIndex,
+                                               name: `Condition ${groupIndex}`,
+                                               conditions: [{
+                                                       id: Date.now() + 1,
+                                                       type: 'postType',
+                                                       values: { ifPostType: Array.isArray( attributes.ifPostType ) ? attributes.ifPostType : [ attributes.ifPostType ] },
+                                               }],
+                                               operator: 'and',
                                        } );
+                                       groupIndex++;
                                }
                                if ( attributes.ifLanguage && attributes.ifLanguage !== 'none' ) {
-                                       migrated.push( {
-                                               id: Date.now() + 2,
-                                               type: 'language',
-                                               values: { ifLanguage: Array.isArray( attributes.ifLanguage ) ? attributes.ifLanguage : [ attributes.ifLanguage ] },
+                                       newConditions.push( {
+                                               id: Date.now() + groupIndex,
+                                               name: `Condition ${groupIndex}`,
+                                               conditions: [{
+                                                       id: Date.now() + 2,
+                                                       type: 'language',
+                                                       values: { ifLanguage: Array.isArray( attributes.ifLanguage ) ? attributes.ifLanguage : [ attributes.ifLanguage ] },
+                                               }],
+                                               operator: 'and',
                                        } );
+                                       groupIndex++;
                                }
                                if ( attributes.userRole && attributes.userRole.length > 0 ) {
-                                       migrated.push( {
-                                               id: Date.now() + 3,
-                                               type: 'userRole',
-                                               values: { userRole: attributes.userRole },
+                                       newConditions.push( {
+                                               id: Date.now() + groupIndex,
+                                               name: `Condition ${groupIndex}`,
+                                               conditions: [{
+                                                       id: Date.now() + 3,
+                                                       type: 'userRole',
+                                                       values: { userRole: attributes.userRole },
+                                               }],
+                                               operator: 'and',
                                        } );
+                                       groupIndex++;
                                }
                                if ( attributes.postAuthor && attributes.postAuthor > 0 ) {
-                                       migrated.push( {
-                                               id: Date.now() + 4,
-                                               type: 'postAuthor',
-                                               values: { postAuthor: [ attributes.postAuthor ] },
+                                       newConditions.push( {
+                                               id: Date.now() + groupIndex,
+                                               name: `Condition ${groupIndex}`,
+                                               conditions: [{
+                                                       id: Date.now() + 4,
+                                                       type: 'postAuthor',
+                                                       values: { postAuthor: [ attributes.postAuthor ] },
+                                               }],
+                                               operator: 'and',
                                        } );
+                                       groupIndex++;
                                }
                                if ( attributes.customFieldName ) {
-                                       migrated.push( {
-                                               id: Date.now() + 5,
-                                               type: 'customField',
-                                               values: {
-                                                       customFieldName: attributes.customFieldName,
-                                                       ...( attributes.customFieldRule ? { customFieldRule: attributes.customFieldRule } : {} ),
-                                                       ...( attributes.customFieldValue ? { customFieldValue: attributes.customFieldValue } : {} ),
-                                               },
+                                       newConditions.push( {
+                                               id: Date.now() + groupIndex,
+                                               name: `Condition ${groupIndex}`,
+                                               conditions: [{
+                                                       id: Date.now() + 5,
+                                                       type: 'customField',
+                                                       values: {
+                                                               customFieldName: attributes.customFieldName,
+                                                               ...( attributes.customFieldRule ? { customFieldRule: attributes.customFieldRule } : {} ),
+                                                               ...( attributes.customFieldValue ? { customFieldValue: attributes.customFieldValue } : {} ),
+                                                       },
+                                               }],
+                                               operator: 'and',
                                        } );
+                                       groupIndex++;
                                }
                                if ( attributes.periodDisplaySetting && attributes.periodDisplaySetting !== 'none' ) {
-                                       migrated.push( {
-                                               id: Date.now() + 6,
-                                               type: 'period',
-                                               values: {
-                                                       periodDisplaySetting: attributes.periodDisplaySetting,
-                                                       ...( attributes.periodSpecificationMethod ? { periodSpecificationMethod: attributes.periodSpecificationMethod } : {} ),
-                                                       ...( attributes.periodDisplayValue ? { periodDisplayValue: attributes.periodDisplayValue } : {} ),
-                                                       ...( attributes.periodReferCustomField ? { periodReferCustomField: attributes.periodReferCustomField } : {} ),
-                                               },
+                                       newConditions.push( {
+                                               id: Date.now() + groupIndex,
+                                               name: `Condition ${groupIndex}`,
+                                               conditions: [{
+                                                       id: Date.now() + 6,
+                                                       type: 'period',
+                                                       values: {
+                                                               periodDisplaySetting: attributes.periodDisplaySetting,
+                                                               ...( attributes.periodSpecificationMethod ? { periodSpecificationMethod: attributes.periodSpecificationMethod } : {} ),
+                                                               ...( attributes.periodDisplayValue ? { periodDisplayValue: attributes.periodDisplayValue } : {} ),
+                                                               ...( attributes.periodReferCustomField ? { periodReferCustomField: attributes.periodReferCustomField } : {} ),
+                                                       },
+                                               }],
+                                               operator: 'and',
                                        } );
+                                       groupIndex++;
                                }
                                if ( attributes.showOnlyLoginUser ) {
-                                       migrated.push( {
-                                               id: Date.now() + 7,
-                                               type: 'loginUser',
-                                               values: { showOnlyLoginUser: attributes.showOnlyLoginUser },
+                                       newConditions.push( {
+                                               id: Date.now() + groupIndex,
+                                               name: `Condition ${groupIndex}`,
+                                               conditions: [{
+                                                       id: Date.now() + 7,
+                                                       type: 'loginUser',
+                                                       values: { showOnlyLoginUser: attributes.showOnlyLoginUser },
+                                               }],
+                                               operator: 'and',
                                        } );
+                                       groupIndex++;
                                }
 
-                               const newConditions = [
-                                       {
+                               // 条件が1つもない場合は、デフォルトのCondition 1を作成
+                               if (newConditions.length === 0) {
+                                       newConditions.push({
                                                id: 'default-group',
                                                name: 'Condition 1',
-                                               conditions: migrated.length > 0 ? migrated : [
-                                                       {
-                                                               id: Date.now() + 8,
-                                                               type: 'pageType',
-                                                               values: {},
-                                                       },
-                                               ],
+                                               conditions: [{
+                                                       id: Date.now() + 8,
+                                                       type: 'pageType',
+                                                       values: {},
+                                               }],
                                                operator: 'and',
-                                       },
-                               ];
+                                       });
+                               }
+
                                setAttributes( { conditions: newConditions } );
                        }
                }, [] );
