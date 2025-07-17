@@ -537,12 +537,12 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 		};
 
 		// 共通のラベル生成関数
-		const generateLabelFromValues = (values, options, valueKey, operator = 'or', useSimpleLabel = false) => {
+		const generateLabelFromValues = (values, options, valueKey, useSimpleLabel = false) => {
 			const selected = values[valueKey] || [];
 			if (selected.length === 0) return null;
 			return selected.map(val => {
 				const opt = options.find(o => o.value === val);
-				return opt ? (useSimpleLabel ? opt.simpleLabel : opt.label) : val;
+				return opt?.[useSimpleLabel ? 'simpleLabel' : 'label'] || val;
 			}).join(', ');
 		};
 
@@ -556,7 +556,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 
 				switch (condition.type) {
 					case 'pageType':
-						label = generateLabelFromValues(condition.values, ifPageTypes, 'ifPageType', 'or', true);
+						label = generateLabelFromValues(condition.values, ifPageTypes, 'ifPageType', true);
 						break;
 					case 'postType':
 						label = generateLabelFromValues(condition.values, vk_dynamic_if_block_localize_data.postTypeSelectOptions, 'ifPostType');
@@ -565,10 +565,10 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						label = generateLabelFromValues(condition.values, vk_dynamic_if_block_localize_data.languageSelectOptions, 'ifLanguage');
 						break;
 					case 'userRole':
-						label = generateLabelFromValues(condition.values, userRoles, 'userRole', operator);
+						label = generateLabelFromValues(condition.values, userRoles, 'userRole');
 						break;
 					case 'postAuthor':
-						label = generateLabelFromValues(condition.values, userSelectOptions, 'postAuthor', operator);
+						label = generateLabelFromValues(condition.values, userSelectOptions, 'postAuthor');
 						break;
 					case 'customField':
 						if (!condition.values.customFieldName) return null;
