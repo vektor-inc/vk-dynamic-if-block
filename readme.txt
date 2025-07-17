@@ -4,7 +4,7 @@ Tags: dynamic block, if, Conditional branch, Conditional Display, Custom Field, 
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 0.8.4
+Stable tag: 0.8.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ VK Dynamic If Block displays its Inner Blocks based on specified conditions, suc
 
 == Description ==
 
-VK Dynamic If Block is a custom WordPress block, primarily designed for FSE, that allows users to display Innder Block based on specified conditions. With this block, you can show or hide Innder Block depending on various conditions, such as whether the current page is the front page or a single post, the post type, or the value of a Custom Field.
+VK Dynamic If Block is a custom WordPress block, primarily designed for FSE, that allows users to display Innder Block based on specified conditions. With this block, you can show or hide Inner Block depending on various conditions, such as whether the current page is the front page or a single post, the post type, or the value of a Custom Field.
 
 == Installation ==
 
@@ -35,8 +35,14 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
-[ Add Function ][ Author Archive ] Allow specifying the author.
 [ Specification change ] Changed the UI to specify the condition branching method at the beginning
+
+= 0.8.6 =
+[ Specific Change ][ Author Archive ] Changed to target only users with the role of Contributor or higher who have at least one published article.
+
+= 0.8.5 =
+[ Add Function ][ Author Archive ] Allow specifying the author.
+[ Bug Fix ] Fix readme typo
 
 = 0.8.4 =
 [ Add Function ] Add exclusion indicator to condition labels.
