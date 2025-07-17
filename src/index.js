@@ -206,14 +206,9 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 		const userSelectOptions = vk_dynamic_if_block_localize_data.userSelectOptions || [];
 
 		const addCondition = () => {
-			const newCondition = {
-				id: Date.now(),
-				type: 'pageType',
-				values: {},
-			};
-
-			// 最初のグループに条件を追加
+			const newCondition = { id: Date.now(), type: 'pageType', values: {} };
 			const newConditions = [ ...conditions ];
+			
 			if ( newConditions.length === 0 ) {
 				newConditions.push( {
 					id: 'default-group',
@@ -229,70 +224,72 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 		};
 
 		const addConditionGroup = () => {
-			// すでに使われているCondition Typeを取得
 			const usedTypes = conditions.map(g => g.conditions[0]?.type).filter(Boolean);
-			// 未使用のCondition Typeを取得
 			const availableTypes = conditionTypes.map(opt => opt.value).filter(val => !usedTypes.includes(val));
-			// 最初の未使用タイプ、なければ'pageType'をデフォルト
 			const firstType = availableTypes[0] || 'pageType';
 			const newConditionGroup = {
 				id: Date.now(),
 				name: `Condition ${ conditions.length + 1 }`,
-				conditions: [
-					{
-						id: Date.now(),
-						type: firstType,
-						values: {},
-					},
-				],
+				conditions: [{ id: Date.now(), type: firstType, values: {} }],
 				operator: 'or',
 			};
 			setAttributes( { conditions: [ ...conditions, newConditionGroup ] } );
 		};
 
 		const updateCondition = ( groupIndex, conditionIndex, updates ) => {
+			if (!Array.isArray(conditions) || groupIndex < 0 || conditionIndex < 0 || !updates) return;
+			
 			const newConditions = [ ...conditions ];
-			newConditions[ groupIndex ].conditions[ conditionIndex ] = { 
-				...newConditions[ groupIndex ].conditions[ conditionIndex ], 
-				...updates 
-			};
+			const group = newConditions[ groupIndex ];
+			const condition = group?.conditions?.[ conditionIndex ];
+			
+			if (!group || !condition) return;
+			
+			newConditions[ groupIndex ].conditions[ conditionIndex ] = { ...condition, ...updates };
 			setAttributes( { conditions: newConditions } );
 		};
 
 		const updateConditionValue = ( groupIndex, conditionIndex, key, value ) => {
+			if (!Array.isArray(conditions) || groupIndex < 0 || conditionIndex < 0) return;
+			
 			const newConditions = [ ...conditions ];
-			newConditions[ groupIndex ].conditions[ conditionIndex ].values = {
-				...newConditions[ groupIndex ].conditions[ conditionIndex ].values,
-				[ key ]: value,
-			};
+			const group = newConditions[ groupIndex ];
+			const condition = group?.conditions?.[ conditionIndex ];
+			
+			if (!group || !condition) return;
+			
+			condition.values = { ...condition.values, [ key ]: value };
 			setAttributes( { conditions: newConditions } );
 		};
 
 		// 共通のチェックボックスレンダラー
-		const renderCheckboxGroup = (options, selectedValues, valueKey, className, groupIndex, conditionIndex) => (
-			<BaseControl
-				__nextHasNoMarginBottom
-				className={className}
-			>
-				{options.map((option, index) => {
-					const selected = selectedValues || [];
-					return (
-						<CheckboxControl
-							__nextHasNoMarginBottom
-							key={index}
-							label={option.label}
-							checked={selected.includes(option.value)}
-							onChange={(isChecked) => {
-								const newValues = isChecked
-									? [...selected, option.value]
-									: selected.filter(v => v !== option.value);
-								updateConditionValue(groupIndex, conditionIndex, valueKey, newValues);
-							}}
-						/>
-					);
-				})}
-			</BaseControl>
-		);
+		const renderCheckboxGroup = (options = [], selectedValues = [], valueKey = '', className = '', groupIndex = 0, conditionIndex = 0) => {
+			if (!Array.isArray(options) || !options.length) return null;
+			
+			return (
+				<BaseControl __nextHasNoMarginBottom className={className}>
+					{options.map((option, index) => {
+						const selected = Array.isArray(selectedValues) ? selectedValues : [];
+						const isChecked = selected.includes(option?.value);
+						
+						return (
+							<CheckboxControl
+								__nextHasNoMarginBottom
+								key={option?.value || index}
+								label={option?.label || ''}
+								checked={isChecked}
+								onChange={(isChecked) => {
+									const newValues = isChecked
+										? [...selected, option.value]
+										: selected.filter(v => v !== option.value);
+									updateConditionValue(groupIndex, conditionIndex, valueKey, newValues);
+								}}
+							/>
+						);
+					})}
+				</BaseControl>
+			);
+		};
 
 		const renderConditionSettings = ( condition, groupIndex, conditionIndex ) => {
 			const { type, values } = condition;
@@ -537,71 +534,53 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 		};
 
 		// 共通のラベル生成関数
-		const generateLabelFromValues = (values, options, valueKey, useSimpleLabel = false) => {
-			const selected = values[valueKey] || [];
-			if (selected.length === 0) return null;
-			return selected.map(val => {
-				const opt = options.find(o => o.value === val);
-				return opt?.[useSimpleLabel ? 'simpleLabel' : 'label'] || val;
-			}).join(', ');
+		const generateLabelFromValues = (values = {}, options = [], valueKey = '', useSimpleLabel = false) => {
+			const selected = Array.isArray(values[valueKey]) ? values[valueKey] : [];
+			if (!selected.length || !Array.isArray(options)) return null;
+			
+			return selected.map(val => 
+				options.find(o => o?.value === val)?.[useSimpleLabel ? 'simpleLabel' : 'label'] || val
+			).join(', ');
 		};
 
 		const generateLabels = () => {
-			// グループごとにラベルを生成
-			const groupLabels = conditions.map((group) => {
-				const { conditions: groupConditions, operator } = group;
-				if (groupConditions.length === 0) return null;
-				const condition = groupConditions[0];
-				let label = '';
+			if (!Array.isArray(conditions) || !conditions.length) {
+				return exclusion ? 
+					`${__('!', 'vk-dynamic-if-block')} ${__('No conditions set', 'vk-dynamic-if-block')}` :
+					__('No conditions set', 'vk-dynamic-if-block');
+			}
 
-				switch (condition.type) {
-					case 'pageType':
-						label = generateLabelFromValues(condition.values, ifPageTypes, 'ifPageType', true);
-						break;
-					case 'postType':
-						label = generateLabelFromValues(condition.values, vk_dynamic_if_block_localize_data.postTypeSelectOptions, 'ifPostType');
-						break;
-					case 'language':
-						label = generateLabelFromValues(condition.values, vk_dynamic_if_block_localize_data.languageSelectOptions, 'ifLanguage');
-						break;
-					case 'userRole':
-						label = generateLabelFromValues(condition.values, userRoles, 'userRole');
-						break;
-					case 'postAuthor':
-						label = generateLabelFromValues(condition.values, userSelectOptions, 'postAuthor');
-						break;
-					case 'customField':
-						if (!condition.values.customFieldName) return null;
-						label = condition.values.customFieldName;
-						break;
-					case 'period':
-						if (!condition.values.periodDisplaySetting || condition.values.periodDisplaySetting === 'none') return null;
-						label = condition.values.periodDisplaySetting;
-						break;
-					case 'loginUser':
-						if (!condition.values.showOnlyLoginUser) return null;
-						label = __('Login User Only', 'vk-dynamic-if-block');
-						break;
-					default:
-						label = condition.type;
-				}
+			const groupLabels = conditions.map((group) => {
+				const { conditions: groupConditions = [] } = group || {};
+				if (!groupConditions.length) return null;
+				
+				const condition = groupConditions[0];
+				if (!condition?.type) return null;
+				
+				const { values = {} } = condition;
+				const labelMap = {
+					pageType: () => generateLabelFromValues(values, ifPageTypes, 'ifPageType', true),
+					postType: () => generateLabelFromValues(values, vk_dynamic_if_block_localize_data?.postTypeSelectOptions || [], 'ifPostType'),
+					language: () => generateLabelFromValues(values, vk_dynamic_if_block_localize_data?.languageSelectOptions || [], 'ifLanguage'),
+					userRole: () => generateLabelFromValues(values, userRoles, 'userRole'),
+					postAuthor: () => generateLabelFromValues(values, userSelectOptions, 'postAuthor'),
+					customField: () => values.customFieldName || null,
+					period: () => values.periodDisplaySetting && values.periodDisplaySetting !== 'none' ? values.periodDisplaySetting : null,
+					loginUser: () => values.showOnlyLoginUser ? __('Login User Only', 'vk-dynamic-if-block') : null,
+				};
+
+				const label = labelMap[condition.type]?.() || condition.type;
 				return label ? `[${label}]` : null;
 			}).filter(Boolean);
 
-			if (groupLabels.length === 0) {
-				// 条件がなくても除外指定がある場合は「! No conditions set」と表示
-				if (exclusion) {
-					return __('!', 'vk-dynamic-if-block') + ' ' + __('No conditions set', 'vk-dynamic-if-block');
-				}
-				return __('No conditions set', 'vk-dynamic-if-block');
+			if (!groupLabels.length) {
+				return exclusion ? 
+					`${__('!', 'vk-dynamic-if-block')} ${__('No conditions set', 'vk-dynamic-if-block')}` :
+					__('No conditions set', 'vk-dynamic-if-block');
 			}
 
-			let labelsString = groupLabels.join(` ${conditionOperator.toUpperCase()} `);
-			if (exclusion) {
-				labelsString = __('!', 'vk-dynamic-if-block') + ' ' + labelsString;
-			}
-
-			return labelsString;
+			const labelsString = groupLabels.join(` ${conditionOperator?.toUpperCase() || 'AND'} `);
+			return exclusion ? `${__('!', 'vk-dynamic-if-block')} ${labelsString}` : labelsString;
 		};
 
 		const blockClassName = 'vk-dynamic-if-block';
