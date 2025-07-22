@@ -215,8 +215,23 @@ function vk_dynamic_if_block_check_post_type($values) {
     if (empty($post_types)) return true;
 
     // VkHelpersを使用してより確実に投稿タイプを取得
-    $post_type_info = VkHelpers::get_post_type_info();
-    $current_type = $post_type_info['slug'] ?? get_post_type();
+    if (class_exists('VkHelpers')) {
+        $post_type_info = VkHelpers::get_post_type_info();
+        $current_type = $post_type_info['slug'] ?? get_post_type();
+    } else {
+        // VkHelpersが存在しない場合はWordPress標準関数を使用
+        $current_type = get_post_type();
+        if (empty($current_type)) {
+            // アーカイブページの場合
+            if (is_post_type_archive()) {
+                $current_type = get_query_var('post_type');
+            } elseif (is_home() && !is_front_page()) {
+                $current_type = 'post';
+            } elseif (is_front_page()) {
+                $current_type = 'page';
+            }
+        }
+    }
     
     foreach ($post_types as $post_type) {
         if ($post_type === 'none' || $current_type === $post_type) {
