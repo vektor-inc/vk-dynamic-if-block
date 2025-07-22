@@ -10,31 +10,24 @@ function vk_dynamic_if_block_render($attributes, $content) {
     $defaults = ['groups' => [], 'conditions' => [], 'exclusion' => false];
     $attributes = array_merge($defaults, $attributes);
 
+    // conditionsが設定されている場合はconditionsを優先
+    if (!empty($attributes['conditions'])) {
+        return vk_dynamic_if_block_render_with_conditions($attributes, $content);
+    }
+
+    // groupsが設定されている場合はgroupsを使用
     if (!empty($attributes['groups'])) {
         return vk_dynamic_if_block_render_with_groups($attributes, $content);
     }
 
-    if (empty($attributes['conditions'])) {
-        $attributes['conditions'] = vk_dynamic_if_block_migrate_old_attributes($attributes);
-    }
+    // 古い属性からの移行
+    $attributes['conditions'] = vk_dynamic_if_block_migrate_old_attributes($attributes);
 
     if (empty($attributes['conditions'])) {
         return $content;
     }
 
-    $display = true;
-    foreach ($attributes['conditions'] as $index => $condition) {
-        $result = vk_dynamic_if_block_evaluate_condition($condition);
-        $operator = isset($condition['operator']) ? $condition['operator'] : 'and';
-        
-        if ($index === 0) {
-            $display = $result;
-        } else {
-            $display = $operator === 'and' ? $display && $result : $display || $result;
-        }
-    }
-
-    return ($attributes['exclusion'] ? !$display : $display) ? $content : '';
+    return vk_dynamic_if_block_render_with_conditions($attributes, $content);
 }
 
 function vk_dynamic_if_block_render_with_groups($attributes, $content) {
@@ -134,6 +127,40 @@ function vk_dynamic_if_block_migrate_old_attributes($attributes) {
     return $conditions;
 }
 
+function vk_dynamic_if_block_render_with_conditions($attributes, $content) {
+    if (empty($attributes['conditions'])) {
+        return $content;
+    }
+
+    $conditionOperator = $attributes['conditionOperator'] ?? 'and';
+
+    $display = true;
+    foreach ($attributes['conditions'] as $index => $condition) {
+        
+        // ネストされた条件構造を処理
+        if (isset($condition['conditions']) && is_array($condition['conditions'])) {
+            $group_result = true;
+            foreach ($condition['conditions'] as $nested_condition) {
+                $nested_result = vk_dynamic_if_block_evaluate_condition($nested_condition);
+                $group_result = $group_result && $nested_result;
+            }
+            $result = $group_result;
+        } else {
+            $result = vk_dynamic_if_block_evaluate_condition($condition);
+        }
+        
+        if ($index === 0) {
+            $display = $result;
+        } else {
+            $display = $conditionOperator === 'and' ? $display && $result : $display || $result;
+        }
+    }
+
+    $final_result = ($attributes['exclusion'] ? !$display : $display);
+    
+    return $final_result ? $content : '';
+}
+
 function vk_dynamic_if_block_evaluate_condition($condition) {
     $type = $condition['type'] ?? '';
     $values = $condition['values'] ?? [];
@@ -187,7 +214,9 @@ function vk_dynamic_if_block_check_post_type($values) {
     $post_types = (array)($values['ifPostType'] ?? []);
     if (empty($post_types)) return true;
 
-    $current_type = class_exists('VkHelpers') ? VkHelpers::get_post_type_info()['slug'] : get_post_type();
+    // VkHelpersを使用してより確実に投稿タイプを取得
+    $post_type_info = VkHelpers::get_post_type_info();
+    $current_type = $post_type_info['slug'] ?? get_post_type();
     
     foreach ($post_types as $post_type) {
         if ($post_type === 'none' || $current_type === $post_type) {
