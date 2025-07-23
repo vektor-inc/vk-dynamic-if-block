@@ -416,7 +416,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				};
 
 				const label = labelMap[condition.type]?.() || condition.type;
-				return label ? `[${label}]` : null;
+				return label || null;
 			}).filter(Boolean);
 
 			if (!groupLabels.length) {
@@ -425,7 +425,11 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					__('No conditions set', 'vk-dynamic-if-block');
 			}
 
-			const labelsString = groupLabels.join(` ${conditionOperator?.toUpperCase() || 'AND'} `);
+			// Condition 1つだけの場合はカッコなし、複数の場合はカッコ付き
+			const labelsString = groupLabels.length === 1 
+				? groupLabels[0]
+				: groupLabels.map(label => `[${label}]`).join(` ${conditionOperator?.toUpperCase() || 'AND'} `);
+
 			return exclusion ? `${__('!', 'vk-dynamic-if-block')} ${labelsString}` : labelsString;
 		};
 
