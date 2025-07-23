@@ -138,7 +138,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 
                                // 条件が1つもない場合は、デフォルトのCondition 1を作成
                                if (newConditions.length === 0) {
-                                       newConditions.push(createConditionGroup('pageType', {}, 1));
+                                       // デフォルトでは何も制限しない（常に表示）
+                                       newConditions.push(createConditionGroup('pageType', { ifPageType: ['none'] }, 1));
                                }
 
                                setAttributes( { conditions: newConditions } );
@@ -188,11 +189,31 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 		const addConditionGroup = () => {
 			const usedTypes = conditions.map(g => g.conditions[0]?.type).filter(Boolean);
 			const availableTypes = conditionTypes.map(opt => opt.value).filter(val => !usedTypes.includes(val));
+			
+			// Condition Typeの種類数に制限
+			const maxConditions = Object.keys(CONDITION_TYPE_LABELS).length;
+			if (conditions.length >= maxConditions) {
+				return; // 最大数に達した場合は何もしない
+			}
+			
 			const firstType = availableTypes[0] || BLOCK_CONFIG.defaultConditionType;
+			
+			// デフォルト値を設定
+			let defaultValues = {};
+			if (firstType === 'pageType') {
+				defaultValues = { ifPageType: ['none'] };
+			} else if (firstType === 'postType') {
+				defaultValues = { ifPostType: ['none'] };
+			} else if (firstType === 'language') {
+				defaultValues = { ifLanguage: [''] };
+			} else if (firstType === 'postAuthor') {
+				defaultValues = { postAuthor: [0] };
+			}
+			
 			const newConditionGroup = {
 				id: generateId(),
 				name: `Condition ${ conditions.length + 1 }`,
-				conditions: [{ id: generateId(), type: firstType, values: {} }],
+				conditions: [{ id: generateId(), type: firstType, values: defaultValues }],
 				operator: 'or',
 			};
 			setAttributes( { conditions: [ ...conditions, newConditionGroup ] } );
@@ -521,9 +542,15 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 										variant="secondary"
 										onClick={ addConditionGroup }
 										className="vkdif__add-condition"
+										disabled={ conditions.length >= Object.keys(CONDITION_TYPE_LABELS).length }
 									>
 										{ __( 'Add Condition', 'vk-dynamic-if-block' ) }
 									</Button>
+									{ conditions.length >= Object.keys(CONDITION_TYPE_LABELS).length && (
+										<p className="vkdif__max-conditions-notice">
+											{ __( 'Maximum number of conditions reached. Each condition type can only be used once.', 'vk-dynamic-if-block' ) }
+										</p>
+									) }
 								</BaseControl>
 								{ conditions.length > 1 && (
 									<SelectControl
