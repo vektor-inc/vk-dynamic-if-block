@@ -546,12 +546,14 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 									>
 										{ __( 'Add Condition', 'vk-dynamic-if-block' ) }
 									</Button>
-									{ conditions.length >= Object.keys(CONDITION_TYPE_LABELS).length && (
-										<p className="vkdif__max-conditions-notice">
-											{ __( 'Maximum number of conditions reached. Each condition type can only be used once.', 'vk-dynamic-if-block' ) }
-										</p>
-									) }
 								</BaseControl>
+								{ conditions.length >= Object.keys(CONDITION_TYPE_LABELS).length && (
+									<BaseControl>
+										<div className="vkdif__alert vkdif__alert-warning">
+											<p>{ __( 'Maximum number of conditions reached. Each condition type can only be used once.', 'vk-dynamic-if-block' ) }</p>
+										</div>
+									</BaseControl>
+								) }
 								{ conditions.length > 1 && (
 									<SelectControl
 										label={ __( 'Condition Operator', 'vk-dynamic-if-block' ) }
