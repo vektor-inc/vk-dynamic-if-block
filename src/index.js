@@ -12,10 +12,25 @@ import {
 	ToggleControl,
 	CheckboxControl,
 	BaseControl,
+	Button,
 	__experimentalNumberControl as NumberControl,
 } from '@wordpress/components';
 import { ReactComponent as Icon } from './icon.svg';
 import transforms from './transforms';
+import React from 'react';
+import {
+	CONDITION_TYPE_LABELS,
+	PAGE_TYPE_DEFINITIONS,
+	CUSTOM_FIELD_RULES,
+	PERIOD_SETTINGS,
+	PERIOD_METHODS,
+	CONDITION_OPERATORS,
+	BLOCK_CONFIG,
+	createMigrationRules,
+	generateId,
+	createConditionGroup,
+	sortLanguages,
+} from './constants';
 
 registerBlockType( 'vk-blocks/dynamic-if', {
 	apiVersion: 3,
@@ -23,579 +38,548 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 	icon: <Icon />,
 	transforms,
 	category: 'theme',
-	attributes: {
-		ifPageType: {
-			type: 'string',
-			default: 'none',
-		},
-		ifPostType: {
-			type: 'string',
-			default: 'none',
-		},
-		ifLanguage: {
-			type: 'string',
-			default: 'none',
-		},
-		userRole: {
-			type: 'array',
-			default: [],
-		},
-		postAuthor: {
-			type: 'number',
-			default: 0,
-		},
-		customFieldName: {
-			type: 'string',
-			default: '',
-		},
-		customFieldRule: {
-			type: 'string',
-			default: '',
-		},
-		customFieldValue: {
-			type: 'string',
-			default: '',
-		},
-		exclusion: {
-			type: 'boolian',
-			default: false,
-		},
-		periodDisplaySetting: {
-			type: 'string',
-			default: 'none',
-		},
-		periodSpecificationMethod: {
-			type: 'string',
-			default: 'direct',
-		},
-		periodDisplayValue: {
-			type: 'string',
-			default: '',
-		},
-		periodReferCustomField: {
-			type: 'string',
-			default: '',
-		},
-		showOnlyLoginUser: {
-			type: 'boolean',
-			default: false,
-		},
-	},
+       attributes: {
+               conditions: {
+                       type: 'array',
+                       default: [
+                               {
+                                       id: 'default-group',
+                                       name: 'Condition 1',
+                                       conditions: [],
+                                       operator: 'and',
+                               },
+                       ],
+               },
+               conditionOperator: {
+                       type: 'string',
+                       default: 'and',
+               },
+               exclusion: {
+                       type: 'boolean',
+                       default: false,
+               },
+               ifPageType: {
+                       type: 'string',
+                       default: 'none',
+               },
+               ifPostType: {
+                       type: 'string',
+                       default: 'none',
+               },
+               ifLanguage: {
+                       type: 'string',
+                       default: 'none',
+               },
+               userRole: {
+                       type: 'array',
+                       default: [],
+               },
+               postAuthor: {
+                       type: 'number',
+                       default: 0,
+               },
+               customFieldName: {
+                       type: 'string',
+                       default: '',
+               },
+               customFieldRule: {
+                       type: 'string',
+                       default: 'valueExists',
+               },
+               customFieldValue: {
+                       type: 'string',
+                       default: '',
+               },
+               periodDisplaySetting: {
+                       type: 'string',
+                       default: 'none',
+               },
+               periodSpecificationMethod: {
+                       type: 'string',
+                       default: 'direct',
+               },
+               periodDisplayValue: {
+                       type: 'string',
+                       default: '',
+               },
+               periodReferCustomField: {
+                       type: 'string',
+                       default: '',
+               },
+               showOnlyLoginUser: {
+                       type: 'boolean',
+                       default: false,
+               },
+       },
 	supports: {
 		html: false,
 		innerBlocks: true,
 	},
 	edit( { attributes, setAttributes } ) {
-		const {
-			ifPageType,
-			ifPostType,
-			ifLanguage,
-			userRole,
-			postAuthor,
-			customFieldName,
-			customFieldRule,
-			customFieldValue,
-			exclusion,
-			periodDisplaySetting,
-			periodSpecificationMethod,
-			periodDisplayValue,
-			periodReferCustomField,
-			showOnlyLoginUser,
-		} = attributes;
+		const { conditions, conditionOperator, exclusion } = attributes;
 
-		const ifPageTypes = [
-			{
-				value: 'none',
-				label: __( 'No restriction', 'vk-dynamic-if-block' ),
-			},
-			{
-				value: 'is_front_page',
-				label:
-					__( 'Front Page', 'vk-dynamic-if-block' ) +
-					' ( is_front_page() )',
-			},
-			{
-				value: 'is_single',
-				label:
-					__( 'Single', 'vk-dynamic-if-block' ) + ' ( is_single() )',
-			},
-			{
-				value: 'is_page',
-				label: __( 'Page', 'vk-dynamic-if-block' ) + ' ( is_page() )',
-			},
-			{
-				value: 'is_singular',
-				label:
-					__( 'Singular', 'vk-dynamic-if-block' ) +
-					' ( is_singular() )',
-			},
-			{
-				value: 'is_home',
-				label:
-					__( 'Post Top', 'vk-dynamic-if-block' ) +
-					' ( is_home() && ! is_front_page() )',
-			},
-			{
-				value: 'is_post_type_archive',
-				label:
-					__( 'Post Type Archive', 'vk-dynamic-if-block' ) +
-					' ( is_post_type_archive() )',
-			},
-			{
-				value: 'is_category',
-				label:
-					__( 'Category Archive', 'vk-dynamic-if-block' ) +
-					' ( is_category() )',
-			},
-			{
-				value: 'is_tag',
-				label:
-					__( 'Tag Archive', 'vk-dynamic-if-block' ) +
-					' ( is_tag() )',
-			},
-			{
-				value: 'is_tax',
-				label:
-					__( 'Taxonomy Archive', 'vk-dynamic-if-block' ) +
-					' ( is_tax() )',
-			},
-			{
-				value: 'is_year',
-				label:
-					__( 'Yearly Archive', 'vk-dynamic-if-block' ) +
-					' ( is_year() )',
-			},
-			{
-				value: 'is_month',
-				label:
-					__( 'Monthly Archive', 'vk-dynamic-if-block' ) +
-					' ( is_month() )',
-			},
-			{
-				value: 'is_date',
-				label:
-					__( 'Daily Archive', 'vk-dynamic-if-block' ) +
-					' ( is_date() )',
-			},
-			{
-				value: 'is_author',
-				label:
-					__( 'Author Archive', 'vk-dynamic-if-block' ) +
-					' ( is_author() )',
-			},
-			{
-				value: 'is_archive',
-				label:
-					__( 'Archive', 'vk-dynamic-if-block' ) +
-					' ( is_archive() )',
-			},
-			{
-				value: 'is_search',
-				label:
-					__( 'Search Result', 'vk-dynamic-if-block' ) +
-					' ( is_search() )',
-			},
-			{
-				value: 'is_404',
-				label: __( '404', 'vk-dynamic-if-block' ) + ' ( is_404() )',
-			},
-		];
+               // 既存ブロックから新形式への移行処理
+               React.useEffect( () => {
+                       if ( !conditions || conditions.length === 0 || ( conditions[0] && conditions[0].conditions.length === 0 ) ) {
+                               const newConditions = [];
+                               let groupIndex = 1;
 
-		const blockClassName = `vk-dynamic-if-block ifPageType-${ ifPageType } ifPostType-${ ifPostType }`;
-		const MY_TEMPLATE = [ [ 'core/paragraph', {} ] ];
+                               // 移行対象の条件を定義
+                               const migrationRules = createMigrationRules(attributes);
 
-		const userRolesObj = vk_dynamic_if_block_localize_data.userRoles || {};
-		const userRoles = Object.keys( userRolesObj ).map( ( key ) => ( {
+                               // 各条件を移行
+                               migrationRules.forEach(rule => {
+                                       const value = attributes[rule.attr];
+                                       if (rule.condition(value)) {
+                                               const values = rule.customValues ? rule.customValues() : { [rule.key]: Array.isArray(value) ? value : [value] };
+                                               newConditions.push(createConditionGroup(rule.type, values, groupIndex++));
+                                       }
+                               });
+
+                               // 条件が1つもない場合は、デフォルトのCondition 1を作成
+                               if (newConditions.length === 0) {
+                                       // デフォルトでは何も制限しない（常に表示）
+                                       newConditions.push(createConditionGroup('pageType', { ifPageType: ['none'] }, 1));
+                               }
+
+                               setAttributes( { conditions: newConditions } );
+                       }
+               }, [] );
+
+		const conditionTypes = Object.entries(CONDITION_TYPE_LABELS).map(([value, label]) => ({
+			value,
+			label: __(label, 'vk-dynamic-if-block'),
+		}));
+
+
+
+		const ifPageTypes = PAGE_TYPE_DEFINITIONS.map(def => ({
+			value: def.value,
+			label: def.func ? __(def.label, 'vk-dynamic-if-block') + ` ( ${def.func} )` : __(def.label, 'vk-dynamic-if-block'),
+			simpleLabel: __(def.label, 'vk-dynamic-if-block'),
+		}));
+
+
+
+		const userRoles = Object.entries(vk_dynamic_if_block_localize_data?.userRoles || {}).map(([key, label]) => ({
 			value: key,
-			label: __( userRolesObj[ key ], 'vk-dynamic-if-block' ),
-		} ) );
+			label: __(label, 'vk-dynamic-if-block'),
+		}));
 
-		const userSelectOptions = vk_dynamic_if_block_localize_data.userSelectOptions || []; // eslint-disable-line no-undef
+		const userSelectOptions = vk_dynamic_if_block_localize_data?.userSelectOptions || [];
 
-		let labels = [];
+		const addCondition = () => {
+			const newCondition = { id: generateId(), type: BLOCK_CONFIG.defaultConditionType, values: {} };
+			const newConditions = [ ...conditions ];
+			
+			if ( newConditions.length === 0 ) {
+				newConditions.push( {
+					id: 'default-group',
+					name: 'Condition 1',
+					conditions: [ newCondition ],
+					operator: BLOCK_CONFIG.defaultOperator
+				} );
+			} else {
+				newConditions[0].conditions.push( newCondition );
+			}
 
-		if ( ifPageType !== 'none' ) {
-			labels.push( ifPageType );
-		}
+			setAttributes( { conditions: newConditions } );
+		};
 
-		if ( ifLanguage !== 'none' ) {
-			labels.push( ifLanguage );
-		}
+		const addConditionGroup = () => {
+			const usedTypes = conditions.map(g => g.conditions[0]?.type).filter(Boolean);
+			const availableTypes = conditionTypes.map(opt => opt.value).filter(val => !usedTypes.includes(val));
+			
+			// Condition Typeの種類数に制限
+			const maxConditions = Object.keys(CONDITION_TYPE_LABELS).length;
+			if (conditions.length >= maxConditions) {
+				return; // 最大数に達した場合は何もしない
+			}
+			
+			const firstType = availableTypes[0] || BLOCK_CONFIG.defaultConditionType;
+			
+			// デフォルト値を設定
+			let defaultValues = {};
+			if (firstType === 'pageType') {
+				defaultValues = { ifPageType: ['none'] };
+			} else if (firstType === 'postType') {
+				defaultValues = { ifPostType: ['none'] };
+			} else if (firstType === 'language') {
+				defaultValues = { ifLanguage: [''] };
+			} else if (firstType === 'postAuthor') {
+				defaultValues = { postAuthor: [0] };
+			}
+			
+			const newConditionGroup = {
+				id: generateId(),
+				name: `Condition ${ conditions.length + 1 }`,
+				conditions: [{ id: generateId(), type: firstType, values: defaultValues }],
+				operator: 'or',
+			};
+			setAttributes( { conditions: [ ...conditions, newConditionGroup ] } );
+		};
 
-		if ( ifPostType !== 'none' ) {
-			labels.push( ifPostType );
-		}
-		if ( userRole.length > 0 ) {
-			userRole.forEach( ( roleValue ) => {
-				const roleLabel = userRoles.find(
-					( role ) => role.value === roleValue
-				);
-				if ( roleLabel ) {
-					labels.push( roleLabel.label );
-				}
-			} );
-		}
+		const updateCondition = ( groupIndex, conditionIndex, updates ) => {
+			if (!Array.isArray(conditions) || groupIndex < 0 || conditionIndex < 0 || !updates) return;
+			
+			const newConditions = [ ...conditions ];
+			const group = newConditions[ groupIndex ];
+			const condition = group?.conditions?.[ conditionIndex ];
+			
+			if (!group || !condition) return;
+			
+			newConditions[ groupIndex ].conditions[ conditionIndex ] = { ...condition, ...updates };
+			setAttributes( { conditions: newConditions } );
+		};
 
-		if ( customFieldName ) {
-			labels.push( customFieldName );
-		}
+		const updateConditionValue = ( groupIndex, conditionIndex, key, value ) => {
+			if (!Array.isArray(conditions) || groupIndex < 0 || conditionIndex < 0) return;
+			
+			const newConditions = [ ...conditions ];
+			const group = newConditions[ groupIndex ];
+			const condition = group?.conditions?.[ conditionIndex ];
+			
+			if (!group || !condition) return;
+			
+			condition.values = { ...condition.values, [ key ]: value };
+			setAttributes( { conditions: newConditions } );
+		};
 
-		if ( periodDisplaySetting !== 'none' ) {
-			labels.push( periodDisplaySetting );
-		}
+		// 共通のチェックボックスレンダラー
+		const renderCheckboxGroup = (options = [], selectedValues = [], valueKey = '', className = '', groupIndex = 0, conditionIndex = 0) => {
+			if (!Array.isArray(options) || !options.length) return null;
+			
+			return (
+				<BaseControl __nextHasNoMarginBottom className={className}>
+					{options.map((option, index) => {
+						const selected = Array.isArray(selectedValues) ? selectedValues : [];
+						const isChecked = selected.includes(option?.value);
+						
+						return (
+							<CheckboxControl
+								__nextHasNoMarginBottom
+								key={option?.value || index}
+								label={option?.label || ''}
+								checked={isChecked}
+								onChange={(isChecked) => {
+									const newValues = isChecked
+										? [...selected, option.value]
+										: selected.filter(v => v !== option.value);
+									updateConditionValue(groupIndex, conditionIndex, valueKey, newValues);
+								}}
+							/>
+						);
+					})}
+				</BaseControl>
+			);
+		};
 
-		if ( showOnlyLoginUser ) {
-			labels.push( 'showOnlyLoginUser' );
-		}
 
-		let labels_string = labels.join( ' / ' );
-		if ( exclusion && labels.length > 0 ) {
-			labels_string = '! ' + labels_string;
-		}
 
-		return (
-			<div { ...useBlockProps( { className: blockClassName } ) }>
-				<InspectorControls>
-					<PanelBody
-						title={ __(
-							'Display Conditions',
-							'vk-dynamic-if-block'
-						) }
-						className={ 'vkdif' }
-					>
-						<SelectControl
-							label={ __( 'Page Type', 'vk-dynamic-if-block' ) }
-							value={ ifPageType }
-							options={ ifPageTypes }
-							onChange={ ( value ) =>
-								setAttributes( { ifPageType: value } )
-							}
-						/>
-						<SelectControl
-							label={ __(
-								'Author',
-								'vk-dynamic-if-block'
-							) }
-							value={ postAuthor }
-							options={ userSelectOptions }
-							onChange={ ( value ) =>
-								setAttributes( { postAuthor: Number(value) } )
-							}
-						/>
-						<SelectControl
-							label={ __( 'Post Type', 'vk-dynamic-if-block' ) }
-							value={ ifPostType }
-							options={
-								vk_dynamic_if_block_localize_data.postTypeSelectOptions
-							}
-							onChange={ ( value ) =>
-								setAttributes( { ifPostType: value } )
-							}
-						/>
-						<SelectControl
-							label={ __( 'Languages', 'vk-dynamic-if-block' ) }
-							value={ ifLanguage }
-							options={
-								vk_dynamic_if_block_localize_data.languageSelectOptions
-							}
-							onChange={ ( value ) =>
-								setAttributes( { ifLanguage: value } )
-							}
-						/>
-						<BaseControl
-							__nextHasNoMarginBottom
-							className="dynamic-if-user-role"
-							label={ __( 'User Role', 'vk-dynamic-if-block' ) }
-							help={ __(
-								'If unchecked, no restrictions are imposed by user role',
-								'vk-dynamic-if-block'
-							) }
-						>
-							{ userRoles.map( ( role, index ) => {
-								return (
-									<CheckboxControl
-										__nextHasNoMarginBottom
-										key={ index }
-										label={ role.label }
-										checked={ userRole.includes(
-											role.value
-										) }
-										onChange={ ( isChecked ) => {
-											if ( isChecked ) {
-												setAttributes( {
-													userRole: [
-														...userRole,
-														role.value,
-													],
-												} );
-											} else {
-												setAttributes( {
-													userRole: userRole.filter(
-														( r ) =>
-															r !== role.value
-													),
-												} );
-											}
-										} }
-									/>
-								);
-							} ) }
+		const renderConditionSettings = ( condition = {}, groupIndex = 0, conditionIndex = 0 ) => {
+			const { type = '', values = {} } = condition;
+			const updateValue = (key, value) => updateConditionValue(groupIndex, conditionIndex, key, value);
+
+			const renderers = {
+				pageType: () => renderCheckboxGroup(
+					ifPageTypes, values.ifPageType, 'ifPageType', 'dynamic-if-page-type', groupIndex, conditionIndex
+				),
+				postType: () => renderCheckboxGroup(
+					vk_dynamic_if_block_localize_data?.postTypeSelectOptions || [], 
+					values.ifPostType, 'ifPostType', 'dynamic-if-post-type', groupIndex, conditionIndex
+				),
+				language: () => {
+					const allLanguages = vk_dynamic_if_block_localize_data?.languageSelectOptions || [];
+					const currentSiteLanguage = vk_dynamic_if_block_localize_data?.currentSiteLanguage || '';
+					const selectedLanguages = values.ifLanguage || [];
+					const sortedLanguages = sortLanguages(allLanguages, currentSiteLanguage);
+
+					return (
+						<BaseControl __nextHasNoMarginBottom className="dynamic-if-language">
+							{sortedLanguages.map((language, index) => (
+								<CheckboxControl
+									__nextHasNoMarginBottom
+									key={language.value || index}
+									label={language.label}
+									checked={selectedLanguages.includes(language.value)}
+									onChange={(isChecked) => {
+										const newLanguages = isChecked
+											? [...selectedLanguages, language.value]
+											: selectedLanguages.filter(l => l !== language.value);
+										updateValue('ifLanguage', newLanguages);
+									}}
+								/>
+							))}
 						</BaseControl>
-						<ToggleControl
-							label={ __(
-								'Displayed only for logged-in users.',
-								'vk-dynamic-if-block'
-							) }
-							checked={ showOnlyLoginUser }
-							onChange={ ( checked ) =>
-								setAttributes( { showOnlyLoginUser: checked } )
-							}
-						/>
+					);
+				},
+				userRole: () => renderCheckboxGroup(
+					userRoles, values.userRole, 'userRole', 'dynamic-if-user-role', groupIndex, conditionIndex
+				),
+				postAuthor: () => renderCheckboxGroup(
+					userSelectOptions, values.postAuthor, 'postAuthor', 'dynamic-if-post-author', groupIndex, conditionIndex
+				),
+				customField: () => (
+					<>
 						<TextControl
-							label={ __(
-								'Custom Field Name',
-								'vk-dynamic-if-block'
-							) }
-							value={ customFieldName }
-							onChange={ ( value ) =>
-								setAttributes( { customFieldName: value } )
-							}
+							label={__('Custom Field Name', 'vk-dynamic-if-block')}
+							value={values.customFieldName || ''}
+							onChange={(value) => updateValue('customFieldName', value)}
 						/>
-						{ customFieldName && (
+						{values.customFieldName && (
 							<>
 								<SelectControl
-									label={ __(
-										'Custom Field Rule',
-										'vk-dynamic-if-block'
-									) }
-									value={ customFieldRule }
-									options={ [
-										{
-											value: 'valueExists',
-											label: __(
-												'Value Exist ( !empty() )',
-												'vk-dynamic-if-block'
-											),
-										},
-										{
-											value: 'valueEquals',
-											label: __(
-												'Value Equals ( === )',
-												'vk-dynamic-if-block'
-											),
-										},
-									] }
-									onChange={ ( value ) =>
-										setAttributes( {
-											customFieldRule: value,
-										} )
-									}
+									label={__('Custom Field Rule', 'vk-dynamic-if-block')}
+									value={values.customFieldRule || ''}
+									options={CUSTOM_FIELD_RULES}
+									onChange={(value) => updateValue('customFieldRule', value)}
 								/>
-								{ customFieldRule === 'valueEquals' && (
+								{values.customFieldRule === 'valueEquals' && (
+									<TextControl
+										label={__('Custom Field Value', 'vk-dynamic-if-block')}
+										value={values.customFieldValue || ''}
+										onChange={(value) => updateValue('customFieldValue', value)}
+									/>
+								)}
+							</>
+						)}
+					</>
+				),
+				period: () => (
+					<>
+						<SelectControl
+							label={__('Display Period Setting', 'vk-dynamic-if-block')}
+							value={values.periodDisplaySetting || 'none'}
+							options={PERIOD_SETTINGS}
+							onChange={(value) => updateValue('periodDisplaySetting', value)}
+						/>
+						{values.periodDisplaySetting && values.periodDisplaySetting !== 'none' && (
+							<>
+								<SelectControl
+									label={__('Period specification method', 'vk-dynamic-if-block')}
+									value={values.periodSpecificationMethod || 'direct'}
+									options={PERIOD_METHODS}
+									onChange={(value) => updateValue('periodSpecificationMethod', value)}
+								/>
+								{values.periodSpecificationMethod === 'direct' && (
+									<NumberControl
+										label={__('Value for the specified period', 'vk-dynamic-if-block')}
+										type={values.periodDisplaySetting === 'daysSincePublic' ? 'number' : 'datetime-local'}
+										step={values.periodDisplaySetting === 'daysSincePublic' ? 1 : 60}
+										value={values.periodDisplayValue || ''}
+										onChange={(value) => updateValue('periodDisplayValue', value)}
+									/>
+								)}
+								{values.periodSpecificationMethod === 'referCustomField' && (
 									<>
 										<TextControl
-											label={ __(
-												'Custom Field Value',
-												'vk-dynamic-if-block'
-											) }
-											value={ customFieldValue }
-											onChange={ ( value ) =>
-												setAttributes( {
-													customFieldValue: value,
-												} )
-											}
+											label={__('Referenced custom field name', 'vk-dynamic-if-block')}
+											value={values.periodReferCustomField || ''}
+											onChange={(value) => updateValue('periodReferCustomField', value)}
 										/>
+										{!values.periodReferCustomField && (
+											<div className="vkdif__alert vkdif__alert-warning">
+												{__('Enter the name of the custom field you wish to reference.', 'vk-dynamic-if-block')}
+											</div>
+										)}
 									</>
+								)}
+							</>
+						)}
+					</>
+				),
+				loginUser: () => (
+					<ToggleControl
+						label={__('Displayed only for logged-in users.', 'vk-dynamic-if-block')}
+						checked={values.showOnlyLoginUser || false}
+						onChange={(checked) => updateValue('showOnlyLoginUser', checked)}
+					/>
+				),
+			};
+
+			return renderers[type]?.() || null;
+		};
+
+		// 共通のラベル生成関数
+		const generateLabelFromValues = (values = {}, options = [], valueKey = '', useSimpleLabel = false) => {
+			const selected = Array.isArray(values[valueKey]) ? values[valueKey] : [];
+			if (!selected.length || !Array.isArray(options)) return null;
+			
+			return selected.map(val => 
+				options.find(o => o?.value === val)?.[useSimpleLabel ? 'simpleLabel' : 'label'] || val
+			).join(', ');
+		};
+
+		const generateLabels = () => {
+			if (!Array.isArray(conditions) || !conditions.length) {
+				return exclusion ? 
+					`${__('!', 'vk-dynamic-if-block')} ${__('No conditions set', 'vk-dynamic-if-block')}` :
+					__('No conditions set', 'vk-dynamic-if-block');
+			}
+
+			const groupLabels = conditions.map((group) => {
+				const { conditions: groupConditions = [] } = group || {};
+				if (!groupConditions.length) return null;
+				
+				const condition = groupConditions[0];
+				if (!condition?.type) return null;
+				
+				const { values = {} } = condition;
+				const labelMap = {
+					pageType: () => generateLabelFromValues(values, ifPageTypes, 'ifPageType', true),
+					postType: () => generateLabelFromValues(values, vk_dynamic_if_block_localize_data?.postTypeSelectOptions || [], 'ifPostType'),
+					language: () => generateLabelFromValues(values, vk_dynamic_if_block_localize_data?.languageSelectOptions || [], 'ifLanguage'),
+					userRole: () => generateLabelFromValues(values, userRoles, 'userRole'),
+					postAuthor: () => generateLabelFromValues(values, userSelectOptions, 'postAuthor'),
+					customField: () => values.customFieldName || null,
+					period: () => values.periodDisplaySetting && values.periodDisplaySetting !== 'none' ? values.periodDisplaySetting : null,
+					loginUser: () => values.showOnlyLoginUser ? __('Login User Only', 'vk-dynamic-if-block') : null,
+				};
+
+				const label = labelMap[condition.type]?.() || condition.type;
+				return label || null;
+			}).filter(Boolean);
+
+			if (!groupLabels.length) {
+				return exclusion ? 
+					`${__('!', 'vk-dynamic-if-block')} ${__('No conditions set', 'vk-dynamic-if-block')}` :
+					__('No conditions set', 'vk-dynamic-if-block');
+			}
+
+			// Condition 1つだけの場合はカッコなし、複数の場合はカッコ付き
+			const labelsString = groupLabels.length === 1 
+				? groupLabels[0]
+				: groupLabels.map(label => `[${label}]`).join(` ${conditionOperator?.toUpperCase() || 'AND'} `);
+
+			return exclusion ? `${__('!', 'vk-dynamic-if-block')} ${labelsString}` : labelsString;
+		};
+
+		return (
+			<div { ...useBlockProps( { className: BLOCK_CONFIG.className } ) }>
+				<InspectorControls>
+					<PanelBody
+						title={ __( 'Display Conditions', 'vk-dynamic-if-block' ) }
+						className={ 'vkdif' }
+					>
+						{ conditions.length === 0 ? (
+							<div>
+								<BaseControl
+									__nextHasNoMarginBottom
+									className="dynamic-if-add-condition"
+								>
+									<p>{ __( 'No conditions set. Add a condition to control display.', 'vk-dynamic-if-block' ) }</p>
+									<Button
+										variant="primary"
+										onClick={ addCondition }
+									>
+										{ __( 'Add Condition', 'vk-dynamic-if-block' ) }
+									</Button>
+								</BaseControl>
+								<ToggleControl
+									label={ __( 'Exclusion designation', 'vk-dynamic-if-block' ) }
+									checked={ exclusion }
+									onChange={ ( checked ) =>
+										setAttributes( { exclusion: checked } )
+									}
+								/>
+							</div>
+						) : (
+							<>
+								{ conditions.map( ( group, groupIndex ) => (
+									<div key={ group.id } className="vkdif__group">
+										<div className="vkdif__group-header">
+											<span className="vkdif__group-number">Condition {groupIndex + 1}</span>
+										</div>
+										<div className="vkdif__group-conditions">
+											{ group.conditions.map( ( condition, conditionIndex ) => {
+												// 他グループで選択済みのCondition Typeを取得
+												const usedTypes = conditions
+													.filter((_, idx) => idx !== groupIndex)
+													.map(g => g.conditions[0]?.type)
+													.filter(Boolean);
+												// 選択肢をdisabled付きで生成
+												const availableConditionTypes = conditionTypes.map(opt => ({
+													...opt,
+													disabled: usedTypes.includes(opt.value) && opt.value !== condition.type
+												}));
+												return (
+													<div key={ condition.id } className="vkdif__condition">
+														<div className="vkdif__condition-header">
+															<SelectControl
+																label={ __( 'Condition Type', 'vk-dynamic-if-block' ) }
+																value={ condition.type }
+																options={ availableConditionTypes }
+																onChange={ ( value ) =>
+																	updateCondition( groupIndex, conditionIndex, { type: value, values: {} } )
+																}
+															/>
+														</div>
+														<div className="vkdif__condition-settings">
+															{ renderConditionSettings( condition, groupIndex, conditionIndex ) }
+														</div>
+													</div>
+												);
+											} ) }
+										</div>
+										<Button
+											variant="secondary"
+											isDestructive
+											onClick={ () => {
+												const newConditions = [ ...conditions ];
+												newConditions.splice( groupIndex, 1 );
+												setAttributes( { conditions: newConditions } );
+											} }
+										>
+											{ __( 'Remove Condition', 'vk-dynamic-if-block' ) }
+										</Button>
+									</div>
+								) ) }
+								<BaseControl
+									__nextHasNoMarginBottom
+									className="dynamic-if-add-condition"
+								>
+									<Button
+										variant="secondary"
+										onClick={ addConditionGroup }
+										className="vkdif__add-condition"
+										disabled={ conditions.length >= Object.keys(CONDITION_TYPE_LABELS).length }
+									>
+										{ __( 'Add Condition', 'vk-dynamic-if-block' ) }
+									</Button>
+								</BaseControl>
+								{ conditions.length >= Object.keys(CONDITION_TYPE_LABELS).length && (
+									<BaseControl>
+										<div className="vkdif__alert vkdif__alert-warning">
+											<p>{ __( 'Maximum number of conditions reached. Each condition type can only be used once.', 'vk-dynamic-if-block' ) }</p>
+										</div>
+									</BaseControl>
 								) }
+								{ conditions.length > 1 && (
+									<SelectControl
+										label={ __( 'Condition Operator', 'vk-dynamic-if-block' ) }
+										value={ conditionOperator }
+										options={ CONDITION_OPERATORS }
+										onChange={ ( value ) => setAttributes( { conditionOperator: value } ) }
+									/>
+								) }
+								<ToggleControl
+									label={ __( 'Exclusion designation', 'vk-dynamic-if-block' ) }
+									checked={ exclusion }
+									onChange={ ( checked ) =>
+										setAttributes( { exclusion: checked } )
+									}
+								/>
 							</>
 						) }
-						<BaseControl
-							title={ __(
-								'Display Period',
-								'vk-dynamic-if-block'
-							) }
-						>
-							<SelectControl
-								label={ __(
-									'Display Period Setting',
-									'vk-dynamic-if-block'
-								) }
-								value={ periodDisplaySetting }
-								options={ [
-									{
-										value: 'none',
-										label: __(
-											'No restriction',
-											'vk-dynamic-if-block'
-										),
-									},
-									{
-										value: 'deadline',
-										label: __(
-											'Set to display deadline',
-											'vk-dynamic-if-block'
-										),
-									},
-									{
-										value: 'startline',
-										label: __(
-											'Set to display startline',
-											'vk-dynamic-if-block'
-										),
-									},
-									{
-										value: 'daysSincePublic',
-										label: __(
-											'Number of days from the date of publication',
-											'vk-dynamic-if-block'
-										),
-									},
-								] }
-								onChange={ ( value ) =>
-									setAttributes( {
-										periodDisplaySetting: value,
-									} )
-								}
-								help={
-									periodDisplaySetting === 'deadline'
-										? __(
-												'After the specified date, it is hidden.',
-												'vk-dynamic-if-block'
-										  )
-										: periodDisplaySetting === 'startline'
-										? __(
-												'After the specified date, it is display.',
-												'vk-dynamic-if-block'
-										  )
-										: periodDisplaySetting ===
-										  'daysSincePublic'
-										? __(
-												'After the specified number of days, it is hidden.',
-												'vk-dynamic-if-block'
-										  )
-										: __(
-												'You can set the deadline or startline to be displayed, as well as the time period.',
-												'vk-dynamic-if-block'
-										  )
-								}
-							/>
-							{ periodDisplaySetting !== 'none' && (
-								<>
-									<SelectControl
-										label={ __(
-											'Period specification method',
-											'vk-dynamic-if-block'
-										) }
-										value={ periodSpecificationMethod }
-										options={ [
-											{
-												value: 'direct',
-												label: __(
-													'Direct input in this block',
-													'vk-dynamic-if-block'
-												),
-											},
-											{
-												value: 'referCustomField',
-												label: __(
-													'Refer to value of custom field',
-													'vk-dynamic-if-block'
-												),
-											},
-										] }
-										onChange={ ( value ) =>
-											setAttributes( {
-												periodSpecificationMethod:
-													value,
-											} )
-										}
-									/>
-									{ periodSpecificationMethod ===
-										'direct' && (
-										<NumberControl
-											label={ __(
-												'Value for the specified period',
-												'vk-dynamic-if-block'
-											) }
-											type={
-												periodDisplaySetting ===
-												'daysSincePublic'
-													? 'number'
-													: 'datetime-local'
-											}
-											step={
-												periodDisplaySetting ===
-												'daysSincePublic'
-													? 1
-													: 60
-											}
-											value={ periodDisplayValue }
-											onChange={ ( value ) =>
-												setAttributes( {
-													periodDisplayValue: value,
-												} )
-											}
-										/>
-									) }
-									{ periodSpecificationMethod ===
-										'referCustomField' && (
-										<>
-											<TextControl
-												label={ __(
-													'Referenced custom field name',
-													'vk-dynamic-if-block'
-												) }
-												value={ periodReferCustomField }
-												onChange={ ( value ) =>
-													setAttributes( {
-														periodReferCustomField:
-															value,
-													} )
-												}
-												help={
-													periodDisplaySetting ===
-													'daysSincePublic'
-														? __(
-																'Save the value of the custom field as an integer.',
-																'vk-dynamic-if-block'
-														  )
-														: __(
-																'Save the custom field values as Y-m-d H:i:s.',
-																'vk-dynamic-if-block'
-														  )
-												}
-												className="vkdif__refer-cf-name"
-											/>
-											{ ! periodReferCustomField && (
-												<div className="vkdif__alert vkdif__alert-warning">
-													{ __(
-														'Enter the name of the custom field you wish to reference.',
-														'vk-dynamic-if-block'
-													) }
-												</div>
-											) }
-										</>
-									) }
-								</>
-							) }
-						</BaseControl>
-						<ToggleControl
-							label={ __(
-								'Exclusion designation',
-								'vk-dynamic-if-block'
-							) }
-							checked={ exclusion }
-							onChange={ ( checked ) =>
-								setAttributes( { exclusion: checked } )
-							}
-						/>
 					</PanelBody>
 				</InspectorControls>
 				<div className="vk-dynamic-if-block__label">
-					{ labels_string }
+					<span>
+						{ generateLabels() || __( 'No conditions set', 'vk-dynamic-if-block' ) }
+					</span>
 				</div>
 
-				<InnerBlocks template={ MY_TEMPLATE } />
+				<InnerBlocks template={ BLOCK_CONFIG.defaultTemplate } />
 			</div>
 		);
 	},

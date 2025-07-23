@@ -1,25 +1,48 @@
 .wp-block-vk-blocks-dynamic-if {
 	border: 1px dotted #ccc;
-	padding: 4px;
+	padding: 1rem 4px 4px 4px;
 	position: relative;
 	.editor-styles-wrapper .is-layout-constrained > * + & {
 		margin-block-start: 0;
 	}
 }
+
 .vk-dynamic-if-block__label {
 	position: absolute;
 	padding: 1px 5px;
 	top: 0;
 	right: 0;
 	font-size: 9px;
-	text-align: right;
+	text-align: left;
 	background-color: #e5e5e5;
 	z-index: 10000;
 }
 
-// Specific margin-bottom of user role check box
+// 複数選択用のチェックボックススタイル
+.dynamic-if-page-type .components-checkbox-control,
+.dynamic-if-post-type .components-checkbox-control,
+.dynamic-if-language .components-checkbox-control,
+.dynamic-if-post-author .components-checkbox-control,
 .dynamic-if-user-role .components-checkbox-control {
 	margin-bottom: 15px;
+}
+
+// チェックボックスリストが長くなった場合にスクロールさせる
+.dynamic-if-page-type,
+.dynamic-if-post-type,
+.dynamic-if-language,
+.dynamic-if-user-role,
+.dynamic-if-post-author {
+	position: relative;
+	height: 200px;
+	max-height: 100%;
+	min-height: 100px;
+	overflow-y: auto;
+	border: 1px solid #e0e0e0;
+	padding: 10px;
+	border-radius: 2px;
+	background-color: #fafafa;
+	resize: vertical;
 }
 
 .vkdif .vkdif__refer-cf-name {
@@ -29,10 +52,109 @@
 	}
 }
 
+.vkdif__group {
+    position: relative;
+    padding: 1.5rem 1rem;
+	margin-bottom: 1.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+
+	&:last-child {
+		margin-bottom: 1.5rem;
+	}
+}
+
+.vkdif__group-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-wrap: wrap;
+
+	.vkdif__group-number {
+		font-size: 11px;
+		color: #777;
+		background: #eee;
+		border-radius: 2px;
+		padding: 2px 8px;
+	}
+
+}
+
+.vkdif__group-conditions {
+	.vkdif__condition {
+		margin-bottom: 0;
+		padding: 1rem 0;
+	}
+}
+
+.vkdif__condition-header {
+    margin-bottom: 1rem;
+
+	.components-base-control {
+		width: 100%;
+		margin-bottom: 0;
+	}
+
+	.components-button {
+		align-self: flex-start;
+		height: 30px;
+		padding: 0 12px;
+	}
+}
+
+.vkdif__condition-settings {
+	.components-base-control {
+		margin-bottom: 15px;
+
+		&:last-child {
+			margin-bottom: 0;
+		}
+	}
+}
+
+// 条件追加ボタンのスタイル
+.vkdif .components-button {
+	&.is-primary {
+		background-color: #007cba;
+		border-color: #007cba;
+		color: #fff;
+
+		&:hover {
+			background-color: #005a87;
+			border-color: #005a87;
+		}
+	}
+
+	&.is-secondary {
+		&.is-destructive {
+			color: #d63638;
+			border-color: #d63638;
+
+			&:hover {
+				background-color: #d63638;
+				color: #fff;
+			}
+		}
+	}
+}
+
+// 条件がない場合のメッセージ
+.vkdif__no-conditions {
+	text-align: center;
+	padding: 20px;
+	color: #666;
+
+	p {
+		margin-bottom: 15px;
+	}
+}
+
 // alert
 .vkdif__alert {
-	padding: 1em;
-	margin: 0.5em auto;
+	padding: 1rem;
+	margin: 0.5rem auto;
 	border-radius: 3px;
 	p {
 		margin: 0;
