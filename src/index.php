@@ -12,7 +12,6 @@ function vk_dynamic_if_block_render($attributes, $content) {
 
     // 新しいUIで設定されたconditionsが存在しない場合のみ、古い属性の移行処理を実行
     if (empty($attributes['conditions'])) {
-        error_log("Dynamic If Block: No conditions found, checking for old attributes...");
         // 古い属性が設定されている場合は移行処理を実行
         $old_attributes = ['customFieldName', 'ifPageType', 'ifPostType', 'ifLanguage', 'userRole', 'postAuthor', 'periodDisplaySetting', 'showOnlyLoginUser'];
         $has_old_attributes = false;
@@ -22,20 +21,13 @@ function vk_dynamic_if_block_render($attributes, $content) {
             if (isset($attributes[$attr]) && !empty($attributes[$attr]) && $attributes[$attr] !== 'none') {
                 $has_old_attributes = true;
                 $found_old_attributes[$attr] = $attributes[$attr];
-                error_log("Dynamic If Block: Found old attribute '{$attr}': " . var_export($attributes[$attr], true));
             }
         }
         
         if ($has_old_attributes) {
-            error_log("Dynamic If Block: Starting migration for old attributes: " . var_export($found_old_attributes, true));
             $migrated_conditions = vk_dynamic_if_block_migrate_old_attributes($attributes);
-            error_log("Dynamic If Block: Migration completed. New conditions: " . var_export($migrated_conditions, true));
             $attributes['conditions'] = $migrated_conditions;
-        } else {
-            error_log("Dynamic If Block: No old attributes found, no migration needed");
         }
-    } else {
-        error_log("Dynamic If Block: Using existing conditions, skipping migration: " . var_export($attributes['conditions'], true));
     }
 
     // conditionsが設定されている場合はconditionsを優先
@@ -91,7 +83,6 @@ function vk_dynamic_if_block_render_with_groups($attributes, $content) {
 }
 
 function vk_dynamic_if_block_migrate_old_attributes($attributes) {
-    error_log("Dynamic If Block: Starting migration process...");
     $conditions = [];
     $migrations = [
         'ifPageType' => 'pageType',
@@ -104,15 +95,11 @@ function vk_dynamic_if_block_migrate_old_attributes($attributes) {
         if (isset($attributes[$old_key]) && $attributes[$old_key] !== 'none') {
             // 複数の値が設定されている場合は配列として処理
             $values = is_array($attributes[$old_key]) ? $attributes[$old_key] : [$attributes[$old_key]];
-            error_log("Dynamic If Block Migration: Converting '{$old_key}' to '{$new_type}' with values: " . var_export($values, true));
             $conditions[] = [
                 'id' => "migrated_{$new_type}_" . time(),
                 'type' => $new_type,
                 'values' => [$old_key => $values]
             ];
-            error_log("Dynamic If Block Migration: Created condition for '{$new_type}' with ID: migrated_{$new_type}_" . time());
-        } else {
-            error_log("Dynamic If Block Migration: Skipping '{$old_key}' - not set or 'none'");
         }
     }
 
@@ -120,15 +107,11 @@ function vk_dynamic_if_block_migrate_old_attributes($attributes) {
     if (isset($attributes['userRole']) && !empty($attributes['userRole'])) {
         // 複数の値が設定されている場合は配列として処理
         $values = is_array($attributes['userRole']) ? $attributes['userRole'] : [$attributes['userRole']];
-        error_log("Dynamic If Block Migration: Converting 'userRole' with values: " . var_export($values, true));
         $conditions[] = [
             'id' => 'migrated_user_role_' . time(),
             'type' => 'userRole',
             'values' => ['userRole' => $values]
         ];
-        error_log("Dynamic If Block Migration: Created condition for 'userRole' with ID: migrated_user_role_" . time());
-    } else {
-        error_log("Dynamic If Block Migration: Skipping 'userRole' - not set or empty");
     }
 
     if (isset($attributes['customFieldName']) && !empty($attributes['customFieldName'])) {
@@ -136,16 +119,11 @@ function vk_dynamic_if_block_migrate_old_attributes($attributes) {
         if (isset($attributes['customFieldRule'])) $values['customFieldRule'] = $attributes['customFieldRule'];
         if (isset($attributes['customFieldValue'])) $values['customFieldValue'] = $attributes['customFieldValue'];
         
-        error_log("Dynamic If Block Migration: Converting 'customField' with values: " . var_export($values, true));
-        
         $conditions[] = [
             'id' => 'migrated_custom_field_' . time(),
             'type' => 'customField',
             'values' => $values
         ];
-        error_log("Dynamic If Block Migration: Created condition for 'customField' with ID: migrated_custom_field_" . time());
-    } else {
-        error_log("Dynamic If Block Migration: Skipping 'customField' - not set or empty");
     }
 
     if (isset($attributes['periodDisplaySetting']) && $attributes['periodDisplaySetting'] !== 'none') {
@@ -163,18 +141,13 @@ function vk_dynamic_if_block_migrate_old_attributes($attributes) {
     }
 
     if (isset($attributes['showOnlyLoginUser']) && $attributes['showOnlyLoginUser']) {
-        error_log("Dynamic If Block Migration: Converting 'showOnlyLoginUser' with value: " . var_export($attributes['showOnlyLoginUser'], true));
         $conditions[] = [
             'id' => 'migrated_login_user_' . time(),
             'type' => 'loginUser',
             'values' => ['showOnlyLoginUser' => $attributes['showOnlyLoginUser']]
         ];
-        error_log("Dynamic If Block Migration: Created condition for 'loginUser' with ID: migrated_login_user_" . time());
-    } else {
-        error_log("Dynamic If Block Migration: Skipping 'showOnlyLoginUser' - not set or false");
     }
 
-    error_log("Dynamic If Block Migration: Migration process completed. Total conditions created: " . count($conditions));
     return $conditions;
 }
 
@@ -265,9 +238,6 @@ function vk_dynamic_if_block_check_post_type($values) {
     $post_types = (array)($values['ifPostType'] ?? []);
     if (empty($post_types)) return true;
 
-    // デバッグ用
-    error_log("Dynamic If Block Post Type Debug - Expected: " . var_export($post_types, true));
-
     // VkHelpersを使用してより確実に投稿タイプを取得
     if (class_exists('VkHelpers')) {
         $post_type_info = VkHelpers::get_post_type_info();
@@ -287,16 +257,12 @@ function vk_dynamic_if_block_check_post_type($values) {
         }
     }
     
-    error_log("Dynamic If Block Post Type Debug - Current: " . var_export($current_type, true));
-    
     foreach ($post_types as $post_type) {
         if ($post_type === 'none' || $current_type === $post_type) {
-            error_log("Dynamic If Block Post Type Debug - Match found: {$post_type}");
             return true;
         }
     }
     
-    error_log("Dynamic If Block Post Type Debug - No match found");
     return false;
 }
 
