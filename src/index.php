@@ -6,9 +6,25 @@
 
 use VektorInc\VK_Helpers\VkHelpers;
 
-function vk_dynamic_if_block_render($attributes, $content) {
+function vk_dynamic_if_block_render($attributes, $content) {    
     $defaults = ['groups' => [], 'conditions' => [], 'exclusion' => false];
     $attributes = array_merge($defaults, $attributes);
+
+    // 古い属性が設定されている場合は移行処理を実行
+    $old_attributes = ['customFieldName', 'ifPageType', 'ifPostType', 'ifLanguage', 'userRole', 'postAuthor', 'periodDisplaySetting', 'showOnlyLoginUser'];
+    $has_old_attributes = false;
+    
+    foreach ($old_attributes as $attr) {
+        if (isset($attributes[$attr]) && !empty($attributes[$attr]) && $attributes[$attr] !== 'none') {
+            $has_old_attributes = true;
+            break;
+        }
+    }
+    
+    if ($has_old_attributes) {
+        $migrated_conditions = vk_dynamic_if_block_migrate_old_attributes($attributes);
+        $attributes['conditions'] = $migrated_conditions;
+    }
 
     // conditionsが設定されている場合はconditionsを優先
     if (!empty($attributes['conditions'])) {
@@ -73,20 +89,24 @@ function vk_dynamic_if_block_migrate_old_attributes($attributes) {
 
     foreach ($migrations as $old_key => $new_type) {
         if (isset($attributes[$old_key]) && $attributes[$old_key] !== 'none') {
+            // 複数の値が設定されている場合は配列として処理
+            $values = is_array($attributes[$old_key]) ? $attributes[$old_key] : [$attributes[$old_key]];
             $conditions[] = [
                 'id' => "migrated_{$new_type}_" . time(),
                 'type' => $new_type,
-                'values' => [$old_key => [$attributes[$old_key]]]
+                'values' => [$old_key => $values]
             ];
         }
     }
 
     // 特殊なケース
     if (isset($attributes['userRole']) && !empty($attributes['userRole'])) {
+        // 複数の値が設定されている場合は配列として処理
+        $values = is_array($attributes['userRole']) ? $attributes['userRole'] : [$attributes['userRole']];
         $conditions[] = [
             'id' => 'migrated_user_role_' . time(),
             'type' => 'userRole',
-            'values' => ['userRole' => $attributes['userRole']]
+            'values' => ['userRole' => $values]
         ];
     }
 
@@ -238,6 +258,7 @@ function vk_dynamic_if_block_check_post_type($values) {
             return true;
         }
     }
+    
     return false;
 }
 
@@ -283,7 +304,11 @@ function vk_dynamic_if_block_check_custom_field($values) {
     $field_value = get_post_meta(get_the_ID(), $field_name, true);
     $rule = $values['customFieldRule'] ?? 'valueExists';
     
-    return $rule === 'valueExists' ? ($field_value || $field_value === '0') : $field_value === ($values['customFieldValue'] ?? '');
+    if ($rule === 'valueExists') {
+        return !empty($field_value) || $field_value === '0' || $field_value === 0;
+    } else {
+        return $field_value === ($values['customFieldValue'] ?? '');
+    }
 }
 
 function vk_dynamic_if_block_check_period($values) {
