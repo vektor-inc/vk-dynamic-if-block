@@ -302,13 +302,13 @@ function vk_dynamic_if_block_check_language($values)
 
 function vk_dynamic_if_block_check_user_role($values)
 {
-    $user_role = $values['userRole'] ?? '';
-    if (empty($user_role)) {
+    $user_roles = $values['userRole'] ?? [];
+    if (empty($user_roles)) {
         return true;
     }
 
     $current_user = wp_get_current_user();
-    return is_user_logged_in() && in_array($user_role, $current_user->roles);
+    return is_user_logged_in() && array_intersect($current_user->roles, $user_roles);
 }
 
 function vk_dynamic_if_block_check_post_author($values)

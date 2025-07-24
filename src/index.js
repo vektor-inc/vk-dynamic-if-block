@@ -11,6 +11,7 @@ import {
 	SelectControl,
 	TextControl,
 	ToggleControl,
+	CheckboxControl,
 	BaseControl,
 	Button,
 } from '@wordpress/components';
@@ -72,8 +73,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			default: 'none',
 		},
 		userRole: {
-			type: 'string',
-			default: '',
+			type: 'array',
+			default: [],
 		},
 		postAuthor: {
 			type: 'number',
@@ -246,6 +247,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				defaultValues = { ifPageType: 'none' };
 			} else if ( firstType === 'postType' ) {
 				defaultValues = { ifPostType: 'none' };
+			} else if ( firstType === 'userRole' ) {
+				defaultValues = { userRole: [] };
 			} else if ( firstType === 'language' ) {
 				defaultValues = { ifLanguage: '' };
 			} else if ( firstType === 'postAuthor' ) {
@@ -376,14 +379,26 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					);
 				},
 				userRole: () => (
-					<SelectControl
-						label={ __( 'User Role', 'vk-dynamic-if-block' ) }
-						value={ values.userRole || '' }
-						options={ userRoles }
-						onChange={ ( value ) =>
-							updateValue( 'userRole', value )
-						}
-					/>
+					<BaseControl
+						__nextHasNoMarginBottom
+						className="dynamic-if-user-role"
+					>
+						{ userRoles.map( ( role, index ) => (
+							<CheckboxControl
+								__nextHasNoMarginBottom
+								key={ role?.value || index }
+								label={ role?.label || '' }
+								checked={ ( values.userRole || [] ).includes( role.value ) }
+								onChange={ ( checked ) => {
+									const currentRoles = values.userRole || [];
+									const newRoles = checked
+										? [ ...currentRoles, role.value ]
+										: currentRoles.filter( ( r ) => r !== role.value );
+									updateValue( 'userRole', newRoles );
+								} }
+							/>
+						) ) }
+					</BaseControl>
 				),
 				postAuthor: () => (
 					<SelectControl
@@ -615,12 +630,15 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 									[],
 								'ifLanguage'
 							),
-						userRole: () =>
-							generateLabelFromValues(
-								values,
-								userRoles,
-								'userRole'
-							),
+						userRole: () => {
+							const selectedRoles = values.userRole || [];
+							if ( ! selectedRoles.length ) {
+								return null;
+							}
+							return selectedRoles
+								.map( ( role ) => userRoles.find( ( r ) => r.value === role )?.label || role )
+								.join( ', ' );
+						},
 						postAuthor: () =>
 							generateLabelFromValues(
 								values,

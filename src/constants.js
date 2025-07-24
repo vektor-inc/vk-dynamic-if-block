@@ -123,7 +123,7 @@ export const createMigrationRules = ( attributes ) => [
 		attr: 'userRole',
 		type: 'userRole',
 		key: 'userRole',
-		condition: ( val ) => val && val !== '',
+		condition: ( val ) => val && val.length > 0,
 	},
 	{
 		attr: 'postAuthor',
