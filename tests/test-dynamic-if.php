@@ -575,7 +575,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 						),
 						array(
 							'type'   => 'postAuthor',
-							'values' => array( 'postAuthor' => array( $test_users['test_user_02'] ) ),
+							'values' => array( 'postAuthor' => $test_users['test_user_02'] ),
 						),
 					),
 				),
@@ -673,7 +673,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 						),
 						array(
 							'type'   => 'postAuthor',
-							'values' => array( 'postAuthor' => array( $test_users['test_user_01'] ) ),
+							'values' => array( 'postAuthor' => $test_users['test_user_01'] ),
 						),
 					),
 				),
@@ -691,7 +691,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 						),
 						array(
 							'type'   => 'postAuthor',
-							'values' => array( 'postAuthor' => array( $test_users['test_user_02'] ) ),
+							'values' => array( 'postAuthor' => $test_users['test_user_02'] ),
 						),
 					),
 				),
