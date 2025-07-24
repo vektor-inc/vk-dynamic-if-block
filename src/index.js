@@ -213,7 +213,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			if ( newConditions.length === 0 ) {
 				newConditions.push( {
 					id: 'default-group',
-					name: 'Condition 1',
 					conditions: [ newCondition ],
 					operator: BLOCK_CONFIG.defaultOperator,
 				} );
@@ -244,7 +243,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 
 			const newConditionGroup = {
 				id: generateId(),
-				name: `Condition ${ conditions.length + 1 }`,
 				conditions: [
 					{
 						id: generateId(),
@@ -721,11 +719,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 										key={ group.id }
 										className="vkdif__group"
 									>
-										<div className="vkdif__group-header">
-											<span className="vkdif__group-number">
-												Condition { groupIndex + 1 }
-											</span>
-										</div>
 										<div className="vkdif__group-conditions">
 											{ group.conditions.map(
 												(
