@@ -225,21 +225,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 		};
 
 		const addConditionGroup = () => {
-			// Condition Typeの種類数に制限
-			const maxConditions = Object.keys( CONDITION_TYPE_LABELS ).length;
-			if ( conditions.length >= maxConditions ) {
-				return; // 最大数に達した場合は何もしない
-			}
-
-			const usedTypes = conditions
-				.map( ( g ) => g.conditions[ 0 ]?.type )
-				.filter( Boolean );
-
-			const availableTypes = conditionTypes
-				.map( ( opt ) => opt.value )
-				.filter( ( val ) => ! usedTypes.includes( val ) );
-			const firstType =
-				availableTypes[ 0 ] || BLOCK_CONFIG.defaultConditionType;
+			// デフォルトの条件タイプを使用
+			const firstType = BLOCK_CONFIG.defaultConditionType;
 
 			// デフォルト値を設定
 			let defaultValues = {};
@@ -750,33 +737,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 													condition,
 													conditionIndex
 												) => {
-													// 他グループで選択済みのCondition Typeを取得
-													const usedTypes = conditions
-														.filter(
-															( _, idx ) =>
-																idx !==
-																groupIndex
-														)
-														.map(
-															( g ) =>
-																g
-																	.conditions[ 0 ]
-																	?.type
-														)
-														.filter( Boolean );
-													// 選択肢をdisabled付きで生成
-													const availableConditionTypes =
-														conditionTypes.map(
-															( opt ) => ( {
-																...opt,
-																disabled:
-																	usedTypes.includes(
-																		opt.value
-																	) &&
-																	opt.value !==
-																		condition.type,
-															} )
-														);
+													// 全ての条件タイプを選択可能
+													const availableConditionTypes = conditionTypes;
 													return (
 														<div
 															key={ condition.id }
@@ -851,11 +813,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 										variant="secondary"
 										onClick={ addConditionGroup }
 										className="vkdif__add-condition"
-										disabled={
-											conditions.length >=
-											Object.keys( CONDITION_TYPE_LABELS )
-												.length
-										}
 									>
 										{ __(
 											'Add Condition',
@@ -863,20 +820,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 										) }
 									</Button>
 								</BaseControl>
-								{ conditions.length >=
-									Object.keys( CONDITION_TYPE_LABELS )
-										.length && (
-									<BaseControl>
-										<div className="vkdif__alert vkdif__alert-warning">
-											<p>
-												{ __(
-													'Maximum number of conditions reached. Each condition type can only be used once.',
-													'vk-dynamic-if-block'
-												) }
-											</p>
-										</div>
-									</BaseControl>
-								) }
 								{ conditions.length > 1 && (
 									<SelectControl
 										label={ __(
