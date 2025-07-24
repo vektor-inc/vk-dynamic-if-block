@@ -659,17 +659,12 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					: __( 'No conditions set', 'vk-dynamic-if-block' );
 			}
 
-			// Condition 1つだけの場合はカッコなし、複数の場合はカッコ付き
-			const labelsString =
-				groupLabels.length === 1
-					? groupLabels[ 0 ]
-					: groupLabels
-							.map( ( label ) => `[${ label }]` )
-							.join(
-								` ${
-									conditionOperator?.toUpperCase() || 'AND'
-								} `
-							);
+			// 各Conditionのラベルを結合
+			const labelsString = groupLabels.join(
+				` ${
+					conditionOperator?.toUpperCase() || 'AND'
+				} `
+			);
 
 			return exclusion
 				? `${ __( '!', 'vk-dynamic-if-block' ) } ${ labelsString }`
