@@ -20,7 +20,7 @@ function vk_dynamic_if_block_render($attributes, $content)
     $defaults = [ 'groups' => [], 'conditions' => [], 'exclusion' => false ];
     $attributes = array_merge($defaults, $attributes);
 
-    // 新しいUIで設定されたconditionsが存在しない場合のみ、古い属性の移行処理を実行
+    // 新しいUIで設定されたconditionsが存在しない場合、古い属性の移行処理を実行
     if (empty($attributes['conditions'])) {
         // 古い属性が設定されている場合は移行処理を実行
         $old_attributes = [
@@ -34,12 +34,11 @@ function vk_dynamic_if_block_render($attributes, $content)
             'showOnlyLoginUser'
         ];
         $has_old_attributes = false;
-        $found_old_attributes = [];
 
         foreach ($old_attributes as $attr) {
             if (isset($attributes[ $attr ]) && ! empty($attributes[ $attr ]) && $attributes[ $attr ] !== 'none') {
                 $has_old_attributes = true;
-                $found_old_attributes[ $attr ] = $attributes[ $attr ];
+                break;
             }
         }
 
@@ -114,19 +113,19 @@ function vk_dynamic_if_block_migrate_old_attributes($attributes)
 
     foreach ($migrations as $old_key => $new_type) {
         if (isset($attributes[$old_key]) && $attributes[$old_key] !== 'none') {
-            // 複数の値が設定されている場合は配列として処理
-            $values = is_array($attributes[$old_key]) ? $attributes[$old_key] : [$attributes[$old_key]];
+            // 昔の状態では単一値だったので、配列の場合は最初の値を使用
+            $value = is_array($attributes[$old_key]) ? $attributes[$old_key][0] : $attributes[$old_key];
             $conditions[] = [
                 'id' => "migrated_{$new_type}_" . time(),
                 'type' => $new_type,
-                'values' => [$old_key => $values]
+                'values' => [$old_key => $value]
             ];
         }
     }
 
-    // 特殊なケース
+    // 特殊なケース - userRoleは配列のまま
     if (isset($attributes['userRole']) && !empty($attributes['userRole'])) {
-        // 複数の値が設定されている場合は配列として処理
+        // userRoleは複数選択可能なので配列として処理
         $values = is_array($attributes['userRole']) ? $attributes['userRole'] : [$attributes['userRole']];
         $conditions[] = [
             'id' => 'migrated_user_role_' . time(),
@@ -177,6 +176,8 @@ function vk_dynamic_if_block_migrate_old_attributes($attributes)
 
     return $conditions;
 }
+
+
 
 function vk_dynamic_if_block_render_with_conditions($attributes, $content)
 {
