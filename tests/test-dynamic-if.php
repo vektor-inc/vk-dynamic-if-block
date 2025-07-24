@@ -289,7 +289,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'pageType',
-							'values' => array( 'ifPageType' => array( 'is_front_page' ) ),
+							'values' => array( 'ifPageType' => 'is_front_page' ),
 						),
 					),
 				),
@@ -306,7 +306,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'pageType',
-							'values' => array( 'ifPageType' => array( 'is_front_page' ) ),
+							'values' => array( 'ifPageType' => 'is_front_page' ),
 						),
 					),
 				),
@@ -320,7 +320,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'pageType',
-							'values' => array( 'ifPageType' => array( 'is_home' ) ),
+							'values' => array( 'ifPageType' => 'is_home' ),
 						),
 					),
 				),
@@ -341,7 +341,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'pageType',
-							'values' => array( 'ifPageType' => array( 'is_front_page' ) ),
+							'values' => array( 'ifPageType' => 'is_front_page' ),
 						),
 					),
 				),
@@ -359,7 +359,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'pageType',
-							'values' => array( 'ifPageType' => array( 'is_front_page' ) ),
+							'values' => array( 'ifPageType' => 'is_front_page' ),
 						),
 					),
 				),
@@ -381,7 +381,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'pageType',
-							'values' => array( 'ifPageType' => array( 'is_home' ) ),
+							'values' => array( 'ifPageType' => 'is_home' ),
 						),
 					),
 				),
@@ -397,7 +397,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'pageType',
-							'values' => array( 'ifPageType' => array( 'is_archive' ) ),
+							'values' => array( 'ifPageType' => 'is_archive' ),
 						),
 					),
 				),
@@ -413,7 +413,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'pageType',
-							'values' => array( 'ifPageType' => array( 'is_year' ) ),
+							'values' => array( 'ifPageType' => 'is_year' ),
 						),
 					),
 				),
@@ -429,7 +429,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'pageType',
-							'values' => array( 'ifPageType' => array( 'is_month' ) ),
+							'values' => array( 'ifPageType' => 'is_month' ),
 						),
 					),
 				),
@@ -445,7 +445,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'pageType',
-							'values' => array( 'ifPageType' => array( 'is_date' ) ),
+							'values' => array( 'ifPageType' => 'is_date' ),
 						),
 					),
 				),
@@ -461,7 +461,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'pageType',
-							'values' => array( 'ifPageType' => array( 'is_category' ) ),
+							'values' => array( 'ifPageType' => 'is_category' ),
 						),
 					),
 				),
@@ -475,11 +475,11 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'pageType',
-							'values' => array( 'ifPageType' => array( 'is_archive' ) ),
+							'values' => array( 'ifPageType' => 'is_archive' ),
 						),
 						array(
 							'type'   => 'postType',
-							'values' => array( 'ifPostType' => array( 'post' ) ),
+							'values' => array( 'ifPostType' => 'post' ),
 						),
 					),
 				),
@@ -495,7 +495,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'pageType',
-							'values' => array( 'ifPageType' => array( 'is_tag' ) ),
+							'values' => array( 'ifPageType' => 'is_tag' ),
 						),
 					),
 				),
@@ -511,7 +511,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'pageType',
-							'values' => array( 'ifPageType' => array( 'is_tax' ) ),
+							'values' => array( 'ifPageType' => 'is_tax' ),
 						),
 					),
 				),
@@ -525,7 +525,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'pageType',
-							'values' => array( 'ifPageType' => array( 'is_archive' ) ),
+							'values' => array( 'ifPageType' => 'is_archive' ),
 						),
 					),
 				),
@@ -541,7 +541,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'pageType',
-							'values' => array( 'ifPageType' => array( 'is_page' ) ),
+							'values' => array( 'ifPageType' => 'is_page' ),
 						),
 					),
 				),
@@ -557,7 +557,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'pageType',
-							'values' => array( 'ifPageType' => array( 'is_single' ) ),
+							'values' => array( 'ifPageType' => 'is_single' ),
 						),
 					),
 				),
@@ -571,7 +571,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'pageType',
-							'values' => array( 'ifPageType' => array( 'is_single' ) ),
+							'values' => array( 'ifPageType' => 'is_single' ),
 						),
 						array(
 							'type'   => 'postAuthor',
@@ -592,7 +592,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'pageType',
-							'values' => array( 'ifPageType' => array( 'is_post_type_archive' ) ),
+							'values' => array( 'ifPageType' => 'is_post_type_archive' ),
 						),
 					),
 				),
@@ -606,7 +606,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'postType',
-							'values' => array( 'ifPostType' => array( 'event' ) ),
+							'values' => array( 'ifPostType' => 'event' ),
 						),
 					),
 				),
@@ -621,7 +621,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'postType',
-							'values' => array( 'ifPostType' => array( 'event' ) ),
+							'values' => array( 'ifPostType' => 'event' ),
 						),
 					),
 				),
@@ -636,11 +636,11 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'pageType',
-							'values' => array( 'ifPageType' => array( 'is_single' ) ),
+							'values' => array( 'ifPageType' => 'is_single' ),
 						),
 						array(
 							'type'   => 'postType',
-							'values' => array( 'ifPostType' => array( 'event' ) ),
+							'values' => array( 'ifPostType' => 'event' ),
 						),
 					),
 				),
@@ -655,7 +655,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'pageType',
-							'values' => array( 'ifPageType' => array( 'is_author' ) ),
+							'values' => array( 'ifPageType' => 'is_author' ),
 						),
 					),
 				),
@@ -669,7 +669,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'pageType',
-							'values' => array( 'ifPageType' => array( 'is_author' ) ),
+							'values' => array( 'ifPageType' => 'is_author' ),
 						),
 						array(
 							'type'   => 'postAuthor',
@@ -687,7 +687,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'pageType',
-							'values' => array( 'ifPageType' => array( 'is_author' ) ),
+							'values' => array( 'ifPageType' => 'is_author' ),
 						),
 						array(
 							'type'   => 'postAuthor',
@@ -706,7 +706,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'postType',
-							'values' => array( 'ifPostType' => array( 'event' ) ),
+							'values' => array( 'ifPostType' => 'event' ),
 						),
 					),
 				),
@@ -722,7 +722,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'postType',
-							'values' => array( 'ifPostType' => array( 'event' ) ),
+							'values' => array( 'ifPostType' => 'event' ),
 						),
 					),
 				),
@@ -740,7 +740,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 					'conditions' => array(
 						array(
 							'type'   => 'pageType',
-							'values' => array( 'ifPageType' => array( 'is_404' ) ),
+							'values' => array( 'ifPageType' => 'is_404' ),
 						),
 					),
 				),
