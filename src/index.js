@@ -5,18 +5,17 @@ import {
 	InnerBlocks,
 	InspectorControls,
 } from '@wordpress/block-editor';
+import { useEffect } from '@wordpress/element';
 import {
 	PanelBody,
 	SelectControl,
 	TextControl,
 	ToggleControl,
-	CheckboxControl,
 	BaseControl,
 	Button,
 } from '@wordpress/components';
 import { ReactComponent as Icon } from './icon.svg';
 import transforms from './transforms';
-import React from 'react';
 import {
 	CONDITION_TYPE_LABELS,
 	PAGE_TYPE_DEFINITIONS,
@@ -73,8 +72,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			default: 'none',
 		},
 		userRole: {
-			type: 'array',
-			default: [],
+			type: 'string',
+			default: '',
 		},
 		postAuthor: {
 			type: 'number',
@@ -121,7 +120,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 		const { conditions, conditionOperator, exclusion } = attributes;
 
 		// 既存ブロックから新形式への移行処理
-		React.useEffect( () => {
+		useEffect( () => {
 			if (
 				! conditions ||
 				conditions.length === 0 ||
@@ -141,8 +140,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							? rule.customValues()
 							: {
 									[ rule.key ]: Array.isArray( value )
-										? value
-										: [ value ],
+										? value[ 0 ] || ''
+										: value,
 							  };
 						newConditions.push(
 							createConditionGroup(
@@ -160,7 +159,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					newConditions.push(
 						createConditionGroup(
 							'pageType',
-							{ ifPageType: [ 'none' ] },
+							{ ifPageType: 'none' },
 							1
 						)
 					);
@@ -244,13 +243,13 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			// デフォルト値を設定
 			let defaultValues = {};
 			if ( firstType === 'pageType' ) {
-				defaultValues = { ifPageType: [ 'none' ] };
+				defaultValues = { ifPageType: 'none' };
 			} else if ( firstType === 'postType' ) {
-				defaultValues = { ifPostType: [ 'none' ] };
+				defaultValues = { ifPostType: 'none' };
 			} else if ( firstType === 'language' ) {
-				defaultValues = { ifLanguage: [ '' ] };
+				defaultValues = { ifLanguage: '' };
 			} else if ( firstType === 'postAuthor' ) {
-				defaultValues = { postAuthor: [ 0 ] };
+				defaultValues = { postAuthor: 0 };
 			}
 
 			const newConditionGroup = {
@@ -321,53 +320,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			setAttributes( { conditions: newConditions } );
 		};
 
-		// 共通のチェックボックスレンダラー
-		const renderCheckboxGroup = (
-			options = [],
-			selectedValues = [],
-			valueKey = '',
-			className = '',
-			groupIndex = 0,
-			conditionIndex = 0
-		) => {
-			if ( ! Array.isArray( options ) || ! options.length ) {
-				return null;
-			}
-
-			return (
-				<BaseControl __nextHasNoMarginBottom className={ className }>
-					{ options.map( ( option, index ) => {
-						const selected = Array.isArray( selectedValues )
-							? selectedValues
-							: [];
-						const isChecked = selected.includes( option?.value );
-
-						return (
-							<CheckboxControl
-								__nextHasNoMarginBottom
-								key={ option?.value || index }
-								label={ option?.label || '' }
-								checked={ isChecked }
-								onChange={ ( checked ) => {
-									const newValues = checked
-										? [ ...selected, option.value ]
-										: selected.filter(
-												( v ) => v !== option.value
-										  );
-									updateConditionValue(
-										groupIndex,
-										conditionIndex,
-										valueKey,
-										newValues
-									);
-								} }
-							/>
-						);
-					} ) }
-				</BaseControl>
-			);
-		};
-
 		const renderConditionSettings = (
 			condition = {},
 			groupIndex = 0,
@@ -378,88 +330,71 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				updateConditionValue( groupIndex, conditionIndex, key, value );
 
 			const renderers = {
-				pageType: () =>
-					renderCheckboxGroup(
-						ifPageTypes,
-						values.ifPageType,
-						'ifPageType',
-						'dynamic-if-page-type',
-						groupIndex,
-						conditionIndex
-					),
-				postType: () =>
-					renderCheckboxGroup(
-						vkDynamicIfBlockLocalizeData?.postTypeSelectOptions ||
-							[],
-						values.ifPostType,
-						'ifPostType',
-						'dynamic-if-post-type',
-						groupIndex,
-						conditionIndex
-					),
+				pageType: () => (
+					<SelectControl
+						label={ __( 'Page Type', 'vk-dynamic-if-block' ) }
+						value={ values.ifPageType || 'none' }
+						options={ ifPageTypes }
+						onChange={ ( value ) =>
+							updateValue( 'ifPageType', value )
+						}
+					/>
+				),
+				postType: () => (
+					<SelectControl
+						label={ __( 'Post Type', 'vk-dynamic-if-block' ) }
+						value={ values.ifPostType || 'none' }
+						options={
+							vkDynamicIfBlockLocalizeData?.postTypeSelectOptions ||
+							[]
+						}
+						onChange={ ( value ) =>
+							updateValue( 'ifPostType', value )
+						}
+					/>
+				),
 				language: () => {
 					const allLanguages =
 						vkDynamicIfBlockLocalizeData?.languageSelectOptions ||
 						[];
 					const currentSiteLanguage =
 						vkDynamicIfBlockLocalizeData?.currentSiteLanguage || '';
-					const selectedLanguages = values.ifLanguage || [];
 					const sortedLanguages = sortLanguages(
 						allLanguages,
 						currentSiteLanguage
 					);
 
 					return (
-						<BaseControl
-							__nextHasNoMarginBottom
-							className="dynamic-if-language"
-						>
-							{ sortedLanguages.map( ( language, index ) => (
-								<CheckboxControl
-									__nextHasNoMarginBottom
-									key={ language.value || index }
-									label={ language.label }
-									checked={ selectedLanguages.includes(
-										language.value
-									) }
-									onChange={ ( checked ) => {
-										const newLanguages = checked
-											? [
-													...selectedLanguages,
-													language.value,
-											  ]
-											: selectedLanguages.filter(
-													( l ) =>
-														l !== language.value
-											  );
-										updateValue(
-											'ifLanguage',
-											newLanguages
-										);
-									} }
-								/>
-							) ) }
-						</BaseControl>
+						<SelectControl
+							label={ __( 'Language', 'vk-dynamic-if-block' ) }
+							value={ values.ifLanguage || '' }
+							options={ sortedLanguages }
+							onChange={ ( value ) =>
+								updateValue( 'ifLanguage', value )
+							}
+						/>
 					);
 				},
-				userRole: () =>
-					renderCheckboxGroup(
-						userRoles,
-						values.userRole,
-						'userRole',
-						'dynamic-if-user-role',
-						groupIndex,
-						conditionIndex
-					),
-				postAuthor: () =>
-					renderCheckboxGroup(
-						userSelectOptions,
-						values.postAuthor,
-						'postAuthor',
-						'dynamic-if-post-author',
-						groupIndex,
-						conditionIndex
-					),
+				userRole: () => (
+					<SelectControl
+						label={ __( 'User Role', 'vk-dynamic-if-block' ) }
+						value={ values.userRole || '' }
+						options={ userRoles }
+						onChange={ ( value ) =>
+							updateValue( 'userRole', value )
+						}
+					/>
+				),
+				postAuthor: () => (
+					<SelectControl
+						label={ __( 'Post Author', 'vk-dynamic-if-block' ) }
+						value={ values.postAuthor || 0 }
+						options={ userSelectOptions }
+						onChange={ ( value ) =>
+							updateValue( 'postAuthor', parseInt( value ) || 0 )
+						}
+					/>
+				),
 				customField: () => (
 					<>
 						<TextControl
@@ -624,21 +559,15 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			valueKey = '',
 			useSimpleLabel = false
 		) => {
-			const selected = Array.isArray( values[ valueKey ] )
-				? values[ valueKey ]
-				: [];
-			if ( ! selected.length || ! Array.isArray( options ) ) {
+			const value = values[ valueKey ];
+			if ( ! value || ! Array.isArray( options ) ) {
 				return null;
 			}
 
-			return selected
-				.map(
-					( val ) =>
-						options.find( ( o ) => o?.value === val )?.[
-							useSimpleLabel ? 'simpleLabel' : 'label'
-						] || val
-				)
-				.join( ', ' );
+			const option = options.find( ( o ) => o?.value === value );
+			return (
+				option?.[ useSimpleLabel ? 'simpleLabel' : 'label' ] || value
+			);
 		};
 
 		const generateLabels = () => {

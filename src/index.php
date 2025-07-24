@@ -2,12 +2,7 @@
 
 /**
  * Dynamic If Block
- *
- * @category Blocks
- * @package  Vektorincvkdynamicifblock
- * @author   Vektor,Inc. <info@vektor-inc.co.jp>
- * @license  GPL-2.0-or-later https://www.gnu.org/licenses/gpl-2.0.html
- * @link     https://github.com/vektor-inc/vk-dynamic-if-block
+ * @package vektor-inc/vk-dynamic-if-block
  */
 
 use VektorInc\VK_Helpers\VkHelpers;
@@ -238,8 +233,8 @@ function vk_dynamic_if_block_evaluate_condition($condition)
 
 function vk_dynamic_if_block_check_page_type($values)
 {
-    $page_types = (array)($values['ifPageType'] ?? []);
-    if (empty($page_types)) {
+    $page_type = $values['ifPageType'] ?? '';
+    if (empty($page_type) || $page_type === 'none') {
         return true;
     }
 
@@ -262,18 +257,13 @@ function vk_dynamic_if_block_check_page_type($values)
         'is_archive' => is_archive()
     ];
 
-    foreach ($page_types as $page_type) {
-        if ($page_type === 'none' || ($page_checks[$page_type] ?? false)) {
-            return true;
-        }
-    }
-    return false;
+    return $page_checks[$page_type] ?? false;
 }
 
 function vk_dynamic_if_block_check_post_type($values)
 {
-    $post_types = (array)($values['ifPostType'] ?? []);
-    if (empty($post_types)) {
+    $post_type = $values['ifPostType'] ?? '';
+    if (empty($post_type) || $post_type === 'none') {
         return true;
     }
 
@@ -296,57 +286,41 @@ function vk_dynamic_if_block_check_post_type($values)
         }
     }
 
-    foreach ($post_types as $post_type) {
-        if ($post_type === 'none' || $current_type === $post_type) {
-            return true;
-        }
-    }
-
-    return false;
+    return $current_type === $post_type;
 }
 
 function vk_dynamic_if_block_check_language($values)
 {
-    $languages = (array)($values['ifLanguage'] ?? []);
-    if (empty($languages)) {
+    $language = $values['ifLanguage'] ?? '';
+    if (empty($language) || $language === 'none') {
         return true;
     }
 
     $current_locale = get_locale();
-    foreach ($languages as $language) {
-        if (empty($language) || $language === 'none' || $language === $current_locale) {
-            return true;
-        }
-    }
-    return false;
+    return $language === $current_locale;
 }
 
 function vk_dynamic_if_block_check_user_role($values)
 {
-    $user_roles = $values['userRole'] ?? [];
-    if (empty($user_roles)) {
+    $user_role = $values['userRole'] ?? '';
+    if (empty($user_role)) {
         return true;
     }
 
     $current_user = wp_get_current_user();
-    return is_user_logged_in() && array_intersect($current_user->roles, $user_roles);
+    return is_user_logged_in() && in_array($user_role, $current_user->roles);
 }
 
 function vk_dynamic_if_block_check_post_author($values)
 {
-    $authors = (array)($values['postAuthor'] ?? []);
-    if (empty($authors)) {
+    $author = $values['postAuthor'] ?? 0;
+    if (empty($author)) {
         return true;
     }
 
     $author_id = (int)get_post_field('post_author', get_the_ID());
-    foreach ($authors as $author) {
-        $author = (int)$author;
-        if ($author === 0 || is_author($author) || (is_singular() && $author_id === $author)) {
-            return true;
-        }
-    }
-    return false;
+    $author = (int)$author;
+    return $author === 0 || is_author($author) || (is_singular() && $author_id === $author);
 }
 
 function vk_dynamic_if_block_check_custom_field($values)
