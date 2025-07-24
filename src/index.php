@@ -2,12 +2,7 @@
 
 /**
  * Dynamic If Block
- *
- * @category Blocks
- * @package  Vektorincvkdynamicifblock
- * @author   Vektor,Inc. <info@vektor-inc.co.jp>
- * @license  GPL-2.0-or-later https://www.gnu.org/licenses/gpl-2.0.html
- * @link     https://github.com/vektor-inc/vk-dynamic-if-block
+ * @package vektor-inc/vk-dynamic-if-block
  */
 
 use VektorInc\VK_Helpers\VkHelpers;
