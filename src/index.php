@@ -20,7 +20,7 @@ function vk_dynamic_if_block_render($attributes, $content)
     $defaults = [ 'groups' => [], 'conditions' => [], 'exclusion' => false ];
     $attributes = array_merge($defaults, $attributes);
 
-    // 新しいUIで設定されたconditionsが存在しない場合のみ、古い属性の移行処理を実行
+    // 新しいUIで設定されたconditionsが存在しない場合、古い属性の移行処理を実行
     if (empty($attributes['conditions'])) {
         // 古い属性が設定されている場合は移行処理を実行
         $old_attributes = [
@@ -34,12 +34,11 @@ function vk_dynamic_if_block_render($attributes, $content)
             'showOnlyLoginUser'
         ];
         $has_old_attributes = false;
-        $found_old_attributes = [];
 
         foreach ($old_attributes as $attr) {
             if (isset($attributes[ $attr ]) && ! empty($attributes[ $attr ]) && $attributes[ $attr ] !== 'none') {
                 $has_old_attributes = true;
-                $found_old_attributes[ $attr ] = $attributes[ $attr ];
+                break;
             }
         }
 
@@ -114,19 +113,19 @@ function vk_dynamic_if_block_migrate_old_attributes($attributes)
 
     foreach ($migrations as $old_key => $new_type) {
         if (isset($attributes[$old_key]) && $attributes[$old_key] !== 'none') {
-            // 複数の値が設定されている場合は配列として処理
-            $values = is_array($attributes[$old_key]) ? $attributes[$old_key] : [$attributes[$old_key]];
+            // 昔の状態では単一値だったので、配列の場合は最初の値を使用
+            $value = is_array($attributes[$old_key]) ? $attributes[$old_key][0] : $attributes[$old_key];
             $conditions[] = [
                 'id' => "migrated_{$new_type}_" . time(),
                 'type' => $new_type,
-                'values' => [$old_key => $values]
+                'values' => [$old_key => $value]
             ];
         }
     }
 
-    // 特殊なケース
+    // 特殊なケース - userRoleは配列のまま
     if (isset($attributes['userRole']) && !empty($attributes['userRole'])) {
-        // 複数の値が設定されている場合は配列として処理
+        // userRoleは複数選択可能なので配列として処理
         $values = is_array($attributes['userRole']) ? $attributes['userRole'] : [$attributes['userRole']];
         $conditions[] = [
             'id' => 'migrated_user_role_' . time(),
@@ -177,6 +176,8 @@ function vk_dynamic_if_block_migrate_old_attributes($attributes)
 
     return $conditions;
 }
+
+
 
 function vk_dynamic_if_block_render_with_conditions($attributes, $content)
 {
@@ -233,8 +234,8 @@ function vk_dynamic_if_block_evaluate_condition($condition)
 
 function vk_dynamic_if_block_check_page_type($values)
 {
-    $page_types = (array)($values['ifPageType'] ?? []);
-    if (empty($page_types)) {
+    $page_type = $values['ifPageType'] ?? '';
+    if (empty($page_type) || $page_type === 'none') {
         return true;
     }
 
@@ -257,18 +258,13 @@ function vk_dynamic_if_block_check_page_type($values)
         'is_archive' => is_archive()
     ];
 
-    foreach ($page_types as $page_type) {
-        if ($page_type === 'none' || ($page_checks[$page_type] ?? false)) {
-            return true;
-        }
-    }
-    return false;
+    return $page_checks[$page_type] ?? false;
 }
 
 function vk_dynamic_if_block_check_post_type($values)
 {
-    $post_types = (array)($values['ifPostType'] ?? []);
-    if (empty($post_types)) {
+    $post_type = $values['ifPostType'] ?? '';
+    if (empty($post_type) || $post_type === 'none') {
         return true;
     }
 
@@ -291,29 +287,18 @@ function vk_dynamic_if_block_check_post_type($values)
         }
     }
 
-    foreach ($post_types as $post_type) {
-        if ($post_type === 'none' || $current_type === $post_type) {
-            return true;
-        }
-    }
-
-    return false;
+    return $current_type === $post_type;
 }
 
 function vk_dynamic_if_block_check_language($values)
 {
-    $languages = (array)($values['ifLanguage'] ?? []);
-    if (empty($languages)) {
+    $language = $values['ifLanguage'] ?? '';
+    if (empty($language) || $language === 'none') {
         return true;
     }
 
     $current_locale = get_locale();
-    foreach ($languages as $language) {
-        if (empty($language) || $language === 'none' || $language === $current_locale) {
-            return true;
-        }
-    }
-    return false;
+    return $language === $current_locale;
 }
 
 function vk_dynamic_if_block_check_user_role($values)
@@ -329,19 +314,14 @@ function vk_dynamic_if_block_check_user_role($values)
 
 function vk_dynamic_if_block_check_post_author($values)
 {
-    $authors = (array)($values['postAuthor'] ?? []);
-    if (empty($authors)) {
+    $author = $values['postAuthor'] ?? 0;
+    if (empty($author)) {
         return true;
     }
 
     $author_id = (int)get_post_field('post_author', get_the_ID());
-    foreach ($authors as $author) {
-        $author = (int)$author;
-        if ($author === 0 || is_author($author) || (is_singular() && $author_id === $author)) {
-            return true;
-        }
-    }
-    return false;
+    $author = (int)$author;
+    return $author === 0 || is_author($author) || (is_singular() && $author_id === $author);
 }
 
 function vk_dynamic_if_block_check_custom_field($values)

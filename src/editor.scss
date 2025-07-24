@@ -65,27 +65,10 @@
 	}
 }
 
-.vkdif__group-header {
-    position: absolute;
-    top: 0;
-    left: 0;
-    display: flex;
-    flex-wrap: wrap;
-
-	.vkdif__group-number {
-		font-size: 11px;
-		color: #777;
-		background: #eee;
-		border-radius: 2px;
-		padding: 2px 8px;
-	}
-
-}
-
 .vkdif__group-conditions {
 	.vkdif__condition {
 		margin-bottom: 0;
-		padding: 1rem 0;
+		padding-bottom: 1rem;
 	}
 }
 

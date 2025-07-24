@@ -180,7 +180,6 @@ export const generateId = () => Date.now() + Math.random();
 
 export const createConditionGroup = ( type, values, groupIndex ) => ( {
 	id: generateId(),
-	name: `Condition ${ groupIndex }`,
 	conditions: [ { id: generateId(), type, values } ],
 	operator: BLOCK_CONFIG.defaultOperator,
 } );

@@ -27,7 +27,6 @@
 			"default": [
 				{
 					"id": "default-condition",
-					"name": "Condition 1",
 					"conditions": [
 						{
 							"id": 1,
