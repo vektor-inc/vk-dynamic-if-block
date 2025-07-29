@@ -378,6 +378,50 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'expected'  => 'Daily Archive page',
 			),
 			/******************************************
+			* Post Type Archive page */
+			array(
+				'name'      => 'Post Type Archive page',
+				'go_to'     => get_post_type_archive_link( 'event' ),
+				'attribute' => array(
+					'ifPageType' => 'is_post_type_archive',
+				),
+				'content'   => 'Post Type Archive page',
+				'expected'  => 'Post Type Archive page',
+			),
+			/******************************************
+			* Custom Post Type Monthly Archive page (should not show with is_post_type_archive) */
+			array(
+				'name'      => 'Custom Post Type Monthly Archive page - is_post_type_archive should be false',
+				'go_to'     => get_month_link( gmdate( 'Y' ), gmdate( 'm' ) ) . '?post_type=event',
+				'attribute' => array(
+					'ifPageType' => 'is_post_type_archive',
+				),
+				'content'   => 'Custom Post Type Monthly Archive page',
+				'expected'  => '',
+			),
+			/******************************************
+			* Custom Post Type Yearly Archive page (should not show with is_post_type_archive) */
+			array(
+				'name'      => 'Custom Post Type Yearly Archive page - is_post_type_archive should be false',
+				'go_to'     => get_year_link( gmdate( 'Y' ) ) . '?post_type=event',
+				'attribute' => array(
+					'ifPageType' => 'is_post_type_archive',
+				),
+				'content'   => 'Custom Post Type Yearly Archive page',
+				'expected'  => '',
+			),
+			/******************************************
+			* Custom Post Type Daily Archive page (should not show with is_post_type_archive) */
+			array(
+				'name'      => 'Custom Post Type Daily Archive page - is_post_type_archive should be false',
+				'go_to'     => get_day_link( gmdate( 'Y' ), gmdate( 'm' ), gmdate( 'd' ) ) . '?post_type=event',
+				'attribute' => array(
+					'ifPageType' => 'is_post_type_archive',
+				),
+				'content'   => 'Custom Post Type Daily Archive page',
+				'expected'  => '',
+			),
+			/******************************************
 			* Category archive page */
 			array(
 				'name'      => 'Category archive page',
