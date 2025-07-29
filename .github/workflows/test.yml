@@ -4,6 +4,7 @@ on:
     pull_request:
         branches:
             - main
+            - main_v0
 jobs:
     php_unit:
         name: php unit test
