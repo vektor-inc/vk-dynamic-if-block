@@ -4,7 +4,7 @@ Tags: dynamic block, if, Conditional branch, Conditional Display, Custom Field, 
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 0.8.5
+Stable tag: 0.9.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -35,7 +35,10 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
-[ Specification change ] Changed the UI to specify the condition branching method at the beginning
+[ Specification Change ] Changed UI to stacked condition format. 
+
+= 0.9.1 =
+[ Specification change ] Add the condition !is_year() && !is_month() && !is_date() for Post Type Archives.
 
 = 0.8.6 =
 [ Specification change ][ Author Archive ] Changed to target only users with the role of Contributor or higher who have at least one published article.
