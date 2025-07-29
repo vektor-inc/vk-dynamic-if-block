@@ -139,7 +139,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				value: 'is_post_type_archive',
 				label:
 					__( 'Post Type Archive', 'vk-dynamic-if-block' ) +
-					' ( is_post_type_archive() )',
+					' ( is_post_type_archive() && ! is_year() && ! is_month() && ! is_date() )',
 			},
 			{
 				value: 'is_category',
