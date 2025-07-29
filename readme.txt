@@ -35,7 +35,7 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
-[ Bug Fix ] Fixed is_post_type_archive() returning true on custom post type date archive pages (yearly, monthly, daily).
+[ Specification change ] Add the condition !is_year() && !is_month() && !is_date() for Post Type Archives.
 
 = 0.8.6 =
 [ Specification change ][ Author Archive ] Changed to target only users with the role of Contributor or higher who have at least one published article.
