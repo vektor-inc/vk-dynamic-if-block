@@ -72,6 +72,36 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 			$test_users['test_user_02'] = wp_insert_user( $userdata, $userdata['user_pass'] );
 		}
 
+		// テスト用エディターユーザーを発行.
+		$userdata                = array(
+			'user_login'   => 'editor',
+			'user_url'     => 'https://vektor-inc.co.jp',
+			'user_pass'    => 'password',
+			'display_name' => 'Editor User',
+			'role'         => 'editor',
+		);
+		$user = get_user_by('login', $userdata['user_login']);
+		if ( $user ) {
+			$test_users['editor_user'] = $user->ID;
+		} else {
+			$test_users['editor_user'] = wp_insert_user( $userdata, $userdata['user_pass'] );
+		}
+
+		// テスト用サブスクライバーユーザーを発行.
+		$userdata                = array(
+			'user_login'   => 'subscriber',
+			'user_url'     => 'https://vektor-inc.co.jp',
+			'user_pass'    => 'password',
+			'display_name' => 'Subscriber User',
+			'role'         => 'subscriber',
+		);
+		$user = get_user_by('login', $userdata['user_login']);
+		if ( $user ) {
+			$test_users['subscriber_user'] = $user->ID;
+		} else {
+			$test_users['subscriber_user'] = wp_insert_user( $userdata, $userdata['user_pass'] );
+		}
+
 		return $test_users;
 	}
 
@@ -256,8 +286,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Front Page',
 				'go_to'     => home_url(),
 				'attribute' => array(
-					'ifPageType' => 'is_front_page',
-					'ifPostType' => 'none',
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 'ifPageType' => array( 'is_front_page' ) ),
+						),
+					),
 				),
 				'content'   => 'Front Page',
 				'expected'  => 'Front Page',
@@ -269,8 +303,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				),
 				'go_to'     => home_url(),
 				'attribute' => array(
-					'ifPageType' => 'is_front_page',
-					'ifPostType' => 'none',
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 'ifPageType' => array( 'is_front_page' ) ),
+						),
+					),
 				),
 				'content'   => 'Front Post Home',
 				'expected'  => 'Front Post Home',
@@ -279,8 +317,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Front Post If Home',
 				'go_to'     => home_url(),
 				'attribute' => array(
-					'ifPageType' => 'is_home',
-					'ifPostType' => 'none',
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 'ifPageType' => array( 'is_home' ) ),
+						),
+					),
 				),
 				'content'   => 'Front Post If Home',
 				'expected'  => 'Front Post If Home',
@@ -295,9 +337,13 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				),
 				'go_to'     => home_url(),
 				'attribute' => array(
-					'ifPageType' => 'is_front_page',
-					'ifPostType' => 'none',
 					'exclusion'  => true,
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 'ifPageType' => array( 'is_front_page' ) ),
+						),
+					),
 				),
 				'content'   => 'Front excluded',
 				'expected'  => '',
@@ -309,9 +355,13 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				),
 				'go_to'     => home_url(),
 				'attribute' => array(
-					'ifPageType' => 'is_front_page',
-					'ifPostType' => 'none',
 					'exclusion'  => true,
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 'ifPageType' => array( 'is_front_page' ) ),
+						),
+					),
 				),
 				'content'   => 'Front excluded',
 				'expected'  => '',
@@ -328,7 +378,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				),
 				'go_to'     => get_permalink( $test_posts['home_page_id'] ),
 				'attribute' => array(
-					'ifPageType' => 'is_home',
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 'ifPageType' => array( 'is_home' ) ),
+						),
+					),
 				),
 				'content'   => 'Home',
 				'expected'  => 'Home',
@@ -339,7 +394,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Post Type Archive page',
 				'go_to'     => get_post_type_archive_link( 'event' ),
 				'attribute' => array(
-					'ifPageType' => 'is_archive',
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 'ifPageType' => array( 'is_archive' ) ),
+						),
+					),
 				),
 				'content'   => 'Post Type Archive page',
 				'expected'  => 'Post Type Archive page',
@@ -350,7 +410,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Yearly Archive page',
 				'go_to'     => get_year_link( gmdate( 'Y' ) ),
 				'attribute' => array(
-					'ifPageType' => 'is_year',
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 'ifPageType' => array( 'is_year' ) ),
+						),
+					),
 				),
 				'content'   => 'Yearly Archive page',
 				'expected'  => 'Yearly Archive page',
@@ -361,7 +426,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Monthly Archive page',
 				'go_to'     => get_month_link( gmdate( 'Y' ), gmdate( 'm' ) ),
 				'attribute' => array(
-					'ifPageType' => 'is_month',
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 'ifPageType' => array( 'is_month' ) ),
+						),
+					),
 				),
 				'content'   => 'Monthly Archive page',
 				'expected'  => 'Monthly Archive page',
@@ -372,7 +442,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Daily Archive page',
 				'go_to'     => get_day_link( gmdate( 'Y' ), gmdate( 'm' ), gmdate( 'd' ) ),
 				'attribute' => array(
-					'ifPageType' => 'is_date',
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 'ifPageType' => array( 'is_date' ) ),
+						),
+					),
 				),
 				'content'   => 'Daily Archive page',
 				'expected'  => 'Daily Archive page',
@@ -427,7 +502,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Category archive page',
 				'go_to'     => get_category_link( $test_posts['parent_category_id'] ),
 				'attribute' => array(
-					'ifPageType' => 'is_category',
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 'ifPageType' => array( 'is_category' ) ),
+						),
+					),
 				),
 				'content'   => 'Category Archive page',
 				'expected'  => 'Category Archive page',
@@ -436,8 +516,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Category archive page',
 				'go_to'     => get_category_link( $test_posts['parent_category_id'] ),
 				'attribute' => array(
-					'ifPageType' => 'is_archive',
-					'ifPostType' => 'post',
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 'ifPageType' => array( 'is_archive' ) ),
+						),
+						array(
+							'type'   => 'postType',
+							'values' => array( 'ifPostType' => array( 'post' ) ),
+						),
+					),
 				),
 				'content'   => 'Category Archive page',
 				'expected'  => 'Category Archive page',
@@ -448,7 +536,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Tag archive page',
 				'go_to'     => get_term_link( $test_posts['test_tag_id'] ),
 				'attribute' => array(
-					'ifPageType' => 'is_tag',
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 'ifPageType' => array( 'is_tag' ) ),
+						),
+					),
 				),
 				'content'   => 'Tag Archive page',
 				'expected'  => 'Tag Archive page',
@@ -459,7 +552,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Term archive page',
 				'go_to'     => get_term_link( $test_posts['event_term_id'] ),
 				'attribute' => array(
-					'ifPageType' => 'is_tax',
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 'ifPageType' => array( 'is_tax' ) ),
+						),
+					),
 				),
 				'content'   => 'Term Archive page',
 				'expected'  => 'Term Archive page',
@@ -468,7 +566,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Term archive page',
 				'go_to'     => get_term_link( $test_posts['event_term_id'] ),
 				'attribute' => array(
-					'ifPageType' => 'is_archive',
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 'ifPageType' => array( 'is_archive' ) ),
+						),
+					),
 				),
 				'content'   => 'Term Archive page',
 				'expected'  => 'Term Archive page',
@@ -479,7 +582,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Page',
 				'go_to'     => get_permalink( $test_posts['parent_page_id'] ),
 				'attribute' => array(
-					'ifPageType' => 'is_page',
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 'ifPageType' => array( 'is_page' ) ),
+						),
+					),
 				),
 				'content'   => 'Page',
 				'expected'  => 'Page',
@@ -490,7 +598,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Single',
 				'go_to'     => get_permalink( $test_posts['post_id'] ),
 				'attribute' => array(
-					'ifPageType' => 'is_single',
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 'ifPageType' => array( 'is_single' ) ),
+						),
+					),
 				),
 				'content'   => 'Single',
 				'expected'  => 'Single',
@@ -499,8 +612,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Single',
 				'go_to'     => get_permalink( $test_posts['post_id'] ),
 				'attribute' => array(
-					'ifPageType' => 'is_single',
-					'postAuthor' => $test_users['test_user_02'],
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 'ifPageType' => array( 'is_single' ) ),
+						),
+						array(
+							'type'   => 'postAuthor',
+							'values' => array( 'postAuthor' => array( $test_users['test_user_02'] ) ),
+						),
+					),
 				),
 				'content'   => 'Single',
 				'expected'  => 'Single',
@@ -512,7 +633,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Post Type Archive page',
 				'go_to'     => get_post_type_archive_link( 'event' ),
 				'attribute' => array(
-					'ifPageType' => 'is_post_type_archive',
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 'ifPageType' => array( 'is_post_type_archive' ) ),
+						),
+					),
 				),
 				'content'   => 'Post Type Archive page',
 				'expected'  => 'Post Type Archive page',
@@ -521,7 +647,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Post Type Archive page',
 				'go_to'     => get_post_type_archive_link( 'event' ),
 				'attribute' => array(
-					'ifPostType' => 'event',
+					'conditions' => array(
+						array(
+							'type'   => 'postType',
+							'values' => array( 'ifPostType' => array( 'event' ) ),
+						),
+					),
 				),
 				'content'   => 'Post Type Archive page',
 				'expected'  => 'Post Type Archive page',
@@ -531,7 +662,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Term archive page',
 				'go_to'     => get_term_link( $test_posts['event_term_id'] ),
 				'attribute' => array(
-					'ifPostType' => 'event',
+					'conditions' => array(
+						array(
+							'type'   => 'postType',
+							'values' => array( 'ifPostType' => array( 'event' ) ),
+						),
+					),
 				),
 				'content'   => 'Term Archive page',
 				'expected'  => 'Term Archive page',
@@ -540,9 +676,17 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Term archive page',
 				'go_to'     => get_term_link( $test_posts['event_term_id'] ),
 				'attribute' => array(
-					'ifPageType' => 'is_single',
-					'ifPostType' => 'event',
 					'exclusion'  => true,
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 'ifPageType' => array( 'is_single' ) ),
+						),
+						array(
+							'type'   => 'postType',
+							'values' => array( 'ifPostType' => array( 'event' ) ),
+						),
+					),
 				),
 				'content'   => 'Term Archive page',
 				'expected'  => 'Term Archive page',
@@ -552,7 +696,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Author archive page',
 				'go_to'     => get_author_posts_url( $test_users['test_user_01'] ),
 				'attribute' => array(
-					'ifPageType' => 'is_author',
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 'ifPageType' => array( 'is_author' ) ),
+						),
+					),
 				),
 				'content'   => 'Author Archive page',
 				'expected'  => 'Author Archive page',
@@ -561,8 +710,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Author archive page',
 				'go_to'     => get_author_posts_url( $test_users['test_user_01'] ),
 				'attribute' => array(
-					'ifPageType' => 'is_author',
-					'postAuthor' => $test_users['test_user_01'],
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 'ifPageType' => array( 'is_author' ) ),
+						),
+						array(
+							'type'   => 'postAuthor',
+							'values' => array( 'postAuthor' => array( $test_users['test_user_01'] ) ),
+						),
+					),
 				),
 				'content'   => 'Author Archive page',
 				'expected'  => 'Author Archive page',
@@ -571,10 +728,18 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Author archive page',
 				'go_to'     => get_author_posts_url( $test_users['test_user_01'] ),
 				'attribute' => array(
-					'ifPageType' => 'is_author',
-					'postAuthor' => $test_users['test_user_02'],
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 'ifPageType' => array( 'is_author' ) ),
+						),
+						array(
+							'type'   => 'postAuthor',
+							'values' => array( 'postAuthor' => array( $test_users['test_user_02'] ) ),
+						),
+					),
 				),
-				'content'   => 'Author Archive page',
+				'content'   => 'Author archive page',
 				'expected'  => '',
 			),
 			// single.
@@ -582,7 +747,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Post Type Event',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'ifPostType' => 'event',
+					'conditions' => array(
+						array(
+							'type'   => 'postType',
+							'values' => array( 'ifPostType' => array( 'event' ) ),
+						),
+					),
 				),
 				'content'   => 'Post Type Event',
 				'expected'  => 'Post Type Event',
@@ -592,8 +762,13 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => '! Post Type Event',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'ifPostType' => 'event',
 					'exclusion'  => true,
+					'conditions' => array(
+						array(
+							'type'   => 'postType',
+							'values' => array( 'ifPostType' => array( 'event' ) ),
+						),
+					),
 				),
 				'content'   => 'Post Type Event',
 				'expected'  => '',
@@ -606,8 +781,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => '404 Page',
 				'go_to'     => home_url() . '/?cat=999999',
 				'attribute' => array(
-					'ifPageType' => 'is_404',
-					'ifPostType' => 'none',
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 'ifPageType' => array( 'is_404' ) ),
+						),
+					),
 				),
 				'content'   => '404 Page',
 				'expected'  => '404 Page',
@@ -621,11 +800,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Custom Field Exist',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'ifPageType'       => 'none',
-					'ifPostType'       => 'none',
-					'CustomFieldName'  => 'price',
-					'customFieldRule'  => 'valueExists',
-					'customFieldValue' => '',
+					'conditions' => array(
+						array(
+							'type'   => 'customField',
+							'values' => array(
+								'customFieldName'  => 'price',
+								'customFieldRule'  => 'valueExists',
+								'customFieldValue' => '',
+							),
+						),
+					),
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
@@ -639,11 +823,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Custom Field no value',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'ifPageType'       => 'none',
-					'ifPostType'       => 'none',
-					'customFieldName'  => 'price',
-					'customFieldRule'  => 'valueExists',
-					'customFieldValue' => '',
+					'conditions' => array(
+						array(
+							'type'   => 'customField',
+							'values' => array(
+								'customFieldName'  => 'price',
+								'customFieldRule'  => 'valueExists',
+								'customFieldValue' => '',
+							),
+						),
+					),
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
@@ -657,11 +846,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Custom Field value exist string 0',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'ifPageType'       => 'none',
-					'ifPostType'       => 'none',
-					'customFieldName'  => 'price',
-					'customFieldRule'  => 'valueExists',
-					'customFieldValue' => '',
+					'conditions' => array(
+						array(
+							'type'   => 'customField',
+							'values' => array(
+								'customFieldName'  => 'price',
+								'customFieldRule'  => 'valueExists',
+								'customFieldValue' => '',
+							),
+						),
+					),
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
@@ -675,11 +869,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Custom Field value exist number 0',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'ifPageType'       => 'none',
-					'ifPostType'       => 'none',
-					'customFieldName'  => 'price',
-					'customFieldRule'  => 'valueExists',
-					'customFieldValue' => '',
+					'conditions' => array(
+						array(
+							'type'   => 'customField',
+							'values' => array(
+								'customFieldName'  => 'price',
+								'customFieldRule'  => 'valueExists',
+								'customFieldValue' => '',
+							),
+						),
+					),
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
@@ -693,11 +892,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Custom Field value match',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'ifPageType'       => 'none',
-					'ifPostType'       => 'none',
-					'customFieldName'  => 'price',
-					'customFieldRule'  => 'valueEquals',
-					'customFieldValue' => '100',
+					'conditions' => array(
+						array(
+							'type'   => 'customField',
+							'values' => array(
+								'customFieldName'  => 'price',
+								'customFieldRule'  => 'valueEquals',
+								'customFieldValue' => '100',
+							),
+						),
+					),
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
@@ -711,11 +915,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Custom Field value not match',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'ifPageType'       => 'none',
-					'ifPostType'       => 'none',
-					'customFieldName'  => 'price',
-					'customFieldRule'  => 'valueEquals',
-					'customFieldValue' => '100',
+					'conditions' => array(
+						array(
+							'type'   => 'customField',
+							'values' => array(
+								'customFieldName'  => 'price',
+								'customFieldRule'  => 'valueEquals',
+								'customFieldValue' => '100',
+							),
+						),
+					),
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
@@ -729,11 +938,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Custom Field value not match',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'ifPageType'       => 'none',
-					'ifPostType'       => 'none',
-					'customFieldName'  => 'price',
-					'customFieldRule'  => null,
-					'customFieldValue' => '100',
+					'conditions' => array(
+						array(
+							'type'   => 'customField',
+							'values' => array(
+								'customFieldName'  => 'price',
+								'customFieldRule'  => null,
+								'customFieldValue' => '100',
+							),
+						),
+					),
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
@@ -749,9 +963,11 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Page viewable by administrator and editor',
 				'go_to'     => get_permalink( $test_posts['parent_page_id'] ),
 				'attribute' => array(
-					'userRole' => array(
-						'administrator',
-						'editor',
+					'conditions' => array(
+						array(
+							'type'   => 'userRole',
+							'values' => array( 'userRole' => array( 'administrator', 'editor' ) ),
+						),
 					),
 				),
 				'content'   => 'Page viewable by administrator and editor',
@@ -761,30 +977,60 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'No restrictions on viewers',
 				'go_to'     => get_permalink( $test_posts['parent_page_id'] ),
 				'attribute' => array(
-					'userRole' => array(),
+					'conditions' => array(
+						array(
+							'type'   => 'userRole',
+							'values' => array( 'userRole' => array() ),
+						),
+					),
 				),
 				'content'   => 'No restrictions on viewers',
 				'expected'  => 'No restrictions on viewers',
 			),
 			array(
-				'name'       => 'Editor can view',
-				'go_to'      => get_permalink( $test_posts['parent_page_id'] ),
-				'attribute'  => array(
-					'userRole' => array( 'editor' ),
+				'name'      => 'Editor can view',
+				'go_to'     => home_url(),
+				'user'      => 'editor',
+				'attribute' => array(
+					'conditions' => array(
+						array(
+							'type'   => 'userRole',
+							'values' => array( 'userRole' => array( 'editor' ) ),
+						),
+					),
 				),
-				'user_roles' => array( 'editor' ),
-				'content'    => 'Editor can view',
-				'expected'   => 'Editor can view',
+				'content'   => 'Editor can view',
+				'expected'  => 'Editor can view',
 			),
 			array(
-				'name'       => 'Editor can not view',
-				'go_to'      => get_permalink( $test_posts['parent_page_id'] ),
-				'attribute'  => array(
-					'userRole' => array( 'administrator' ),
+				'name'      => 'Subscriber can not view',
+				'go_to'     => home_url(),
+				'user'      => 'subscriber',
+				'attribute' => array(
+					'conditions' => array(
+						array(
+							'type'   => 'userRole',
+							'values' => array( 'userRole' => array( 'editor' ) ),
+						),
+					),
 				),
-				'user_roles' => array( 'editor' ),
-				'content'    => 'Editor can not view',
-				'expected'   => '',
+				'content'   => 'Subscriber can not view',
+				'expected'  => '',
+			),
+			array(
+				'name'      => 'Not log-in user can not view',
+				'go_to'     => home_url(),
+				'user'      => 'not-log-in',
+				'attribute' => array(
+					'conditions' => array(
+						array(
+							'type'   => 'userRole',
+							'values' => array( 'userRole' => array( 'editor' ) ),
+						),
+					),
+				),
+				'content'   => 'Not log-in user can not view',
+				'expected'  => '',
 			),
 			/******************************************
 			* Login User Only */
@@ -792,7 +1038,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Only login user can view',
 				'go_to'     => get_permalink( $test_posts['parent_page_id'] ),
 				'attribute' => array(
-					'showOnlyLoginUser' => true,
+					'conditions' => array(
+						array(
+							'type'   => 'loginUser',
+							'values' => array( 'showOnlyLoginUser' => true ),
+						),
+					),
 				),
 				'is_login'  => true,
 				'content'   => 'Only login user can view',
@@ -802,7 +1053,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Only login user can view',
 				'go_to'     => get_permalink( $test_posts['parent_page_id'] ),
 				'attribute' => array(
-					'showOnlyLoginUser' => true,
+					'conditions' => array(
+						array(
+							'type'   => 'loginUser',
+							'values' => array( 'showOnlyLoginUser' => true ),
+						),
+					),
 				),
 				'is_login'  => false,
 				'content'   => 'Only login user can view',
@@ -815,9 +1071,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Display Period not specified',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'periodDisplaySetting'      => 'none',
-					'periodSpecificationMethod' => 'direct',
-					'periodDisplayValue'        => '',
+					'conditions' => array(
+						array(
+							'type'   => 'period',
+							'values' => array(
+								'periodDisplaySetting'      => 'none',
+								'periodSpecificationMethod' => 'direct',
+								'periodDisplayValue'        => '',
+							),
+						),
+					),
 				),
 				'content'   => 'Display Period not specified',
 				'expected'  => 'Display Period not specified',
@@ -827,9 +1090,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Display Period [ deadline / direct / after today]( true )',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'periodDisplaySetting'      => 'deadline',
-					'periodSpecificationMethod' => 'direct',
-					'periodDisplayValue'        => date( 'Y-m-d H:i', strtotime( '+5 days' ) ),
+					'conditions' => array(
+						array(
+							'type'   => 'period',
+							'values' => array(
+								'periodDisplaySetting'      => 'deadline',
+								'periodSpecificationMethod' => 'direct',
+								'periodDisplayValue'        => date( 'Y-m-d H:i', strtotime( '+5 days' ) ),
+							),
+						),
+					),
 				),
 				'content'   => 'Display Period [ deadline / direct / after today]( true )',
 				'expected'  => 'Display Period [ deadline / direct / after today]( true )',
@@ -838,9 +1108,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Display Period [ deadline / direct / before today]( false )',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'periodDisplaySetting'      => 'deadline',
-					'periodSpecificationMethod' => 'direct',
-					'periodDisplayValue'        => date( 'Y-m-d H:i', strtotime( '-5 days' ) ),
+					'conditions' => array(
+						array(
+							'type'   => 'period',
+							'values' => array(
+								'periodDisplaySetting'      => 'deadline',
+								'periodSpecificationMethod' => 'direct',
+								'periodDisplayValue'        => date( 'Y-m-d H:i', strtotime( '-5 days' ) ),
+							),
+						),
+					),
 				),
 				'content'   => 'Display Period [ deadline / direct / before today]( false )',
 				'expected'  => '',
@@ -849,9 +1126,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Display Period [ deadline / direct / before now]( false )',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'periodDisplaySetting'      => 'deadline',
-					'periodSpecificationMethod' => 'direct',
-					'periodDisplayValue'        => date( 'Y-m-d H:i', strtotime( '-1 hours' ) ),
+					'conditions' => array(
+						array(
+							'type'   => 'period',
+							'values' => array(
+								'periodDisplaySetting'      => 'deadline',
+								'periodSpecificationMethod' => 'direct',
+								'periodDisplayValue'        => date( 'Y-m-d H:i', strtotime( '-1 hours' ) ),
+							),
+						),
+					),
 				),
 				'content'   => 'Display Period [ deadline / direct / before now]( false )',
 				'expected'  => '',
@@ -860,9 +1144,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Display Period [ deadline / direct / Y-m-d today]( true )',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'periodDisplaySetting'      => 'deadline',
-					'periodSpecificationMethod' => 'direct',
-					'periodDisplayValue'        => date( 'Y-m-d' ),
+					'conditions' => array(
+						array(
+							'type'   => 'period',
+							'values' => array(
+								'periodDisplaySetting'      => 'deadline',
+								'periodSpecificationMethod' => 'direct',
+								'periodDisplayValue'        => date( 'Y-m-d' ),
+							),
+						),
+					),
 				),
 				'content'   => 'Display Period [ deadline / direct / Y-m-d today]( true )',
 				'expected'  => 'Display Period [ deadline / direct / Y-m-d today]( true )',
@@ -871,9 +1162,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Display Period [ deadline / referCustomField / after today]( true )',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'periodDisplaySetting'      => 'deadline',
-					'periodSpecificationMethod' => 'referCustomField',
-					'periodReferCustomField'      => 'datetime',
+					'conditions' => array(
+						array(
+							'type'   => 'period',
+							'values' => array(
+								'periodDisplaySetting'      => 'deadline',
+								'periodSpecificationMethod' => 'referCustomField',
+								'periodReferCustomField'      => 'datetime',
+							),
+						),
+					),
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
@@ -887,9 +1185,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Display Period [ deadline / referCustomField / before today]( false )',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'periodDisplaySetting'      => 'deadline',
-					'periodSpecificationMethod' => 'referCustomField',
-					'periodReferCustomField'      => 'datetime',
+					'conditions' => array(
+						array(
+							'type'   => 'period',
+							'values' => array(
+								'periodDisplaySetting'      => 'deadline',
+								'periodSpecificationMethod' => 'referCustomField',
+								'periodReferCustomField'      => 'datetime',
+							),
+						),
+					),
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
@@ -903,9 +1208,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Display Period [ deadline / referCustomField(Y-m-d H:i:s) / before today]( false )',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'periodDisplaySetting'      => 'deadline',
-					'periodSpecificationMethod' => 'referCustomField',
-					'periodReferCustomField'      => 'datetime',
+					'conditions' => array(
+						array(
+							'type'   => 'period',
+							'values' => array(
+								'periodDisplaySetting'      => 'deadline',
+								'periodSpecificationMethod' => 'referCustomField',
+								'periodReferCustomField'      => 'datetime',
+							),
+						),
+					),
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
@@ -920,9 +1232,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Display Period [ startline / direct / after today]( false )',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'periodDisplaySetting'      => 'startline',
-					'periodSpecificationMethod' => 'direct',
-					'periodDisplayValue'        => date( 'Y-m-d H:i', strtotime( '+5 days' ) ),
+					'conditions' => array(
+						array(
+							'type'   => 'period',
+							'values' => array(
+								'periodDisplaySetting'      => 'startline',
+								'periodSpecificationMethod' => 'direct',
+								'periodDisplayValue'        => date( 'Y-m-d H:i', strtotime( '+5 days' ) ),
+							),
+						),
+					),
 				),
 				'content'   => 'Display Period [ startline / direct / after today]( false )',
 				'expected'  => '',
@@ -931,9 +1250,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Display Period [ startline / direct / before today]( true )',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'periodDisplaySetting'      => 'startline',
-					'periodSpecificationMethod' => 'direct',
-					'periodDisplayValue'        => date( 'Y-m-d H:i', strtotime( '-5 days' ) ),
+					'conditions' => array(
+						array(
+							'type'   => 'period',
+							'values' => array(
+								'periodDisplaySetting'      => 'startline',
+								'periodSpecificationMethod' => 'direct',
+								'periodDisplayValue'        => date( 'Y-m-d H:i', strtotime( '-5 days' ) ),
+							),
+						),
+					),
 				),
 				'content'   => 'Display Period [ startline / direct / before today]( true )',
 				'expected'  => 'Display Period [ startline / direct / before today]( true )',
@@ -942,9 +1268,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Display Period [ startline / direct / before now]( true )',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'periodDisplaySetting'      => 'startline',
-					'periodSpecificationMethod' => 'direct',
-					'periodDisplayValue'        => date( 'Y-m-d H:i', strtotime( '-1 hours' ) ),
+					'conditions' => array(
+						array(
+							'type'   => 'period',
+							'values' => array(
+								'periodDisplaySetting'      => 'startline',
+								'periodSpecificationMethod' => 'direct',
+								'periodDisplayValue'        => date( 'Y-m-d H:i', strtotime( '-1 hours' ) ),
+							),
+						),
+					),
 				),
 				'content'   => 'Display Period [ startline / direct / before now]( true )',
 				'expected'  => 'Display Period [ startline / direct / before now]( true )',
@@ -953,9 +1286,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Display Period [ startline / direct / Y-m-d today]( true )',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'periodDisplaySetting'      => 'startline',
-					'periodSpecificationMethod' => 'direct',
-					'periodDisplayValue'        => date( 'Y-m-d' ),
+					'conditions' => array(
+						array(
+							'type'   => 'period',
+							'values' => array(
+								'periodDisplaySetting'      => 'startline',
+								'periodSpecificationMethod' => 'direct',
+								'periodDisplayValue'        => date( 'Y-m-d' ),
+							),
+						),
+					),
 				),
 				'content'   => 'Display Period [ startline / direct / Y-m-d today]( true )',
 				'expected'  => 'Display Period [ startline / direct / Y-m-d today]( true )',
@@ -964,9 +1304,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Display Period [ startline / referCustomField / after today]( false )',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'periodDisplaySetting'      => 'startline',
-					'periodSpecificationMethod' => 'referCustomField',
-					'periodReferCustomField'      => 'datetime',
+					'conditions' => array(
+						array(
+							'type'   => 'period',
+							'values' => array(
+								'periodDisplaySetting'      => 'startline',
+								'periodSpecificationMethod' => 'referCustomField',
+								'periodReferCustomField'      => 'datetime',
+							),
+						),
+					),
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
@@ -980,9 +1327,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Display Period [ startline / referCustomField / before today]( true )',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'periodDisplaySetting'      => 'startline',
-					'periodSpecificationMethod' => 'referCustomField',
-					'periodReferCustomField'      => 'datetime',
+					'conditions' => array(
+						array(
+							'type'   => 'period',
+							'values' => array(
+								'periodDisplaySetting'      => 'startline',
+								'periodSpecificationMethod' => 'referCustomField',
+								'periodReferCustomField'      => 'datetime',
+							),
+						),
+					),
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
@@ -996,9 +1350,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Display Period [ startline / referCustomField(Y-m-d H:i:s) / before today]( true )',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'periodDisplaySetting'      => 'startline',
-					'periodSpecificationMethod' => 'referCustomField',
-					'periodReferCustomField'      => 'datetime',
+					'conditions' => array(
+						array(
+							'type'   => 'period',
+							'values' => array(
+								'periodDisplaySetting'      => 'startline',
+								'periodSpecificationMethod' => 'referCustomField',
+								'periodReferCustomField'      => 'datetime',
+							),
+						),
+					),
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
@@ -1013,9 +1374,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Display Period [ daysSincePublic / direct / 10 days later]( true )',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'periodDisplaySetting'      => 'daysSincePublic',
-					'periodSpecificationMethod' => 'direct',
-					'periodDisplayValue'        => '10',
+					'conditions' => array(
+						array(
+							'type'   => 'period',
+							'values' => array(
+								'periodDisplaySetting'      => 'daysSincePublic',
+								'periodSpecificationMethod' => 'direct',
+								'periodDisplayValue'        => '10',
+							),
+						),
+					),
 				),
 				'content'   => 'Display Period [ daysSincePublic / direct / 10 days later]( true )',
 				'expected'  => 'Display Period [ daysSincePublic / direct / 10 days later]( true )',
@@ -1024,9 +1392,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Display Period [ daysSincePublic / direct / 5 days later]( false )',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'periodDisplaySetting'      => 'daysSincePublic',
-					'periodSpecificationMethod' => 'direct',
-					'periodDisplayValue'        => '5',
+					'conditions' => array(
+						array(
+							'type'   => 'period',
+							'values' => array(
+								'periodDisplaySetting'      => 'daysSincePublic',
+								'periodSpecificationMethod' => 'direct',
+								'periodDisplayValue'        => '5',
+							),
+						),
+					),
 				),
 				'content'   => 'Display Period [ daysSincePublic / direct / 5 days later]( false )',
 				'expected'  => '',
@@ -1035,9 +1410,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Display Period [ daysSincePublic / direct / 3 days later]( false )',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'periodDisplaySetting'      => 'daysSincePublic',
-					'periodSpecificationMethod' => 'direct',
-					'periodDisplayValue'        => '3',
+					'conditions' => array(
+						array(
+							'type'   => 'period',
+							'values' => array(
+								'periodDisplaySetting'      => 'daysSincePublic',
+								'periodSpecificationMethod' => 'direct',
+								'periodDisplayValue'        => '3',
+							),
+						),
+					),
 				),
 				'content'   => 'Display Period [ daysSincePublic / direct / 3 days later]( false )',
 				'expected'  => '',
@@ -1046,9 +1428,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Display Period [ daysSincePublic / referCustomField / 10 days later]( true )',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'periodDisplaySetting'      => 'daysSincePublic',
-					'periodSpecificationMethod' => 'referCustomField',
-					'periodReferCustomField'      => 'number',
+					'conditions' => array(
+						array(
+							'type'   => 'period',
+							'values' => array(
+								'periodDisplaySetting'      => 'daysSincePublic',
+								'periodSpecificationMethod' => 'referCustomField',
+								'periodReferCustomField'      => 'number',
+							),
+						),
+					),
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
@@ -1062,9 +1451,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Display Period [ daysSincePublic / referCustomField / 5 days later]( false )',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'periodDisplaySetting'      => 'daysSincePublic',
-					'periodSpecificationMethod' => 'referCustomField',
-					'periodReferCustomField'      => 'number',
+					'conditions' => array(
+						array(
+							'type'   => 'period',
+							'values' => array(
+								'periodDisplaySetting'      => 'daysSincePublic',
+								'periodSpecificationMethod' => 'referCustomField',
+								'periodReferCustomField'      => 'number',
+							),
+						),
+					),
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
@@ -1078,9 +1474,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Display Period [ daysSincePublic / referCustomField / 3 days later]( false )',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'periodDisplaySetting'      => 'daysSincePublic',
-					'periodSpecificationMethod' => 'referCustomField',
-					'periodReferCustomField'      => 'number',
+					'conditions' => array(
+						array(
+							'type'   => 'period',
+							'values' => array(
+								'periodDisplaySetting'      => 'daysSincePublic',
+								'periodSpecificationMethod' => 'referCustomField',
+								'periodReferCustomField'      => 'number',
+							),
+						),
+					),
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
@@ -1094,9 +1497,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Display Period [ deadline / referCustomField / empty ]( true )',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'periodDisplaySetting'      => 'deadline',
-					'periodSpecificationMethod' => 'referCustomField',
-					'periodReferCustomField'      => '',
+					'conditions' => array(
+						array(
+							'type'   => 'period',
+							'values' => array(
+								'periodDisplaySetting'      => 'deadline',
+								'periodSpecificationMethod' => 'referCustomField',
+								'periodReferCustomField'      => '',
+							),
+						),
+					),
 				),
 				'content'   => 'Display Period [ deadline / referCustomField / empty ]( true )',
 				'expected'  => 'Display Period [ deadline / referCustomField / empty ]( true )',
@@ -1105,9 +1515,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Display Period [ deadline / referCustomField / not date]( true )',
 				'go_to'     => get_permalink( $test_posts['event_post_id'] ),
 				'attribute' => array(
-					'periodDisplaySetting'      => 'deadline',
-					'periodSpecificationMethod' => 'referCustomField',
-					'periodReferCustomField'      => 'text',
+					'conditions' => array(
+						array(
+							'type'   => 'period',
+							'values' => array(
+								'periodDisplaySetting'      => 'deadline',
+								'periodSpecificationMethod' => 'referCustomField',
+								'periodReferCustomField'      => 'text',
+							),
+						),
+					),
 				),
 				'test_meta' => array(
 					'post_id'    => $test_posts['event_post_id'],
@@ -1123,7 +1540,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Visible all languages (null)',
 				'go_to'     => home_url(),
 				'attribute' => array(
-					'ifLanguage' => null,
+					'conditions' => array(
+						array(
+							'type'   => 'language',
+							'values' => array( 'ifLanguage' => null ),
+						),
+					),
 				),
 				'content'   => 'Visible all languages',
 				'expected'  => 'Visible all languages',
@@ -1132,7 +1554,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Visible all languages ()',
 				'go_to'     => home_url(),
 				'attribute' => array(
-					'ifLanguage' => '',
+					'conditions' => array(
+						array(
+							'type'   => 'language',
+							'values' => array( 'ifLanguage' => '' ),
+						),
+					),
 				),
 				'content'   => 'Visible all languages',
 				'expected'  => 'Visible all languages',
@@ -1141,7 +1568,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Visible on en_US',
 				'go_to'     => home_url(),
 				'attribute' => array(
-					'ifLanguage' => 'en_US',
+					'conditions' => array(
+						array(
+							'type'   => 'language',
+							'values' => array( 'ifLanguage' => 'en_US' ),
+						),
+					),
 				),
 				'content'   => 'en_US',
 				'expected'  => 'en_US',
@@ -1150,7 +1582,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'name'      => 'Unvisible on en_US',
 				'go_to'     => home_url(),
 				'attribute' => array(
-					'ifLanguage' => 'ja',
+					'conditions' => array(
+						array(
+							'type'   => 'language',
+							'values' => array( 'ifLanguage' => 'ja' ),
+						),
+					),
 				),
 				'content'   => 'Unvisible',
 				'expected'  => '',
@@ -1175,13 +1612,35 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 
 			print PHP_EOL;
 			$this->go_to( $test['go_to'] );
-			if ( isset( $test['user_roles'] ) ) {
-				$test['attribute']['test_user_roles'] = $test['user_roles'];
+
+			if ( ! empty( $test['user'] ) ) {
+				print 'user : ' . get_current_user_id() . PHP_EOL;
+				if ( 'not-log-in' === $test['user'] ) {
+					// ログアウト.
+					wp_set_current_user( 0 );
+				} else {
+					$user = get_user_by( 'login', $test['user'] );
+					if ( $user ) {
+						wp_set_current_user( $user->ID );
+					} else {
+						// ユーザーが存在しない場合は、テスト用にユーザーを作成するか、管理者ユーザーを使用
+						$admin_user = get_user_by( 'login', 'vektor' );
+						if ( $admin_user ) {
+							wp_set_current_user( $admin_user->ID );
+						} else {
+							// 管理者ユーザーも存在しない場合は、ID 1を使用（通常は管理者）
+							wp_set_current_user( 1 );
+						}
+						print 'Warning: User "' . $test['user'] . '" not found, using fallback user.' . PHP_EOL;
+					}
+				}
 				$actual = vk_dynamic_if_block_render( $test['attribute'], $test['content'] );
-			} elseif ( isset( $test['is_login'] )) {
-				wp_set_current_user($test['is_login'] ? 1 : 0);
+				// ユーザーをリセット.
+				wp_set_current_user( 0 );
+			} elseif ( isset( $test['is_login'] ) ) {
+				wp_set_current_user( $test['is_login'] ? 1 : 0 );
 				$actual = vk_dynamic_if_block_render( $test['attribute'], $test['content'] );
-				wp_set_current_user(0);
+				wp_set_current_user( 0 );
 			} else {
 				$actual = vk_dynamic_if_block_render( $test['attribute'], $test['content'] );
 			}
