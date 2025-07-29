@@ -45,7 +45,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		is_page() && 'is_page' === $attributes['ifPageType'] ||
 		is_singular() && 'is_singular' === $attributes['ifPageType'] ||
 		is_home() && ! is_front_page() && 'is_home' === $attributes['ifPageType'] ||
-		is_post_type_archive() && 'is_post_type_archive' === $attributes['ifPageType'] ||
+		is_post_type_archive() && ! is_month() && 'is_post_type_archive' === $attributes['ifPageType'] ||
 		is_category() && 'is_category' === $attributes['ifPageType'] ||
 		is_tag() && 'is_tag' === $attributes['ifPageType'] ||
 		is_tax() && 'is_tax' === $attributes['ifPageType'] ||
