@@ -35,6 +35,8 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+[ Bug Fix ] Fixed post type archive condition returning true on custom post type monthly archive pages.
+
 = 0.8.6 =
 [ Specification change ][ Author Archive ] Changed to target only users with the role of Contributor or higher who have at least one published article.
 
