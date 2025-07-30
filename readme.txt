@@ -35,7 +35,7 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
-[ Specification change ] Changed the UI to specify the condition branching method at the beginning
+= 1.0.0 =
 [ Specification Change ] Changed UI to stacked condition format. 
 
 = 0.9.1 =
