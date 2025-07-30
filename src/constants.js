@@ -27,7 +27,7 @@ export const PAGE_TYPE_DEFINITIONS = [
 	{
 		value: 'is_post_type_archive',
 		label: 'Post Type Archive',
-		func: 'is_post_type_archive()',
+		func: 'is_post_type_archive() && !is_year() && !is_month() && !is_date()',
 	},
 	{ value: 'is_category', label: 'Category Archive', func: 'is_category()' },
 	{ value: 'is_tag', label: 'Tag Archive', func: 'is_tag()' },
