@@ -5,8 +5,8 @@
  * Description: A dynamic block displays its Inner Blocks based on specified conditions, such as whether the current page is the front page or a single post, the post type, or the value of a Custom Field.
  * Author: Vektor,Inc.
  * Author URI: https://vektor-inc.co.jp/en/
- * Version: 0.9.1
- * Stable tag: 0.9.1
+ * Version: 1.0.0
+ * Stable tag: 1.0.0
  * License: GPL-2.0-or-later
  * Text Domain: vk-dynamic-if-block
  *
@@ -22,6 +22,309 @@ $autoload_path = plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
 // Deploy failure countermeasure for Vendor directory.
 if ( file_exists( $autoload_path ) ) {
 	require_once $autoload_path;
+}
+
+/**
+ * プラグインアクティベーション時の処理
+ */
+function vk_dynamic_if_block_activate() {
+	// 移行処理を実行
+	vk_dynamic_if_block_migrate_old_blocks_on_activation();
+	
+	// バージョン情報を保存
+	update_option( 'vk_dynamic_if_block_version', '1.0.0' );
+}
+register_activation_hook( __FILE__, 'vk_dynamic_if_block_activate' );
+
+/**
+ * プラグインアップデート時の処理
+ */
+function vk_dynamic_if_block_check_version() {
+	$current_version = get_option( 'vk_dynamic_if_block_version', '0.8.6' );
+	$plugin_version = '1.0.0';
+	
+	// 移行完了フラグをチェック
+	$migration_completed = get_option( 'vk_dynamic_if_block_migration_completed', false );
+	
+	// デバッグ用: 移行処理を強制実行
+	error_log( "VK Dynamic If Block Debug - Current Version: {$current_version}, Plugin Version: {$plugin_version}, Migration Completed: " . ( $migration_completed ? 'true' : 'false' ) );
+	
+	// デバッグ用: 移行完了フラグをリセット（開発時のみ使用）
+	if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+		delete_option( 'vk_dynamic_if_block_migration_completed' );
+		delete_option( 'vk_dynamic_if_block_version' );
+		$migration_completed = false;
+		$current_version = '0.8.6';
+		error_log( "VK Dynamic If Block: Debug mode - reset migration flags" );
+	}
+	
+	// バージョンが異なる場合、かつ移行が未完了の場合のみ移行処理を実行
+	// デバッグ用: 条件を一時的に緩和
+	if ( ( version_compare( $current_version, $plugin_version, '<' ) || true ) && ! $migration_completed ) {
+		error_log( "VK Dynamic If Block: Starting migration process..." );
+		vk_dynamic_if_block_migrate_old_blocks_on_activation();
+		update_option( 'vk_dynamic_if_block_version', $plugin_version );
+		update_option( 'vk_dynamic_if_block_migration_completed', true );
+		error_log( "VK Dynamic If Block: Migration process completed." );
+	} else {
+		error_log( "VK Dynamic If Block: Migration skipped - version: {$current_version}, migration completed: " . ( $migration_completed ? 'true' : 'false' ) );
+	}
+}
+add_action( 'plugins_loaded', 'vk_dynamic_if_block_check_version' );
+
+/**
+ * アクティベーション時・アップデート時の移行処理
+ */
+function vk_dynamic_if_block_migrate_old_blocks_on_activation() {
+	global $wpdb;
+	
+	error_log( "VK Dynamic If Block: Starting migration function..." );
+	
+	// VK Dynamic If Blockを使用している投稿を取得
+	$posts = $wpdb->get_results("
+		SELECT ID, post_content, post_title 
+		FROM {$wpdb->posts} 
+		WHERE post_content LIKE '%vk-blocks/dynamic-if%'
+		AND post_status IN ('publish', 'draft', 'private')
+	");
+	
+	error_log( "VK Dynamic If Block: Found " . count( $posts ) . " posts with dynamic-if blocks" );
+	
+	$migrated_count = 0;
+	
+	foreach ( $posts as $post ) {
+		$original_content = $post->post_content;
+		$updated_content = $original_content;
+		
+		// ブロックの正規表現パターン - より柔軟なパターンに変更
+		$pattern = '/<!-- wp:vk-blocks\/dynamic-if\s+(\{[^}]*\})\s+-->/';
+		
+		if ( preg_match_all( $pattern, $original_content, $matches, PREG_OFFSET_CAPTURE ) ) {
+			error_log( "VK Dynamic If Block: Found " . count( $matches[0] ) . " blocks in post ID: " . $post->ID . " - " . $post->post_title );
+			
+			// 後ろから処理（オフセットが変わらないように）
+			for ( $i = count( $matches[0] ) - 1; $i >= 0; $i-- ) {
+				$full_match_data = $matches[0][ $i ];
+				$attributes_json_data = $matches[1][ $i ];
+				
+				// PREG_OFFSET_CAPTUREフラグにより、配列の要素を取得
+				if ( is_array( $full_match_data ) ) {
+					$full_match = $full_match_data[0];
+					$full_match_offset = $full_match_data[1];
+				} else {
+					$full_match = $full_match_data;
+					$full_match_offset = 0;
+				}
+				
+				if ( is_array( $attributes_json_data ) ) {
+					$attributes_json = $attributes_json_data[0];
+				} else {
+					$attributes_json = $attributes_json_data;
+				}
+				
+				// 文字列であることを確認
+				if ( ! is_string( $attributes_json ) ) {
+					error_log( "VK Dynamic If Block: Skipping block - attributes_json is not string: " . var_export( $attributes_json, true ) );
+					continue;
+				}
+				
+				error_log( "VK Dynamic If Block: Processing attributes JSON: " . $attributes_json );
+				
+				$attributes = json_decode( $attributes_json, true );
+				
+				if ( $attributes ) {
+					error_log( "VK Dynamic If Block: Successfully decoded attributes: " . json_encode( $attributes ) );
+					
+					// 古い属性が存在するかチェック
+					$old_attributes = [
+						'customFieldName',
+						'ifPageType',
+						'ifPostType',
+						'ifLanguage',
+						'userRole',
+						'postAuthor',
+						'periodDisplaySetting',
+						'showOnlyLoginUser'
+					];
+					
+					$has_old_attributes = false;
+					$found_old_attributes = [];
+					foreach ( $old_attributes as $attr ) {
+						if ( isset( $attributes[ $attr ] ) && ! empty( $attributes[ $attr ] ) && $attributes[ $attr ] !== 'none' ) {
+							$has_old_attributes = true;
+							$found_old_attributes[] = $attr;
+							error_log( "VK Dynamic If Block: Found old attribute: {$attr} = " . $attributes[ $attr ] );
+						}
+					}
+					
+					if ( $has_old_attributes ) {
+						error_log( "VK Dynamic If Block: Migrating block in post ID: " . $post->ID . " with old attributes: " . implode( ', ', $found_old_attributes ) );
+						
+						// 移行処理を実行
+						$migrated_conditions = vk_dynamic_if_block_migrate_old_attributes( $attributes );
+						$attributes['conditions'] = $migrated_conditions;
+						
+						// 古い属性を削除
+						foreach ( $old_attributes as $attr ) {
+							unset( $attributes[ $attr ] );
+						}
+						
+						// 新しい属性でJSONを生成
+						$new_attributes_json = json_encode( $attributes );
+						error_log( "VK Dynamic If Block: New attributes JSON: " . $new_attributes_json );
+						
+						// 投稿の内容を更新
+						$updated_content = substr_replace(
+							$updated_content,
+							'<!-- wp:vk-blocks/dynamic-if ' . $new_attributes_json . ' -->',
+							$full_match_offset,
+							strlen( $full_match )
+						);
+						
+						$migrated_count++;
+						error_log( "VK Dynamic If Block: Successfully migrated block in post ID: " . $post->ID );
+					} else {
+						error_log( "VK Dynamic If Block: No old attributes found in block" );
+					}
+				} else {
+					error_log( "VK Dynamic If Block: Failed to decode attributes JSON: " . json_last_error_msg() );
+				}
+			}
+			
+			// 内容が変更された場合のみ更新
+			if ( $updated_content !== $original_content ) {
+				$result = wp_update_post( array(
+					'ID' => $post->ID,
+					'post_content' => $updated_content
+				) );
+				
+				if ( is_wp_error( $result ) ) {
+					error_log( "VK Dynamic If Block: Failed to update post ID: " . $post->ID . " - " . $result->get_error_message() );
+				} else {
+					error_log( "VK Dynamic If Block: Successfully updated post ID: " . $post->ID );
+				}
+			} else {
+				error_log( "VK Dynamic If Block: No changes made to post ID: " . $post->ID );
+			}
+		} else {
+			error_log( "VK Dynamic If Block: No blocks found in post ID: " . $post->ID );
+		}
+	}
+	
+	// 移行完了をログに記録
+	if ( $migrated_count > 0 ) {
+		error_log( "VK Dynamic If Block: {$migrated_count} blocks migrated successfully." );
+	} else {
+		error_log( "VK Dynamic If Block: No blocks were migrated." );
+	}
+	
+	// 移行完了フラグを設定（移行対象がなくても完了とする）
+	update_option( 'vk_dynamic_if_block_migration_completed', true );
+}
+
+/**
+ * Migrate old attributes to new conditions format
+ *
+ * @param array $attributes Old attributes array.
+ * @return array Migrated conditions array.
+ */
+function vk_dynamic_if_block_migrate_old_attributes( $attributes ) {
+	$conditions = array();
+
+	// Page Type Condition
+	if ( isset( $attributes['ifPageType'] ) && ! empty( $attributes['ifPageType'] ) && 'none' !== $attributes['ifPageType'] ) {
+		$conditions[] = array(
+			'type' => 'pageType',
+			'value' => $attributes['ifPageType']
+		);
+	}
+
+	// Post Type Condition
+	if ( isset( $attributes['ifPostType'] ) && ! empty( $attributes['ifPostType'] ) && 'none' !== $attributes['ifPostType'] ) {
+		$conditions[] = array(
+			'type' => 'postType',
+			'value' => $attributes['ifPostType']
+		);
+	}
+
+	// Language Condition
+	if ( isset( $attributes['ifLanguage'] ) && ! empty( $attributes['ifLanguage'] ) && 'none' !== $attributes['ifLanguage'] ) {
+		$conditions[] = array(
+			'type' => 'language',
+			'value' => $attributes['ifLanguage']
+		);
+	}
+
+	// User Role Condition
+	if ( isset( $attributes['userRole'] ) && ! empty( $attributes['userRole'] ) ) {
+		$conditions[] = array(
+			'type' => 'userRole',
+			'value' => $attributes['userRole']
+		);
+	}
+
+	// Post Author Condition
+	if ( isset( $attributes['postAuthor'] ) && ! empty( $attributes['postAuthor'] ) && 0 !== $attributes['postAuthor'] ) {
+		$conditions[] = array(
+			'type' => 'postAuthor',
+			'value' => $attributes['postAuthor']
+		);
+	}
+
+	// Custom Field Condition
+	if ( isset( $attributes['customFieldName'] ) && ! empty( $attributes['customFieldName'] ) ) {
+		$custom_field_condition = array(
+			'type' => 'customField',
+			'fieldName' => $attributes['customFieldName']
+		);
+
+		// Custom Field Rule
+		if ( isset( $attributes['customFieldRule'] ) && ! empty( $attributes['customFieldRule'] ) ) {
+			$custom_field_condition['rule'] = $attributes['customFieldRule'];
+		}
+
+		// Custom Field Value
+		if ( isset( $attributes['customFieldValue'] ) && ! empty( $attributes['customFieldValue'] ) ) {
+			$custom_field_condition['value'] = $attributes['customFieldValue'];
+		}
+
+		$conditions[] = $custom_field_condition;
+	}
+
+	// Period Display Condition
+	if ( isset( $attributes['periodDisplaySetting'] ) && ! empty( $attributes['periodDisplaySetting'] ) && 'none' !== $attributes['periodDisplaySetting'] ) {
+		$period_condition = array(
+			'type' => 'period',
+			'setting' => $attributes['periodDisplaySetting']
+		);
+
+		// Period Specification Method
+		if ( isset( $attributes['periodSpecificationMethod'] ) && ! empty( $attributes['periodSpecificationMethod'] ) ) {
+			$period_condition['method'] = $attributes['periodSpecificationMethod'];
+		}
+
+		// Period Display Value
+		if ( isset( $attributes['periodDisplayValue'] ) && ! empty( $attributes['periodDisplayValue'] ) ) {
+			$period_condition['value'] = $attributes['periodDisplayValue'];
+		}
+
+		// Period Refer Custom Field
+		if ( isset( $attributes['periodReferCustomField'] ) && ! empty( $attributes['periodReferCustomField'] ) ) {
+			$period_condition['referField'] = $attributes['periodReferCustomField'];
+		}
+
+		$conditions[] = $period_condition;
+	}
+
+	// Show Only Login User Condition
+	if ( isset( $attributes['showOnlyLoginUser'] ) && ! empty( $attributes['showOnlyLoginUser'] ) ) {
+		$conditions[] = array(
+			'type' => 'loginUser',
+			'value' => $attributes['showOnlyLoginUser']
+		);
+	}
+
+	return $conditions;
 }
 
 function vk_dynamic_if_block_enqueue_scripts() {

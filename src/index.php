@@ -1,512 +1,687 @@
 <?php
-
 /**
  * Dynamic If Block
+ *
  * @package vektor-inc/vk-dynamic-if-block
  */
 
 use VektorInc\VK_Helpers\VkHelpers;
 
 /**
- * Render the dynamic if block.
+ * Block Render function
  *
- * @param  array  $attributes Block attributes.
- * @param  string $content    Block content.
- *
- * @return string Rendered content.
+ * @param array  $attributes : Block attributes.
+ * @param string $content : Block inner content.
+ * @return string $return : Return HTML.
  */
-function vk_dynamic_if_block_render($attributes, $content)
-{
-    $defaults = [ 'groups' => [], 'conditions' => [], 'exclusion' => false ];
-    $attributes = array_merge($defaults, $attributes);
+function vk_dynamic_if_block_render( $attributes, $content ) {
+	$attributes_default = array(
+		'ifPageType'                => 'none',
+		'ifPostType'                => 'none',
+		'ifLanguage'                => 'none',
+		'userRole'                  => array(),
+		'postAuthor'                => 0,
+		'customFieldName'           => '',
+		'customFieldRule'           => 'valueExists',
+		'customFieldValue'          => '',
+		'exclusion'                 => false,
+		'periodDisplaySetting'      => 'none',
+		'periodSpecificationMethod' => 'direct',
+		'periodDisplayValue'        => '',
+		'periodReferCustomField'    => '',
+		'showOnlyLoginUser'             => '',
+		'conditions'                => array(), // 新しい形式
+	);
+	$attributes         = array_merge( $attributes_default, $attributes );
 
-    // 新しいUIで設定されたconditionsが存在しない場合、古い属性の移行処理を実行
-    if (empty($attributes['conditions'])) {
-        // 古い属性が設定されている場合は移行処理を実行
-        $old_attributes = [
-            'customFieldName',
-            'ifPageType',
-            'ifPostType',
-            'ifLanguage',
-            'userRole',
-            'postAuthor',
-            'periodDisplaySetting',
-            'showOnlyLoginUser'
-        ];
-        $has_old_attributes = false;
+	$display = false;
 
-        foreach ($old_attributes as $attr) {
-            if (isset($attributes[ $attr ]) && ! empty($attributes[ $attr ]) && $attributes[ $attr ] !== 'none') {
-                $has_old_attributes = true;
-                break;
-            }
-        }
+	// 新しい形式（conditions配列）の処理
+	if ( ! empty( $attributes['conditions'] ) && is_array( $attributes['conditions'] ) ) {
+		$display = vk_dynamic_if_block_evaluate_conditions( $attributes['conditions'] );
+	} else {
+		// 古い形式の処理（後方互換性のため）
+		$display = vk_dynamic_if_block_evaluate_old_attributes( $attributes );
+	}
 
-        if ($has_old_attributes) {
-            $migrated_conditions = vk_dynamic_if_block_migrate_old_attributes($attributes);
-            $attributes['conditions'] = $migrated_conditions;
-        }
-    }
+	// Exclusion処理
+	if ( $attributes['exclusion'] ) {
+		$display = ! $display;
+	}
 
-    // conditionsが設定されている場合はconditionsを優先
-    if (! empty($attributes['conditions'])) {
-        return vk_dynamic_if_block_render_with_conditions($attributes, $content);
-    }
-
-    // groupsが設定されている場合はgroupsを使用
-    if (! empty($attributes['groups'])) {
-        return vk_dynamic_if_block_render_with_groups($attributes, $content);
-    }
-
-    // 古い属性からの移行
-    $attributes['conditions'] = vk_dynamic_if_block_migrate_old_attributes($attributes);
-
-    if (empty($attributes['conditions'])) {
-        return $content;
-    }
-
-    return vk_dynamic_if_block_render_with_conditions($attributes, $content);
+	if ( $display ) {
+		return $content;
+	} else {
+		return '';
+	}
 }
 
-function vk_dynamic_if_block_render_with_groups($attributes, $content)
-{
-    $groups = $attributes['groups'];
-    $groupOperator = $attributes['groupOperator'] ?? 'and';
-    $exclusion = $attributes['exclusion'];
+/**
+ * 新しいconditions配列形式を評価
+ */
+function vk_dynamic_if_block_evaluate_conditions( $conditions ) {
+	$display = true;
 
-    if (empty($groups)) {
-        return $content;
-    }
+	foreach ( $conditions as $condition ) {
+		if ( ! isset( $condition['type'] ) ) {
+			continue;
+		}
 
-    $display = true;
-    foreach ($groups as $group_index => $group) {
-        $conditions = $group['conditions'] ?? [];
+		$condition_result = false;
 
-        if (empty($conditions)) {
-            $group_result = true;
-        } else {
-            $group_result = true;
-            foreach ($conditions as $condition) {
-                $group_result = $group_result && vk_dynamic_if_block_evaluate_condition($condition);
-            }
-        }
+		switch ( $condition['type'] ) {
+			case 'pageType':
+				$condition_result = vk_dynamic_if_block_evaluate_page_type( $condition );
+				break;
+			case 'postType':
+				$condition_result = vk_dynamic_if_block_evaluate_post_type( $condition );
+				break;
+			case 'customField':
+				$condition_result = vk_dynamic_if_block_evaluate_custom_field( $condition );
+				break;
+			case 'userRole':
+				$condition_result = vk_dynamic_if_block_evaluate_user_role( $condition );
+				break;
+			case 'language':
+				$condition_result = vk_dynamic_if_block_evaluate_language( $condition );
+				break;
+			case 'author':
+				$condition_result = vk_dynamic_if_block_evaluate_author( $condition );
+				break;
+			case 'period':
+				$condition_result = vk_dynamic_if_block_evaluate_period( $condition );
+				break;
+			case 'loginUser':
+				$condition_result = vk_dynamic_if_block_evaluate_login_user( $condition );
+				break;
+		}
 
-        if ($group_index === 0) {
-            $display = $group_result;
-        } else {
-            $display = $groupOperator === 'and' ? $display && $group_result : $display || $group_result;
-        }
-    }
+		// 条件がfalseの場合、全体もfalse
+		if ( ! $condition_result ) {
+			$display = false;
+			break;
+		}
+	}
 
-    return ($exclusion ? !$display : $display) ? $content : '';
+	return $display;
 }
 
-function vk_dynamic_if_block_migrate_old_attributes($attributes)
-{
-    $conditions = [];
-    $migrations = [
-        'ifPageType' => 'pageType',
-        'ifPostType' => 'postType',
-        'ifLanguage' => 'language',
-        'postAuthor' => 'postAuthor'
-    ];
+/**
+ * ページタイプ条件を評価
+ */
+function vk_dynamic_if_block_evaluate_page_type( $condition ) {
+	if ( ! isset( $condition['values']['ifPageType'] ) ) {
+		return true;
+	}
 
-    foreach ($migrations as $old_key => $new_type) {
-        if (isset($attributes[$old_key]) && $attributes[$old_key] !== 'none') {
-            // 昔の状態では単一値だったので、配列の場合は最初の値を使用
-            $value = is_array($attributes[$old_key]) ? $attributes[$old_key][0] : $attributes[$old_key];
-            $conditions[] = [
-                'id' => "migrated_{$new_type}_" . time(),
-                'type' => $new_type,
-                'values' => [$old_key => $value]
-            ];
-        }
-    }
+	$page_type = $condition['values']['ifPageType'];
 
-    // 特殊なケース - userRoleは配列のまま
-    if (isset($attributes['userRole']) && !empty($attributes['userRole'])) {
-        // userRoleは複数選択可能なので配列として処理
-        $values = is_array($attributes['userRole']) ? $attributes['userRole'] : [$attributes['userRole']];
-        $conditions[] = [
-            'id' => 'migrated_user_role_' . time(),
-            'type' => 'userRole',
-            'values' => ['userRole' => $values]
-        ];
-    }
+	if ( 'none' === $page_type ) {
+		return true;
+	}
 
-    if (isset($attributes['customFieldName']) && !empty($attributes['customFieldName'])) {
-        $values = ['customFieldName' => $attributes['customFieldName']];
-        if (isset($attributes['customFieldRule'])) {
-            $values['customFieldRule'] = $attributes['customFieldRule'];
-        }
-        if (isset($attributes['customFieldValue'])) {
-            $values['customFieldValue'] = $attributes['customFieldValue'];
-        }
-
-        $conditions[] = [
-            'id' => 'migrated_custom_field_' . time(),
-            'type' => 'customField',
-            'values' => $values
-        ];
-    }
-
-    if (isset($attributes['periodDisplaySetting']) && $attributes['periodDisplaySetting'] !== 'none') {
-        $values = ['periodDisplaySetting' => $attributes['periodDisplaySetting']];
-        $period_keys = ['periodSpecificationMethod', 'periodDisplayValue', 'periodReferCustomField'];
-        foreach ($period_keys as $key) {
-            if (isset($attributes[$key])) {
-                $values[$key] = $attributes[$key];
-            }
-        }
-
-        $conditions[] = [
-            'id' => 'migrated_period_' . time(),
-            'type' => 'period',
-            'values' => $values
-        ];
-    }
-
-    if (isset($attributes['showOnlyLoginUser']) && $attributes['showOnlyLoginUser']) {
-        $conditions[] = [
-            'id' => 'migrated_login_user_' . time(),
-            'type' => 'loginUser',
-            'values' => ['showOnlyLoginUser' => $attributes['showOnlyLoginUser']]
-        ];
-    }
-
-    return $conditions;
+	switch ( $page_type ) {
+		case 'is_front_page':
+			return is_front_page();
+		case 'is_single':
+			return is_single();
+		case 'is_page':
+			return is_page();
+		case 'is_singular':
+			return is_singular();
+		case 'is_home':
+			return is_home() && ! is_front_page();
+		case 'is_post_type_archive':
+			return is_post_type_archive() && ! is_year() && ! is_month() && ! is_date();
+		case 'is_category':
+			return is_category();
+		case 'is_tag':
+			return is_tag();
+		case 'is_tax':
+			return is_tax();
+		case 'is_year':
+			return is_year();
+		case 'is_month':
+			return is_month();
+		case 'is_date':
+			return is_date();
+		case 'is_author':
+			return is_author();
+		case 'is_search':
+			return is_search();
+		case 'is_404':
+			return is_404();
+		case 'is_archive':
+			return is_archive();
+		default:
+			return false;
+	}
 }
 
+/**
+ * 投稿タイプ条件を評価
+ */
+function vk_dynamic_if_block_evaluate_post_type( $condition ) {
+	if ( ! isset( $condition['values']['ifPostType'] ) ) {
+		return true;
+	}
 
+	$post_type = $condition['values']['ifPostType'];
 
-function vk_dynamic_if_block_render_with_conditions($attributes, $content)
-{
-    if (empty($attributes['conditions'])) {
-        return $content;
-    }
+	if ( 'none' === $post_type ) {
+		return true;
+	}
 
-    $conditionOperator = $attributes['conditionOperator'] ?? 'and';
+	// vendorファイルの配信・読み込みミス時のフォールバック
+	if ( class_exists( 'VkHelpers' ) ) {
+		$post_type_info = VkHelpers::get_post_type_info();
+		$current_post_type = $post_type_info['slug'];
+	} else {
+		$current_post_type = get_post_type();
+	}
 
-    $display = true;
-    foreach ($attributes['conditions'] as $index => $condition) {
-        // ネストされた条件構造を処理
-        if (isset($condition['conditions']) && is_array($condition['conditions'])) {
-            $group_result = true;
-            foreach ($condition['conditions'] as $nested_condition) {
-                $nested_result = vk_dynamic_if_block_evaluate_condition($nested_condition);
-                $group_result = $group_result && $nested_result;
-            }
-            $result = $group_result;
-        } else {
-            $result = vk_dynamic_if_block_evaluate_condition($condition);
-        }
-
-        if ($index === 0) {
-            $display = $result;
-        } else {
-            $display = $conditionOperator === 'and' ? $display && $result : $display || $result;
-        }
-    }
-
-    $final_result = ($attributes['exclusion'] ? !$display : $display);
-
-    return $final_result ? $content : '';
+	return $current_post_type === $post_type;
 }
 
-function vk_dynamic_if_block_evaluate_condition($condition)
-{
-    $type = $condition['type'] ?? '';
-    $values = $condition['values'] ?? [];
+/**
+ * カスタムフィールド条件を評価
+ */
+function vk_dynamic_if_block_evaluate_custom_field( $condition ) {
+	if ( ! isset( $condition['values']['customFieldName'] ) || empty( $condition['values']['customFieldName'] ) ) {
+		return true;
+	}
 
-    $checkers = [
-        'pageType' => 'vk_dynamic_if_block_check_page_type',
-        'postType' => 'vk_dynamic_if_block_check_post_type',
-        'language' => 'vk_dynamic_if_block_check_language',
-        'userRole' => 'vk_dynamic_if_block_check_user_role',
-        'postAuthor' => 'vk_dynamic_if_block_check_post_author',
-        'customField' => 'vk_dynamic_if_block_check_custom_field',
-        'period' => 'vk_dynamic_if_block_check_period',
-        'loginUser' => 'vk_dynamic_if_block_check_login_user'
-    ];
+	$custom_field_name = $condition['values']['customFieldName'];
+	$custom_field_rule = isset( $condition['values']['customFieldRule'] ) ? $condition['values']['customFieldRule'] : 'valueExists';
+	$custom_field_value = isset( $condition['values']['customFieldValue'] ) ? $condition['values']['customFieldValue'] : '';
 
-    return isset($checkers[$type]) ? $checkers[$type]($values) : true;
+	if ( ! get_the_ID() ) {
+		return false;
+	}
+
+	$get_value = get_post_meta( get_the_ID(), $custom_field_name, true );
+
+	if ( 'valueExists' === $custom_field_rule || empty( $custom_field_rule ) ) {
+		return $get_value || '0' === $get_value;
+	} elseif ( 'valueEquals' === $custom_field_rule ) {
+		return $get_value === $custom_field_value;
+	}
+
+	return false;
 }
 
-function vk_dynamic_if_block_check_page_type($values)
-{
-    $page_type = $values['ifPageType'] ?? '';
-    if (empty($page_type) || $page_type === 'none') {
-        return true;
-    }
+/**
+ * ユーザーロール条件を評価
+ */
+function vk_dynamic_if_block_evaluate_user_role( $condition ) {
+	if ( ! isset( $condition['values']['userRole'] ) || empty( $condition['values']['userRole'] ) ) {
+		return true;
+	}
 
-    $page_checks = [
-        'is_front_page' => is_front_page(),
-        'is_single' => is_single(),
-        'is_page' => is_page(),
-        'is_singular' => is_singular(),
-        'is_home' => is_home() && !is_front_page(),
-        'is_post_type_archive' => is_post_type_archive(),
-        'is_category' => is_category(),
-        'is_tag' => is_tag(),
-        'is_tax' => is_tax(),
-        'is_year' => is_year(),
-        'is_month' => is_month(),
-        'is_date' => is_date(),
-        'is_author' => is_author(),
-        'is_search' => is_search(),
-        'is_404' => is_404(),
-        'is_archive' => is_archive()
-    ];
+	$user_roles = $condition['values']['userRole'];
+	$current_user = wp_get_current_user();
+	$user_roles_array = (array) $current_user->roles;
 
-    return $page_checks[$page_type] ?? false;
+	if ( ! is_user_logged_in() && empty( $user_roles_array ) ) {
+		return false;
+	}
+
+	foreach ( $user_roles_array as $role ) {
+		if ( in_array( $role, $user_roles ) ) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
-function vk_dynamic_if_block_check_post_type($values)
-{
-    $post_type = $values['ifPostType'] ?? '';
-    if (empty($post_type) || $post_type === 'none') {
-        return true;
-    }
+/**
+ * 言語条件を評価
+ */
+function vk_dynamic_if_block_evaluate_language( $condition ) {
+	if ( ! isset( $condition['values']['ifLanguage'] ) || empty( $condition['values']['ifLanguage'] ) || 'none' === $condition['values']['ifLanguage'] ) {
+		return true;
+	}
 
-    // VkHelpersを使用してより確実に投稿タイプを取得
-    if (class_exists('VkHelpers')) {
-        $post_type_info = VkHelpers::get_post_type_info();
-        $current_type = $post_type_info['slug'] ?? get_post_type();
-    } else {
-        // VkHelpersが存在しない場合はWordPress標準関数を使用
-        $current_type = get_post_type();
-        if (empty($current_type)) {
-            // アーカイブページの場合
-            if (is_post_type_archive()) {
-                $current_type = get_query_var('post_type');
-            } elseif (is_home() && !is_front_page()) {
-                $current_type = 'post';
-            } elseif (is_front_page()) {
-                $current_type = 'page';
-            }
-        }
-    }
-
-    return $current_type === $post_type;
+	return $condition['values']['ifLanguage'] === get_locale();
 }
 
-function vk_dynamic_if_block_check_language($values)
-{
-    $language = $values['ifLanguage'] ?? '';
-    if (empty($language) || $language === 'none') {
-        return true;
-    }
+/**
+ * 著者条件を評価
+ */
+function vk_dynamic_if_block_evaluate_author( $condition ) {
+	if ( ! isset( $condition['values']['postAuthor'] ) || empty( $condition['values']['postAuthor'] ) ) {
+		return true;
+	}
 
-    $current_locale = get_locale();
-    return $language === $current_locale;
+	$author_id = intval( get_post_field( 'post_author', get_the_ID() ) );
+
+	if ( 'is_author' === $condition['values']['ifPageType'] && is_author( $condition['values']['postAuthor'] ) ) {
+		return true;
+	} elseif ( 'is_author' !== $condition['values']['ifPageType'] && is_singular() && $author_id === $condition['values']['postAuthor'] ) {
+		return true;
+	}
+
+	return false;
 }
 
-function vk_dynamic_if_block_check_user_role($values)
-{
-    $user_roles = $values['userRole'] ?? [];
-    if (empty($user_roles)) {
-        return true;
-    }
-
-    $current_user = wp_get_current_user();
-    return is_user_logged_in() && array_intersect($current_user->roles, $user_roles);
+/**
+ * 期間条件を評価
+ */
+function vk_dynamic_if_block_evaluate_period( $condition ) {
+	// 期間条件の実装は複雑なため、現在は常にtrueを返す
+	// 必要に応じて実装を追加
+	return true;
 }
 
-function vk_dynamic_if_block_check_post_author($values)
-{
-    $author = $values['postAuthor'] ?? 0;
-    if (empty($author)) {
-        return true;
-    }
+/**
+ * ログインユーザー条件を評価
+ */
+function vk_dynamic_if_block_evaluate_login_user( $condition ) {
+	if ( ! isset( $condition['values']['showOnlyLoginUser'] ) || empty( $condition['values']['showOnlyLoginUser'] ) ) {
+		return true;
+	}
 
-    $author_id = (int)get_post_field('post_author', get_the_ID());
-    $author = (int)$author;
-    return $author === 0 || is_author($author) || (is_singular() && $author_id === $author);
+	return is_user_logged_in();
 }
 
-function vk_dynamic_if_block_check_custom_field($values)
-{
-    $field_name = $values['customFieldName'] ?? '';
-    if (empty($field_name) || !get_the_ID()) {
-        return true;
-    }
+/**
+ * 古い属性形式を評価（後方互換性）
+ */
+function vk_dynamic_if_block_evaluate_old_attributes( $attributes ) {
+	$display = false;
 
-    $field_value = get_post_meta(get_the_ID(), $field_name, true);
-    $rule = $values['customFieldRule'] ?? 'valueExists';
+	// Page Type Condition Check
+	$display_by_page_type = false;
 
-    if ($rule === 'valueExists') {
-        // PHPの!empty()と同じ動作にする
-        return !empty($field_value) || $field_value === '0' || $field_value === 0;
-    } else {
-        return $field_value === ($values['customFieldValue'] ?? '');
-    }
+	if (
+		is_front_page() && 'is_front_page' === $attributes['ifPageType'] ||
+		is_single() && 'is_single' === $attributes['ifPageType'] ||
+		is_page() && 'is_page' === $attributes['ifPageType'] ||
+		is_singular() && 'is_singular' === $attributes['ifPageType'] ||
+		is_home() && ! is_front_page() && 'is_home' === $attributes['ifPageType'] ||
+		is_post_type_archive() && ! is_year() && ! is_month() && ! is_date() && 'is_post_type_archive' === $attributes['ifPageType'] ||
+		is_category() && 'is_category' === $attributes['ifPageType'] ||
+		is_tag() && 'is_tag' === $attributes['ifPageType'] ||
+		is_tax() && 'is_tax' === $attributes['ifPageType'] ||
+		is_year() && 'is_year' === $attributes['ifPageType'] ||
+		is_month() && 'is_month' === $attributes['ifPageType'] ||
+		is_date() && 'is_date' === $attributes['ifPageType'] ||
+		is_author() && 'is_author' === $attributes['ifPageType'] ||
+		is_search() && 'is_search' === $attributes['ifPageType'] ||
+		is_404() && 'is_404' === $attributes['ifPageType'] ||
+		is_archive() && 'is_archive' === $attributes['ifPageType'] ||
+		'none' === $attributes['ifPageType']
+	) {
+		$display_by_page_type = true;
+	}
+
+	// Author Condition Check
+	$display_by_author = false;
+	$author_id         = intval( get_post_field( 'post_author', get_the_ID() ) );
+	if ( empty( $attributes['postAuthor'] ) ) {
+		$display_by_author = true;
+	} elseif ( ! empty( $attributes['postAuthor'] ) && 'is_author' === $attributes['ifPageType'] && is_author( $attributes['postAuthor'] ) ) {
+		$display_by_author = true;
+	} elseif ( ! empty( $attributes['postAuthor'] ) && 'is_author' !== $attributes['ifPageType'] && is_singular() && $author_id === $attributes['postAuthor'] ) {
+		$display_by_author = true;
+	}
+
+	// Post Type Condition Check
+	$display_by_post_type = false;
+
+	// vendorファイルの配信・読み込みミス時のフォールバック
+	if ( class_exists( 'VkHelpers' ) ) {
+		$post_type_info = VkHelpers::get_post_type_info();
+		$post_type_slug = $post_type_info['slug'];
+	} else {
+		$post_type_slug = get_post_type();
+	}
+
+	if ( 'none' === $attributes['ifPostType'] ) {
+		$display_by_post_type = true;
+	} elseif ( $post_type_slug === $attributes['ifPostType'] ) {
+		$display_by_post_type = true;
+	} else {
+		$display_by_post_type = false;
+	}
+
+	// Language Condition Check
+	$display_by_language = false;
+	if (  empty( $attributes['ifLanguage'] ) || 'none' === $attributes['ifLanguage'] || $attributes['ifLanguage'] === get_locale()  ){
+		$display_by_language = true;
+	}
+
+	// User Role Condition Check
+	$display_by_user_role = false;
+
+	// PHPUnit用のユーザーロール情報がある場合はそれを設定.
+	if ( ! empty( $attributes['test_user_roles'] ) ) {
+		$user_roles = $attributes['test_user_roles'];
+	} else {
+		$current_user = wp_get_current_user();
+		$user_roles   = (array) $current_user->roles;
+	}
+
+	if ( ! isset( $attributes['userRole'] ) || empty( $attributes['userRole'] ) ) {
+		$display_by_user_role = true;
+	} else {
+		if ( is_user_logged_in() || $user_roles ) {
+
+			// Check if any of the user's roles match the selected roles.
+			foreach ( $user_roles as $role ) {
+				if ( in_array( $role, $attributes['userRole'] ) ) {
+					$display_by_user_role = true;
+					break;
+				}
+			}
+		} else {
+			$display_by_user_role = false;
+		}
+	}
+
+	// Custom Field Condition Check
+	$display_by_custom_field = false;
+
+	if ( ! $attributes['customFieldName'] ) {
+		$display_by_custom_field = true;
+	} elseif ( $attributes['customFieldName'] ) {
+
+		if ( get_the_ID() ) {
+			$get_value = get_post_meta( get_the_ID(), $attributes['customFieldName'], true );
+			if ( 'valueExists' === $attributes['customFieldRule'] || empty( $attributes['customFieldRule'] ) ) {
+				if ( $get_value || '0' === $get_value ) {
+					$display_by_custom_field = true;
+				} else {
+					$display_by_custom_field = false;
+				}
+			} elseif ( 'valueEquals' === $attributes['customFieldRule'] ) {
+				if ( $get_value === $attributes['customFieldValue'] ) {
+					$display_by_custom_field = true;
+				} else {
+					$display_by_custom_field = false;
+				}
+			}
+		}
+	}
+
+	// Display period Check
+	$display_by_period = false;
+
+	if ( 'none' === $attributes['periodDisplaySetting'] ) {
+		$display_by_period = true;
+	} elseif ( 'deadline' === $attributes['periodDisplaySetting'] ) {
+		if ( 'direct' === $attributes['periodSpecificationMethod'] ) {
+
+			// 時間指定がない場合(日付までで時間が入力されていない場合)に時間を自動指定.
+			if ( $attributes['periodDisplayValue'] === date( 'Y-m-d', strtotime( $attributes['periodDisplayValue'] ) ) ) {
+				$attributes['periodDisplayValue'] .= ' 23:59';
+			}
+
+			// 日付のフォーマットを Y-m-d H:i に指定.
+			if ( $attributes['periodDisplayValue'] !== date( 'Y-m-d H:i', strtotime( $attributes['periodDisplayValue'] ) ) ) {
+				$attributes['periodDisplayValue'] = date( 'Y-m-d H:i', strtotime( $attributes['periodDisplayValue'] ) );
+			}
+
+			if ( $attributes['periodDisplayValue'] > current_time( 'Y-m-d H:i' ) ) {
+				$display_by_period = true;
+			} else {
+				$display_by_period = false;
+			}
+		} elseif ( 'referCustomField' === $attributes['periodSpecificationMethod'] ) {
+			if ( ! empty( $attributes['periodReferCustomField'] ) ) {
+				$get_refer_value = get_post_meta( get_the_ID(), $attributes['periodReferCustomField'], true );
+
+				// Check if $get_refer_value matches the date format.
+				$check_date_ymd     = DateTime::createFromFormat( 'Y-m-d', $get_refer_value );
+				$check_date_ymd_hi  = DateTime::createFromFormat( 'Y-m-d H:i', $get_refer_value );
+				$check_date_ymd_his = DateTime::createFromFormat( 'Y-m-d H:i:s', $get_refer_value );
+
+				if ( $check_date_ymd || $check_date_ymd_hi || $check_date_ymd_his ) {
+
+					if ( $check_date_ymd ) {
+						// If it's only 'Y-m-d' format, append the time as 23:59.
+						$get_refer_value .= ' 23:59:59';
+					}
+
+					if ( $check_date_ymd_hi ) {
+						// If it's only 'Y-m-d H:s' format, append the time as 23:59:59.
+						$get_refer_value .= ':59';
+					}
+
+					if ( $get_refer_value > current_time( 'Y-m-d H:i:s' ) ) {
+						$display_by_period = true;
+					} else {
+						$display_by_period = false;
+					}
+				} else {
+					// This means the value doesn't match either date formats
+					$display_by_period = true;
+				}
+			} else {
+				$display_by_period = true;
+			}
+		}
+	} elseif ( 'startline' === $attributes['periodDisplaySetting'] ) {
+		if ( 'direct' === $attributes['periodSpecificationMethod'] ) {
+
+			// 時間指定がない場合に時間を自動指定.
+			if ( $attributes['periodDisplayValue'] === date( 'Y-m-d', strtotime( $attributes['periodDisplayValue'] ) ) ) {
+				$attributes['periodDisplayValue'] .= ' 00:00';
+			}
+
+			// 日付のフォーマットを Y-m-d H:i に指定.
+			if ( $attributes['periodDisplayValue'] !== date( 'Y-m-d H:i', strtotime( $attributes['periodDisplayValue'] ) ) ) {
+				$attributes['periodDisplayValue'] = date( 'Y-m-d H:i', strtotime( $attributes['periodDisplayValue'] ) );
+			}
+
+			if ( $attributes['periodDisplayValue'] <= current_time( 'Y-m-d H:i' ) ) {
+				$display_by_period = true;
+			} else {
+				$display_by_period = false;
+			}
+		} elseif ( 'referCustomField' === $attributes['periodSpecificationMethod'] ) {
+			if ( ! empty( $attributes['periodReferCustomField'] ) ) {
+				$get_refer_value = get_post_meta( get_the_ID(), $attributes['periodReferCustomField'], true );
+
+				// Check if $get_refer_value matches the date format.
+				$check_date_ymd     = DateTime::createFromFormat( 'Y-m-d', $get_refer_value );
+				$check_date_ymd_hi  = DateTime::createFromFormat( 'Y-m-d H:i', $get_refer_value );
+				$check_date_ymd_his = DateTime::createFromFormat( 'Y-m-d H:i:s', $get_refer_value );
+
+				if ( $check_date_ymd || $check_date_ymd_hi || $check_date_ymd_his ) {
+
+					if ( $check_date_ymd ) {
+						// If it's only 'Y-m-d' format, append the time as 00:00:00.
+						$get_refer_value .= ' 00:00:00';
+					}
+
+					if ( $check_date_ymd_hi ) {
+						// If it's only 'Y-m-d H:i' format, append the time as 00:00:00.
+						$get_refer_value .= ':00';
+					}
+
+					if ( $get_refer_value <= current_time( 'Y-m-d H:i:s' ) ) {
+						$display_by_period = true;
+					} else {
+						$display_by_period = false;
+					}
+				} else {
+					// This means the value doesn't match either date formats.
+					$display_by_period = true;
+				}
+			} else {
+				$display_by_period = true;
+			}
+		}
+	} elseif ( 'daysSincePublic' === $attributes['periodDisplaySetting'] ) {
+		if ( 'direct' === $attributes['periodSpecificationMethod'] ) {
+			$days_since_public = intval( $attributes['periodDisplayValue'] );
+			$post_publish_date = get_post_time( 'U', true, get_the_ID() );
+			$current_time      = current_time( 'timestamp' );
+
+			if ( $current_time >= $post_publish_date + ( $days_since_public * 86400 ) ) {
+				$display_by_period = false;
+			} else {
+				$display_by_period = true;
+			}
+		} elseif ( 'referCustomField' === $attributes['periodSpecificationMethod'] ) {
+			if ( ! empty( $attributes['periodReferCustomField'] ) ) {
+				$get_refer_value = get_post_meta( get_the_ID(), $attributes['periodReferCustomField'], true );
+
+				// Check if $get_refer_value is numeric.
+				if ( is_numeric( $get_refer_value ) ) {
+					$days_since_public = intval( $get_refer_value );
+					$post_publish_date = get_post_time( 'U', true, get_the_ID() );
+					$current_time      = current_time( 'timestamp' );
+
+					if ( $current_time >= $post_publish_date + ( $days_since_public * 86400 ) ) {
+						$display_by_period = false;
+					} else {
+						$display_by_period = true;
+					}
+				} else {
+					// This means the value is not numeric.
+					$display_by_period = true;
+				}
+			} else {
+				$display_by_period = true;
+			}
+		}
+	}
+
+	// Login user Check
+	$display_by_login_user = true; // デフォルトで表示を許可
+
+	// ユーザーがログインしているか、またはログインユーザーのみの表示が不要な場合に表示を許可
+	if ( $attributes['showOnlyLoginUser'] && !is_user_logged_in() ) {
+		$display_by_login_user = false;
+	}
+
+	// Merge Condition Check
+	if ( $display_by_post_type && $display_by_author && $display_by_language && $display_by_page_type && $display_by_custom_field && $display_by_user_role && $display_by_period && $display_by_login_user ) {
+		$display = true;
+	}
+
+	return $display;
 }
 
-function vk_dynamic_if_block_check_period($values)
-{
-    $setting = $values['periodDisplaySetting'] ?? 'none';
-    if ($setting === 'none') {
-        return true;
-    }
+function vk_dynamic_if_block_register_dynamic() {
+	register_block_type(
+		__DIR__ . '/block.json',
+		array(
+			'render_callback' => 'vk_dynamic_if_block_render',
+		)
+	);
+}
+add_action( 'init', 'vk_dynamic_if_block_register_dynamic' );
 
-    $method = $values['periodSpecificationMethod'] ?? 'direct';
-    $value = $values['periodDisplayValue'] ?? '';
-    $refer_field = $values['periodReferCustomField'] ?? '';
-
-    $checkers = [
-        'deadline' => 'vk_dynamic_if_block_check_deadline',
-        'startline' => 'vk_dynamic_if_block_check_startline',
-        'daysSincePublic' => 'vk_dynamic_if_block_check_days_since_public'
-    ];
-
-    return isset($checkers[$setting]) ? $checkers[$setting]($method, $value, $refer_field) : true;
+// Get User Roles
+function get_user_roles() {
+	return wp_roles()->get_names();
 }
 
-function vk_dynamic_if_block_check_deadline($method, $value, $refer_field)
-{
-    if ($method === 'direct') {
-        if ($value === date('Y-m-d', strtotime($value))) {
-            $value .= ' 23:59';
-        }
-        if ($value !== date('Y-m-d H:i', strtotime($value))) {
-            $value = date('Y-m-d H:i', strtotime($value));
-        }
-        return $value > current_time('Y-m-d H:i');
-    }
+function vk_dynamic_if_block_set_localize_script() {
 
-    if ($method === 'referCustomField' && !empty($refer_field)) {
-        $refer_value = get_post_meta(get_the_ID(), $refer_field, true);
-        $formats = ['Y-m-d', 'Y-m-d H:i', 'Y-m-d H:i:s'];
+	$post_type_select_options = array(
+		array(
+			'label' => __( 'No restriction', 'vk-dynamic-if-block' ),
+			'value' => 'none',
+		),
+	);
 
-        foreach ($formats as $format) {
-            if (DateTime::createFromFormat($format, $refer_value)) {
-                if ($format === 'Y-m-d') {
-                    $refer_value .= ' 23:59:59';
-                } elseif ($format === 'Y-m-d H:i') {
-                    $refer_value .= ':59';
-                }
-                return $refer_value > current_time('Y-m-d H:i:s');
-            }
-        }
-    }
-    return true;
+	// Default Post Type.
+	$post_types_all = array(
+		'post' => 'post',
+		'page' => 'page',
+	);
+	$post_types_all = array_merge(
+		$post_types_all,
+		get_post_types(
+			array(
+				'public'   => true,
+				'show_ui'  => true,
+				'_builtin' => false,
+			),
+			'names',
+			'and'
+		)
+	);
+	foreach ( $post_types_all as $post_type ) {
+
+		$post_type_object = get_post_type_object( $post_type );
+
+		$post_type_select_options[] = array(
+			'label' => $post_type_object->labels->singular_name,
+			'value' => $post_type_object->name,
+		);
+	}
+
+	// Languages //////////////////////////////////.
+	$language_select_options   = array(
+		array(
+			'label' => __( 'Unspecified', 'vk-dynamic-if-block' ),
+			'value' => '',
+		),
+		array(
+			'label' => 'English (United States)',
+			'value' => 'en_US',
+		)
+	);
+	// WordPress.orgのAPIから利用可能な言語リストを取得
+	$response = wp_remote_get( 'https://api.wordpress.org/translations/core/1.0/' );
+	if ( ! is_wp_error( $response ) ) {
+		$body      = wp_remote_retrieve_body( $response );
+		$languages = json_decode( $body, true )['translations'];
+
+		// 各言語に対してオプション配列を追加
+		foreach ( $languages as $language ) {
+			$language_select_options[] = array(
+				'label' => $language['native_name'],
+				'value' => $language['language'],
+			);
+		}
+	}
+
+	$post_types = get_post_types( array( 'public' => true ), 'names' );
+
+	$users = get_users( [
+		'role__in' => apply_filters( 'vk_dynamic_if_block_author_role__in', array( 'contributor', 'author', 'editor', 'administrator' ) ),
+	] );
+
+	$user_select_options = array(
+		array(
+			'label' => __( 'Unspecified', 'vk-dynamic-if-block' ),
+			'value' => 0,
+		),
+	);
+	foreach ( $users as $user ) {
+		$has_published = false;
+		foreach ( $post_types as $post_type ) {
+			if ( count_user_posts( $user->ID, $post_type, true ) > 0 ) {
+				$has_published = true;
+				break;
+			}
+		}
+		if ( $has_published ) {
+			$user_select_options[] = array(
+				'label' => $user->display_name,
+				'value' => $user->ID,
+			);
+		}
+	}
+
+	// The wp_localize_script() function is used to add custom JavaScript data to a script handle.
+	wp_localize_script(
+		'vk-dynamic-if-block', // Script handle.
+		'vk_dynamic_if_block_localize_data', // JS object name.
+		array(
+			'postTypeSelectOptions' => $post_type_select_options,
+			'languageSelectOptions' => $language_select_options,
+			'userRoles'             => get_user_roles(),
+			'userSelectOptions'     => $user_select_options,
+		)
+	);
 }
 
-function vk_dynamic_if_block_check_startline($method, $value, $refer_field)
-{
-    if ($method === 'direct') {
-        if ($value === date('Y-m-d', strtotime($value))) {
-            $value .= ' 00:00';
-        }
-        if ($value !== date('Y-m-d H:i', strtotime($value))) {
-            $value = date('Y-m-d H:i', strtotime($value));
-        }
-        return $value <= current_time('Y-m-d H:i');
-    }
-
-    if ($method === 'referCustomField' && !empty($refer_field)) {
-        $refer_value = get_post_meta(get_the_ID(), $refer_field, true);
-        $formats = ['Y-m-d', 'Y-m-d H:i', 'Y-m-d H:i:s'];
-
-        foreach ($formats as $format) {
-            if (DateTime::createFromFormat($format, $refer_value)) {
-                if ($format === 'Y-m-d') {
-                    $refer_value .= ' 00:00:00';
-                } elseif ($format === 'Y-m-d H:i') {
-                    $refer_value .= ':00';
-                }
-                return $refer_value <= current_time('Y-m-d H:i:s');
-            }
-        }
-    }
-    return true;
-}
-
-function vk_dynamic_if_block_check_days_since_public($method, $value, $refer_field)
-{
-    if ($method === 'direct') {
-        $days = (int)$value;
-        $publish_date = get_post_time('U', true, get_the_ID());
-        return current_time('timestamp') < $publish_date + ($days * 86400);
-    }
-
-    if ($method === 'referCustomField' && !empty($refer_field)) {
-        $refer_value = get_post_meta(get_the_ID(), $refer_field, true);
-        if (is_numeric($refer_value)) {
-            $days = (int)$refer_value;
-            $publish_date = get_post_time('U', true, get_the_ID());
-            return current_time('timestamp') < $publish_date + ($days * 86400);
-        }
-    }
-    return true;
-}
-
-function vk_dynamic_if_block_check_login_user($values)
-{
-    return !($values['showOnlyLoginUser'] ?? false) || is_user_logged_in();
-}
-
-function vk_dynamic_if_block_register_dynamic()
-{
-    register_block_type(__DIR__ . '/block.json', ['render_callback' => 'vk_dynamic_if_block_render']);
-}
-add_action('init', 'vk_dynamic_if_block_register_dynamic');
-
-function vk_dynamic_if_block_set_localize_script()
-{
-    // 投稿タイプオプション
-    $post_types = array_merge(
-        ['post', 'page'],
-        get_post_types(['public' => true, 'show_ui' => true, '_builtin' => false], 'names')
-    );
-    $post_type_options = [['label' => __('No restriction', 'vk-dynamic-if-block'), 'value' => 'none']];
-    foreach ($post_types as $type) {
-        $obj = get_post_type_object($type);
-        $post_type_options[] = ['label' => $obj->labels->singular_name, 'value' => $obj->name];
-    }
-
-    // 言語オプション
-    $language_options = [
-        ['label' => __('Unspecified', 'vk-dynamic-if-block'), 'value' => ''],
-        ['label' => 'English (United States)', 'value' => 'en_US']
-    ];
-
-    $response = wp_remote_get('https://api.wordpress.org/translations/core/1.0/');
-    if (!is_wp_error($response)) {
-        $languages = json_decode(wp_remote_retrieve_body($response), true)['translations'] ?? [];
-        foreach ($languages as $lang) {
-            $language_options[] = ['label' => $lang['native_name'], 'value' => $lang['language']];
-        }
-    }
-
-    // ユーザーオプション
-    $users = get_users([
-        'role__in' => apply_filters(
-            'vk_dynamic_if_block_author_role__in',
-            ['contributor', 'author', 'editor', 'administrator']
-        )
-    ]);
-    $user_options = [['label' => __('Unspecified', 'vk-dynamic-if-block'), 'value' => 0]];
-
-    foreach ($users as $user) {
-        $has_posts = false;
-        foreach (get_post_types(['public' => true], 'names') as $post_type) {
-            if (count_user_posts($user->ID, $post_type, true) > 0) {
-                $has_posts = true;
-                break;
-            }
-        }
-        if ($has_posts) {
-            $user_options[] = ['label' => $user->display_name, 'value' => $user->ID];
-        }
-    }
-
-    wp_localize_script('vk-dynamic-if-block', 'vkDynamicIfBlockLocalizeData', [
-        'postTypeSelectOptions' => $post_type_options,
-        'languageSelectOptions' => $language_options,
-        'userRoles' => wp_roles()->get_names(),
-        'userSelectOptions' => $user_options,
-        'currentSiteLanguage' => get_locale()
-    ]);
-}
-add_action('enqueue_block_editor_assets', 'vk_dynamic_if_block_set_localize_script');
+add_action( 'enqueue_block_editor_assets', 'vk_dynamic_if_block_set_localize_script' );
