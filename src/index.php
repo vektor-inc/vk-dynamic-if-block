@@ -244,7 +244,7 @@ function vk_dynamic_if_block_check_page_type($values)
         'is_page' => is_page(),
         'is_singular' => is_singular(),
         'is_home' => is_home() && !is_front_page(),
-        'is_post_type_archive' => is_post_type_archive(),
+        'is_post_type_archive' => is_post_type_archive() && !is_year() && !is_month() && !is_date(),
         'is_category' => is_category(),
         'is_tag' => is_tag(),
         'is_tax' => is_tax(),
