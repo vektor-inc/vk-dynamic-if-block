@@ -5,6 +5,7 @@ import {
 	InnerBlocks,
 	InspectorControls,
 } from '@wordpress/block-editor';
+import { useEffect } from '@wordpress/element';
 import {
 	PanelBody,
 	SelectControl,
@@ -16,7 +17,6 @@ import {
 } from '@wordpress/components';
 import { ReactComponent as Icon } from './icon.svg';
 import transforms from './transforms';
-import React from 'react';
 import {
 	CONDITION_TYPE_LABELS,
 	PAGE_TYPE_DEFINITIONS,
@@ -121,7 +121,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 		const { conditions, conditionOperator, exclusion } = attributes;
 
 		// 既存ブロックから新形式への移行処理
-		React.useEffect( () => {
+		useEffect( () => {
 			if (
 				! conditions ||
 				conditions.length === 0 ||
@@ -141,8 +141,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							? rule.customValues()
 							: {
 									[ rule.key ]: Array.isArray( value )
-										? value
-										: [ value ],
+										? value[ 0 ] || ''
+										: value,
 							  };
 						newConditions.push(
 							createConditionGroup(
@@ -160,7 +160,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					newConditions.push(
 						createConditionGroup(
 							'pageType',
-							{ ifPageType: [ 'none' ] },
+							{ ifPageType: 'none' },
 							1
 						)
 					);
@@ -213,7 +213,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			if ( newConditions.length === 0 ) {
 				newConditions.push( {
 					id: 'default-group',
-					name: 'Condition 1',
 					conditions: [ newCondition ],
 					operator: BLOCK_CONFIG.defaultOperator,
 				} );
@@ -225,37 +224,25 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 		};
 
 		const addConditionGroup = () => {
-			// Condition Typeの種類数に制限
-			const maxConditions = Object.keys( CONDITION_TYPE_LABELS ).length;
-			if ( conditions.length >= maxConditions ) {
-				return; // 最大数に達した場合は何もしない
-			}
-
-			const usedTypes = conditions
-				.map( ( g ) => g.conditions[ 0 ]?.type )
-				.filter( Boolean );
-
-			const availableTypes = conditionTypes
-				.map( ( opt ) => opt.value )
-				.filter( ( val ) => ! usedTypes.includes( val ) );
-			const firstType =
-				availableTypes[ 0 ] || BLOCK_CONFIG.defaultConditionType;
+			// デフォルトの条件タイプを使用
+			const firstType = BLOCK_CONFIG.defaultConditionType;
 
 			// デフォルト値を設定
 			let defaultValues = {};
 			if ( firstType === 'pageType' ) {
-				defaultValues = { ifPageType: [ 'none' ] };
+				defaultValues = { ifPageType: 'none' };
 			} else if ( firstType === 'postType' ) {
-				defaultValues = { ifPostType: [ 'none' ] };
+				defaultValues = { ifPostType: 'none' };
+			} else if ( firstType === 'userRole' ) {
+				defaultValues = { userRole: [] };
 			} else if ( firstType === 'language' ) {
-				defaultValues = { ifLanguage: [ '' ] };
+				defaultValues = { ifLanguage: '' };
 			} else if ( firstType === 'postAuthor' ) {
-				defaultValues = { postAuthor: [ 0 ] };
+				defaultValues = { postAuthor: 0 };
 			}
 
 			const newConditionGroup = {
 				id: generateId(),
-				name: `Condition ${ conditions.length + 1 }`,
 				conditions: [
 					{
 						id: generateId(),
@@ -321,53 +308,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			setAttributes( { conditions: newConditions } );
 		};
 
-		// 共通のチェックボックスレンダラー
-		const renderCheckboxGroup = (
-			options = [],
-			selectedValues = [],
-			valueKey = '',
-			className = '',
-			groupIndex = 0,
-			conditionIndex = 0
-		) => {
-			if ( ! Array.isArray( options ) || ! options.length ) {
-				return null;
-			}
-
-			return (
-				<BaseControl __nextHasNoMarginBottom className={ className }>
-					{ options.map( ( option, index ) => {
-						const selected = Array.isArray( selectedValues )
-							? selectedValues
-							: [];
-						const isChecked = selected.includes( option?.value );
-
-						return (
-							<CheckboxControl
-								__nextHasNoMarginBottom
-								key={ option?.value || index }
-								label={ option?.label || '' }
-								checked={ isChecked }
-								onChange={ ( checked ) => {
-									const newValues = checked
-										? [ ...selected, option.value ]
-										: selected.filter(
-												( v ) => v !== option.value
-										  );
-									updateConditionValue(
-										groupIndex,
-										conditionIndex,
-										valueKey,
-										newValues
-									);
-								} }
-							/>
-						);
-					} ) }
-				</BaseControl>
-			);
-		};
-
 		const renderConditionSettings = (
 			condition = {},
 			groupIndex = 0,
@@ -378,88 +318,83 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				updateConditionValue( groupIndex, conditionIndex, key, value );
 
 			const renderers = {
-				pageType: () =>
-					renderCheckboxGroup(
-						ifPageTypes,
-						values.ifPageType,
-						'ifPageType',
-						'dynamic-if-page-type',
-						groupIndex,
-						conditionIndex
-					),
-				postType: () =>
-					renderCheckboxGroup(
-						vkDynamicIfBlockLocalizeData?.postTypeSelectOptions ||
-							[],
-						values.ifPostType,
-						'ifPostType',
-						'dynamic-if-post-type',
-						groupIndex,
-						conditionIndex
-					),
+				pageType: () => (
+					<SelectControl
+						label={ __( 'Page Type', 'vk-dynamic-if-block' ) }
+						value={ values.ifPageType || 'none' }
+						options={ ifPageTypes }
+						onChange={ ( value ) =>
+							updateValue( 'ifPageType', value )
+						}
+					/>
+				),
+				postType: () => (
+					<SelectControl
+						label={ __( 'Post Type', 'vk-dynamic-if-block' ) }
+						value={ values.ifPostType || 'none' }
+						options={
+							vkDynamicIfBlockLocalizeData?.postTypeSelectOptions ||
+							[]
+						}
+						onChange={ ( value ) =>
+							updateValue( 'ifPostType', value )
+						}
+					/>
+				),
 				language: () => {
 					const allLanguages =
 						vkDynamicIfBlockLocalizeData?.languageSelectOptions ||
 						[];
 					const currentSiteLanguage =
 						vkDynamicIfBlockLocalizeData?.currentSiteLanguage || '';
-					const selectedLanguages = values.ifLanguage || [];
 					const sortedLanguages = sortLanguages(
 						allLanguages,
 						currentSiteLanguage
 					);
 
 					return (
-						<BaseControl
-							__nextHasNoMarginBottom
-							className="dynamic-if-language"
-						>
-							{ sortedLanguages.map( ( language, index ) => (
-								<CheckboxControl
-									__nextHasNoMarginBottom
-									key={ language.value || index }
-									label={ language.label }
-									checked={ selectedLanguages.includes(
-										language.value
-									) }
-									onChange={ ( checked ) => {
-										const newLanguages = checked
-											? [
-													...selectedLanguages,
-													language.value,
-											  ]
-											: selectedLanguages.filter(
-													( l ) =>
-														l !== language.value
-											  );
-										updateValue(
-											'ifLanguage',
-											newLanguages
-										);
-									} }
-								/>
-							) ) }
-						</BaseControl>
+						<SelectControl
+							label={ __( 'Language', 'vk-dynamic-if-block' ) }
+							value={ values.ifLanguage || '' }
+							options={ sortedLanguages }
+							onChange={ ( value ) =>
+								updateValue( 'ifLanguage', value )
+							}
+						/>
 					);
 				},
-				userRole: () =>
-					renderCheckboxGroup(
-						userRoles,
-						values.userRole,
-						'userRole',
-						'dynamic-if-user-role',
-						groupIndex,
-						conditionIndex
-					),
-				postAuthor: () =>
-					renderCheckboxGroup(
-						userSelectOptions,
-						values.postAuthor,
-						'postAuthor',
-						'dynamic-if-post-author',
-						groupIndex,
-						conditionIndex
-					),
+				userRole: () => (
+					<BaseControl
+						__nextHasNoMarginBottom
+						className="dynamic-if-user-role"
+					>
+						{ userRoles.map( ( role, index ) => (
+							<CheckboxControl
+								__nextHasNoMarginBottom
+								key={ role?.value || index }
+								label={ role?.label || '' }
+								checked={ ( values.userRole || [] ).includes( role.value ) }
+								onChange={ ( checked ) => {
+									const currentRoles = values.userRole || [];
+									const newRoles = checked
+										? [ ...currentRoles, role.value ]
+										: currentRoles.filter( ( r ) => r !== role.value );
+									updateValue( 'userRole', newRoles );
+								} }
+							/>
+						) ) }
+					</BaseControl>
+				),
+				postAuthor: () => (
+					<SelectControl
+						label={ __( 'Post Author', 'vk-dynamic-if-block' ) }
+						value={ values.postAuthor || 0 }
+						options={ userSelectOptions }
+						onChange={ ( value ) =>
+							updateValue( 'postAuthor', parseInt( value ) || 0 )
+						}
+					/>
+				),
 				customField: () => (
 					<>
 						<TextControl
@@ -624,21 +559,15 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			valueKey = '',
 			useSimpleLabel = false
 		) => {
-			const selected = Array.isArray( values[ valueKey ] )
-				? values[ valueKey ]
-				: [];
-			if ( ! selected.length || ! Array.isArray( options ) ) {
+			const value = values[ valueKey ];
+			if ( ! value || ! Array.isArray( options ) ) {
 				return null;
 			}
 
-			return selected
-				.map(
-					( val ) =>
-						options.find( ( o ) => o?.value === val )?.[
-							useSimpleLabel ? 'simpleLabel' : 'label'
-						] || val
-				)
-				.join( ', ' );
+			const option = options.find( ( o ) => o?.value === value );
+			return (
+				option?.[ useSimpleLabel ? 'simpleLabel' : 'label' ] || value
+			);
 		};
 
 		const generateLabels = () => {
@@ -686,12 +615,15 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 									[],
 								'ifLanguage'
 							),
-						userRole: () =>
-							generateLabelFromValues(
-								values,
-								userRoles,
-								'userRole'
-							),
+						userRole: () => {
+							const selectedRoles = values.userRole || [];
+							if ( ! selectedRoles.length ) {
+								return null;
+							}
+							return selectedRoles
+								.map( ( role ) => userRoles.find( ( r ) => r.value === role )?.label || role )
+								.join( ', ' );
+						},
 						postAuthor: () =>
 							generateLabelFromValues(
 								values,
@@ -725,17 +657,12 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					: __( 'No conditions set', 'vk-dynamic-if-block' );
 			}
 
-			// Condition 1つだけの場合はカッコなし、複数の場合はカッコ付き
-			const labelsString =
-				groupLabels.length === 1
-					? groupLabels[ 0 ]
-					: groupLabels
-							.map( ( label ) => `[${ label }]` )
-							.join(
-								` ${
-									conditionOperator?.toUpperCase() || 'AND'
-								} `
-							);
+			// 各Conditionのラベルを結合
+			const labelsString = groupLabels.join(
+				` ${
+					conditionOperator?.toUpperCase() || 'AND'
+				} `
+			);
 
 			return exclusion
 				? `${ __( '!', 'vk-dynamic-if-block' ) } ${ labelsString }`
@@ -792,44 +719,14 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 										key={ group.id }
 										className="vkdif__group"
 									>
-										<div className="vkdif__group-header">
-											<span className="vkdif__group-number">
-												Condition { groupIndex + 1 }
-											</span>
-										</div>
 										<div className="vkdif__group-conditions">
 											{ group.conditions.map(
 												(
 													condition,
 													conditionIndex
 												) => {
-													// 他グループで選択済みのCondition Typeを取得
-													const usedTypes = conditions
-														.filter(
-															( _, idx ) =>
-																idx !==
-																groupIndex
-														)
-														.map(
-															( g ) =>
-																g
-																	.conditions[ 0 ]
-																	?.type
-														)
-														.filter( Boolean );
-													// 選択肢をdisabled付きで生成
-													const availableConditionTypes =
-														conditionTypes.map(
-															( opt ) => ( {
-																...opt,
-																disabled:
-																	usedTypes.includes(
-																		opt.value
-																	) &&
-																	opt.value !==
-																		condition.type,
-															} )
-														);
+													// 全ての条件タイプを選択可能
+													const availableConditionTypes = conditionTypes;
 													return (
 														<div
 															key={ condition.id }
@@ -904,11 +801,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 										variant="secondary"
 										onClick={ addConditionGroup }
 										className="vkdif__add-condition"
-										disabled={
-											conditions.length >=
-											Object.keys( CONDITION_TYPE_LABELS )
-												.length
-										}
 									>
 										{ __(
 											'Add Condition',
@@ -916,20 +808,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 										) }
 									</Button>
 								</BaseControl>
-								{ conditions.length >=
-									Object.keys( CONDITION_TYPE_LABELS )
-										.length && (
-									<BaseControl>
-										<div className="vkdif__alert vkdif__alert-warning">
-											<p>
-												{ __(
-													'Maximum number of conditions reached. Each condition type can only be used once.',
-													'vk-dynamic-if-block'
-												) }
-											</p>
-										</div>
-									</BaseControl>
-								) }
 								{ conditions.length > 1 && (
 									<SelectControl
 										label={ __(
