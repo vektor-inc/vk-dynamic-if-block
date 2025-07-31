@@ -2,6 +2,7 @@
 	border: 1px dotted #ccc;
 	padding: 1rem 4px 4px 4px;
 	position: relative;
+
 	.editor-styles-wrapper .is-layout-constrained > * + & {
 		margin-block-start: 0;
 	}
@@ -47,18 +48,19 @@
 
 .vkdif .vkdif__refer-cf-name {
 	margin-bottom: 0;
-	& .components-base-control__help {
+
+	.components-base-control__help {
 		margin-bottom: 0;
 	}
 }
 
 .vkdif__group {
-    position: relative;
-    padding: 1.5rem 1rem;
+	position: relative;
+	padding: 1.5rem 1rem;
 	margin-bottom: 1.5rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    background-color: #fff;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	background-color: #fff;
 
 	&:last-child {
 		margin-bottom: 1.5rem;
@@ -66,6 +68,7 @@
 }
 
 .vkdif__group-conditions {
+
 	.vkdif__condition {
 		margin-bottom: 0;
 		padding-bottom: 1rem;
@@ -73,7 +76,7 @@
 }
 
 .vkdif__condition-header {
-    margin-bottom: 1rem;
+	margin-bottom: 1rem;
 
 	.components-base-control {
 		width: 100%;
@@ -88,6 +91,7 @@
 }
 
 .vkdif__condition-settings {
+
 	.components-base-control {
 		margin-bottom: 15px;
 
@@ -99,6 +103,7 @@
 
 // 条件追加ボタンのスタイル
 .vkdif .components-button {
+
 	&.is-primary {
 		background-color: #007cba;
 		border-color: #007cba;
@@ -111,6 +116,7 @@
 	}
 
 	&.is-secondary {
+
 		&.is-destructive {
 			color: #d63638;
 			border-color: #d63638;
@@ -139,22 +145,22 @@
 	padding: 1rem;
 	margin: 0.5rem auto;
 	border-radius: 3px;
+
 	p {
 		margin: 0;
 	}
 
-	@each $var
-		in (
-			(success, #dff0d8, #3c763d, #d6e9c6),
-			(info, #d9edf7, #31708f, #bce8f1),
-			(warning, #fcf8e3, #8a6d3b, #faebcc),
-			(danger, #f2dede, #a94442, #ebccd1)
-		)
-	{
-		$class-name: nth($var, 1);
-		$color-bg: nth($var, 2);
-		$color: nth($var, 3);
-		$color-border: nth($var, 4);
+	@each $var in (
+		(success, #dff0d8, #3c763d, #d6e9c6),
+		(info, #d9edf7, #31708f, #bce8f1),
+		(warning, #fcf8e3, #8a6d3b, #faebcc),
+		(danger, #f2dede, #a94442, #ebccd1)
+	) {
+		$class-name: list.nth($var, 1);
+		$color-bg: list.nth($var, 2);
+		$color: list.nth($var, 3);
+		$color-border: list.nth($var, 4);
+
 		&-#{$class-name} {
 			background-color: $color-bg;
 			color: $color;
