@@ -491,17 +491,14 @@ function vk_dynamic_if_block_check_page_hierarchy($values)
         return true;
     }
 
-    
-
+    // ページ階層の条件
     switch ($hierarchy_type) {
         case 'has_parent':
-            // 親ページがあるかチェック
             $parent_id = wp_get_post_parent_id($current_page_id);
             $result = $parent_id > 0;
             return $result;
             
         case 'has_children':
-            // 子ページがあるかチェック
             $children = get_pages([
                 'parent' => $current_page_id,
                 'number' => 1,
