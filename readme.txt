@@ -35,6 +35,8 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+[ Specification change ] Change version 1 download url to GitHub from .org
+
 = 0.9.2 =
 [ Specification change ] Added update notification for version 1.
 
