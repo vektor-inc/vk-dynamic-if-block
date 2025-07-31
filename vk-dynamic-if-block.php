@@ -24,6 +24,11 @@ if ( file_exists( $autoload_path ) ) {
 	require_once $autoload_path;
 }
 
+// Show important admin notice for version 1.0 update
+if ( is_admin() ) {
+	require_once plugin_dir_path( __FILE__ ) . 'admin-notice.php';
+}
+
 function vk_dynamic_if_block_enqueue_scripts() {
 
 	$script_dependencies = include plugin_dir_path( __FILE__ ) . '/build/index.asset.php';
