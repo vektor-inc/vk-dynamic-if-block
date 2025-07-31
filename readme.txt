@@ -1,10 +1,10 @@
 === VK Dynamic If Block ===
 Contributors: vektor-inc,kurudrive,doshimaf,toro_unit
 Tags: dynamic block, if, Conditional branch, Conditional Display, Custom Field, Full Site Editing
-Requires at least: 6.0
+Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 0.9.1
+Stable tag: 0.9.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -35,6 +35,7 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+= 0.9.2 =
 [ Specification change ] Added update notification for version 1.
 
 = 0.9.1 =
