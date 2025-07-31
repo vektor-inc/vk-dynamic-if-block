@@ -5,6 +5,10 @@
  * @package vektor-inc/vk-dynamic-if-block
  */
 
+// WordPress functions are available in this context
+// phpcs:disable WordPress.WP.GlobalVariablesOverride.Prohibited
+// phpcs:disable WordPress.WP.Functions
+
 use VektorInc\VK_Helpers\VkHelpers;
 
 /**

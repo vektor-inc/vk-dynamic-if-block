@@ -373,12 +373,16 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 								__nextHasNoMarginBottom
 								key={ role?.value || index }
 								label={ role?.label || '' }
-								checked={ ( values.userRole || [] ).includes( role.value ) }
+								checked={ ( values.userRole || [] ).includes(
+									role.value
+								) }
 								onChange={ ( checked ) => {
 									const currentRoles = values.userRole || [];
 									const newRoles = checked
 										? [ ...currentRoles, role.value ]
-										: currentRoles.filter( ( r ) => r !== role.value );
+										: currentRoles.filter(
+												( r ) => r !== role.value
+										  );
 									updateValue( 'userRole', newRoles );
 								} }
 							/>
@@ -621,7 +625,12 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 								return null;
 							}
 							return selectedRoles
-								.map( ( role ) => userRoles.find( ( r ) => r.value === role )?.label || role )
+								.map(
+									( role ) =>
+										userRoles.find(
+											( r ) => r.value === role
+										)?.label || role
+								)
 								.join( ', ' );
 						},
 						postAuthor: () =>
@@ -659,9 +668,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 
 			// 各Conditionのラベルを結合
 			const labelsString = groupLabels.join(
-				` ${
-					conditionOperator?.toUpperCase() || 'AND'
-				} `
+				` ${ conditionOperator?.toUpperCase() || 'AND' } `
 			);
 
 			return exclusion
@@ -726,7 +733,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 													conditionIndex
 												) => {
 													// 全ての条件タイプを選択可能
-													const availableConditionTypes = conditionTypes;
+													const availableConditionTypes =
+														conditionTypes;
 													return (
 														<div
 															key={ condition.id }

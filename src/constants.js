@@ -178,7 +178,7 @@ export const createMigrationRules = ( attributes ) => [
 // ユーティリティ関数
 export const generateId = () => Date.now() + Math.random();
 
-export const createConditionGroup = ( type, values, groupIndex ) => ( {
+export const createConditionGroup = ( type, values ) => ( {
 	id: generateId(),
 	conditions: [ { id: generateId(), type, values } ],
 	operator: BLOCK_CONFIG.defaultOperator,
