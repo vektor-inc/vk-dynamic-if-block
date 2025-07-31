@@ -145,25 +145,13 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 		// ブロック複製時のID重複対策
 		useEffect( () => {
 			if ( conditions && conditions.length > 0 ) {
-				const allIds = [];
+				// 空のIDがある場合のみ再生成
+				const hasEmptyIds = conditions.some( group => 
+					!group.id || 
+					(group.conditions && group.conditions.some( condition => !condition.id ))
+				);
 				
-				// すべてのIDを収集
-				conditions.forEach( group => {
-					if ( group.id ) {
-						allIds.push( group.id );
-					}
-					if ( group.conditions ) {
-						group.conditions.forEach( condition => {
-							if ( condition.id ) {
-								allIds.push( condition.id );
-							}
-						} );
-					}
-				} );
-
-				// 重複するIDがある場合、すべてのIDを再生成
-				const uniqueIds = new Set( allIds );
-				if ( uniqueIds.size !== allIds.length ) {
+				if ( hasEmptyIds ) {
 					const newConditions = regenerateConditionIds( conditions );
 					setAttributes( { conditions: newConditions } );
 				}
