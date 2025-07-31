@@ -35,6 +35,8 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+[ Specification change ] Added update notification for version 1.
+
 = 0.9.1 =
 [ Specification change ] Add the condition !is_year() && !is_month() && !is_date() for Post Type Archives.
 
