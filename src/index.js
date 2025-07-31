@@ -341,7 +341,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 								updateValue( 'ifPageType', value )
 							}
 						/>
-						{ values.ifPageType === 'is_page' && renderPageHierarchy() }
+						{ values.ifPageType === 'is_page' &&
+							renderPageHierarchy() }
 					</>
 				),
 				postType: () => (
@@ -357,7 +358,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 								updateValue( 'ifPostType', value )
 							}
 						/>
-						{ values.ifPostType === 'page' && renderPageHierarchy() }
+						{ values.ifPostType === 'page' &&
+							renderPageHierarchy() }
 					</>
 				),
 				language: () => {
@@ -570,7 +572,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						}
 					/>
 				),
-
 			};
 
 			return renderers[ type ]?.() || null;
@@ -625,14 +626,19 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 								'ifPageType',
 								true
 							);
-							const hierarchyLabel = values.ifPageType === 'is_page' && values.pageHierarchyType && values.pageHierarchyType !== 'none'
-								? generateLabelFromValues(
-									values,
-									PAGE_HIERARCHY_OPTIONS,
-									'pageHierarchyType'
-								)
-								: null;
-							return hierarchyLabel ? `${pageTypeLabel} (${hierarchyLabel})` : pageTypeLabel;
+							const hierarchyLabel =
+								values.ifPageType === 'is_page' &&
+								values.pageHierarchyType &&
+								values.pageHierarchyType !== 'none'
+									? generateLabelFromValues(
+											values,
+											PAGE_HIERARCHY_OPTIONS,
+											'pageHierarchyType'
+									  )
+									: null;
+							return hierarchyLabel
+								? `${ pageTypeLabel } (${ hierarchyLabel })`
+								: pageTypeLabel;
 						},
 						postType: () => {
 							const postTypeLabel = generateLabelFromValues(
@@ -641,14 +647,19 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 									[],
 								'ifPostType'
 							);
-							const hierarchyLabel = values.ifPostType === 'page' && values.pageHierarchyType && values.pageHierarchyType !== 'none'
-								? generateLabelFromValues(
-									values,
-									PAGE_HIERARCHY_OPTIONS,
-									'pageHierarchyType'
-								)
-								: null;
-							return hierarchyLabel ? `${postTypeLabel} (${hierarchyLabel})` : postTypeLabel;
+							const hierarchyLabel =
+								values.ifPostType === 'page' &&
+								values.pageHierarchyType &&
+								values.pageHierarchyType !== 'none'
+									? generateLabelFromValues(
+											values,
+											PAGE_HIERARCHY_OPTIONS,
+											'pageHierarchyType'
+									  )
+									: null;
+							return hierarchyLabel
+								? `${ postTypeLabel } (${ hierarchyLabel })`
+								: postTypeLabel;
 						},
 						language: () =>
 							generateLabelFromValues(
@@ -687,7 +698,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							values.showOnlyLoginUser
 								? __( 'Login User Only', 'vk-dynamic-if-block' )
 								: null,
-
 					};
 
 					const label =
