@@ -35,8 +35,6 @@ import {
 // グローバル変数の宣言
 /* global vkDynamicIfBlockLocalizeData */
 
-
-
 registerBlockType( 'vk-blocks/dynamic-if', {
 	apiVersion: 3,
 	title: __( 'Dynamic If', 'vk-dynamic-if-block' ),
@@ -318,7 +316,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			}) );
 		};
 
-				const updateConditionValue = (
+		const updateConditionValue = (
 			groupIndex,
 			conditionIndex,
 			key,
