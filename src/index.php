@@ -258,7 +258,17 @@ function vk_dynamic_if_block_check_page_type($values)
         'is_archive' => is_archive()
     ];
 
-    return $page_checks[$page_type] ?? false;
+    $result = $page_checks[$page_type] ?? false;
+
+    // is_pageの場合、階層条件もチェック
+    if ($page_type === 'is_page' && $result) {
+        $hierarchy_type = $values['pageHierarchyType'] ?? '';
+        if (!empty($hierarchy_type) && $hierarchy_type !== 'none') {
+            return vk_dynamic_if_block_check_page_hierarchy($values);
+        }
+    }
+
+    return $result;
 }
 
 function vk_dynamic_if_block_check_post_type($values)
@@ -287,7 +297,20 @@ function vk_dynamic_if_block_check_post_type($values)
         }
     }
 
-    return $current_type === $post_type;
+    // 投稿タイプが一致しない場合はfalse
+    if ($current_type !== $post_type) {
+        return false;
+    }
+
+    // 固定ページの場合、階層条件もチェック
+    if ($post_type === 'page') {
+        $hierarchy_type = $values['pageHierarchyType'] ?? '';
+        if (!empty($hierarchy_type) && $hierarchy_type !== 'none') {
+            return vk_dynamic_if_block_check_page_hierarchy($values);
+        }
+    }
+
+    return true;
 }
 
 function vk_dynamic_if_block_check_language($values)
@@ -444,6 +467,43 @@ function vk_dynamic_if_block_check_days_since_public($method, $value, $refer_fie
 function vk_dynamic_if_block_check_login_user($values)
 {
     return !($values['showOnlyLoginUser'] ?? false) || is_user_logged_in();
+}
+
+function vk_dynamic_if_block_check_page_hierarchy($values)
+{
+    $hierarchy_type = $values['pageHierarchyType'] ?? '';
+    if (empty($hierarchy_type) || $hierarchy_type === 'none') {
+        return true;
+    }
+
+    // 固定ページ以外では常にtrueを返す
+    if (!is_page()) {
+        return true;
+    }
+
+    $current_page_id = get_the_ID();
+    if (!$current_page_id) {
+        return true;
+    }
+
+    switch ($hierarchy_type) {
+        case 'has_parent':
+            // 親ページがあるかチェック
+            $parent_id = wp_get_post_parent_id($current_page_id);
+            return $parent_id > 0;
+            
+        case 'has_children':
+            // 子ページがあるかチェック
+            $children = get_pages([
+                'child_of' => $current_page_id,
+                'number' => 1,
+                'post_type' => 'page'
+            ]);
+            return !empty($children);
+            
+        default:
+            return true;
+    }
 }
 
 function vk_dynamic_if_block_register_dynamic()

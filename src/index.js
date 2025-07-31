@@ -23,6 +23,7 @@ import {
 	CUSTOM_FIELD_RULES,
 	PERIOD_SETTINGS,
 	PERIOD_METHODS,
+	PAGE_HIERARCHY_OPTIONS,
 	CONDITION_OPERATORS,
 	BLOCK_CONFIG,
 	createMigrationRules,
@@ -317,29 +318,47 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			const updateValue = ( key, value ) =>
 				updateConditionValue( groupIndex, conditionIndex, key, value );
 
+			// 共通の階層条件
+			const renderPageHierarchy = () => (
+				<SelectControl
+					label={ __( 'Page Hierarchy', 'vk-dynamic-if-block' ) }
+					value={ values.pageHierarchyType || 'none' }
+					options={ PAGE_HIERARCHY_OPTIONS }
+					onChange={ ( value ) =>
+						updateValue( 'pageHierarchyType', value )
+					}
+				/>
+			);
+
 			const renderers = {
 				pageType: () => (
-					<SelectControl
-						label={ __( 'Page Type', 'vk-dynamic-if-block' ) }
-						value={ values.ifPageType || 'none' }
-						options={ ifPageTypes }
-						onChange={ ( value ) =>
-							updateValue( 'ifPageType', value )
-						}
-					/>
+					<>
+						<SelectControl
+							label={ __( 'Page Type', 'vk-dynamic-if-block' ) }
+							value={ values.ifPageType || 'none' }
+							options={ ifPageTypes }
+							onChange={ ( value ) =>
+								updateValue( 'ifPageType', value )
+							}
+						/>
+						{ values.ifPageType === 'is_page' && renderPageHierarchy() }
+					</>
 				),
 				postType: () => (
-					<SelectControl
-						label={ __( 'Post Type', 'vk-dynamic-if-block' ) }
-						value={ values.ifPostType || 'none' }
-						options={
-							vkDynamicIfBlockLocalizeData?.postTypeSelectOptions ||
-							[]
-						}
-						onChange={ ( value ) =>
-							updateValue( 'ifPostType', value )
-						}
-					/>
+					<>
+						<SelectControl
+							label={ __( 'Post Type', 'vk-dynamic-if-block' ) }
+							value={ values.ifPostType || 'none' }
+							options={
+								vkDynamicIfBlockLocalizeData?.postTypeSelectOptions ||
+								[]
+							}
+							onChange={ ( value ) =>
+								updateValue( 'ifPostType', value )
+							}
+						/>
+						{ values.ifPostType === 'page' && renderPageHierarchy() }
+					</>
 				),
 				language: () => {
 					const allLanguages =
@@ -547,6 +566,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						}
 					/>
 				),
+
 			};
 
 			return renderers[ type ]?.() || null;
@@ -594,20 +614,38 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 
 					const { values = {} } = condition;
 					const labelMap = {
-						pageType: () =>
-							generateLabelFromValues(
+						pageType: () => {
+							const pageTypeLabel = generateLabelFromValues(
 								values,
 								ifPageTypes,
 								'ifPageType',
 								true
-							),
-						postType: () =>
-							generateLabelFromValues(
+							);
+							const hierarchyLabel = values.ifPageType === 'is_page' && values.pageHierarchyType && values.pageHierarchyType !== 'none'
+								? generateLabelFromValues(
+									values,
+									PAGE_HIERARCHY_OPTIONS,
+									'pageHierarchyType'
+								)
+								: null;
+							return hierarchyLabel ? `${pageTypeLabel} (${hierarchyLabel})` : pageTypeLabel;
+						},
+						postType: () => {
+							const postTypeLabel = generateLabelFromValues(
 								values,
 								vkDynamicIfBlockLocalizeData?.postTypeSelectOptions ||
 									[],
 								'ifPostType'
-							),
+							);
+							const hierarchyLabel = values.ifPostType === 'page' && values.pageHierarchyType && values.pageHierarchyType !== 'none'
+								? generateLabelFromValues(
+									values,
+									PAGE_HIERARCHY_OPTIONS,
+									'pageHierarchyType'
+								)
+								: null;
+							return hierarchyLabel ? `${postTypeLabel} (${hierarchyLabel})` : postTypeLabel;
+						},
 						language: () =>
 							generateLabelFromValues(
 								values,
@@ -640,6 +678,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							values.showOnlyLoginUser
 								? __( 'Login User Only', 'vk-dynamic-if-block' )
 								: null,
+
 					};
 
 					const label =
