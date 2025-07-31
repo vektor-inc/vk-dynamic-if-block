@@ -46,7 +46,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			type: 'array',
 			default: [
 				{
-					id: 'default-group',
+					id: generateId(),
 					name: 'Condition 1',
 					conditions: [],
 					operator: 'and',
@@ -120,6 +120,41 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 	},
 	edit: function Edit( { attributes, setAttributes } ) {
 		const { conditions, conditionOperator, exclusion } = attributes;
+
+		// ブロック複製時のID重複対策
+		useEffect( () => {
+			if ( conditions && conditions.length > 0 ) {
+				const allIds = [];
+				
+				// すべてのIDを収集
+				conditions.forEach( group => {
+					if ( group.id ) {
+						allIds.push( group.id );
+					}
+					if ( group.conditions ) {
+						group.conditions.forEach( condition => {
+							if ( condition.id ) {
+								allIds.push( condition.id );
+							}
+						} );
+					}
+				} );
+
+				// 重複するIDがある場合、すべてのIDを再生成
+				const uniqueIds = new Set( allIds );
+				if ( uniqueIds.size !== allIds.length ) {
+					const newConditions = conditions.map( group => ({
+						...group,
+						id: generateId(),
+						conditions: group.conditions ? group.conditions.map( condition => ({
+							...condition,
+							id: generateId()
+						})) : []
+					}));
+					setAttributes( { conditions: newConditions } );
+				}
+			}
+		}, [ conditions, setAttributes ] );
 
 		// 既存ブロックから新形式への移行処理
 		useEffect( () => {
@@ -213,7 +248,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 
 			if ( newConditions.length === 0 ) {
 				newConditions.push( {
-					id: 'default-group',
+					id: generateId(),
 					conditions: [ newCondition ],
 					operator: BLOCK_CONFIG.defaultOperator,
 				} );
