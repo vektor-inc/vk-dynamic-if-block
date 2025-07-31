@@ -36,6 +36,7 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 == Changelog ==
 
 [ Add Function ] Add page hierarchy conditions (parent/child page) to page type and post type conditions for pages.
+[ Bug fix ] Fix Label color
 
 = 1.0.0 =
 [ Specification Change ] Changed UI to stacked condition format. 
