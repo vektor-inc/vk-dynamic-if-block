@@ -16,7 +16,7 @@ add_action( 'admin_notices', function () {
 			<?php echo esc_html__( 'Ahead of the official release of the new version, it is available for download below.', 'vk-dynamic-if-block' ); ?><br>
 			<?php echo esc_html__( 'Please manually upload and activate it from "Plugins > Add New > Upload Plugin", then open the template that uses the VK Dynamic If Block in the block editor and save it.', 'vk-dynamic-if-block' ); ?>
 		</p>
-		<a href="https://downloads.wordpress.org/plugin/vk-dynamic-if-block.1.0.0.zip" target="_blank" rel="noreferrer noopener" class="button button-primary"><?php echo esc_html__( 'Download', 'vk-dynamic-if-block' ); ?></a>
+		<a href="https://github.com/vektor-inc/vk-dynamic-if-block/releases" target="_blank" rel="noreferrer noopener" class="button button-primary"><?php echo esc_html__( 'Download', 'vk-dynamic-if-block' ); ?></a>
 	</div>
 	<?php
 } );
