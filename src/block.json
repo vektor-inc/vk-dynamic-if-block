@@ -9,11 +9,11 @@
 			"type": "array",
 			"default": [
 				{
-					"id": "default-group",
+					"id": "",
 					"name": "Group 1",
 					"conditions": [
 						{
-							"id": 1,
+							"id": "",
 							"type": "pageType",
 							"values": {}
 						}
@@ -26,10 +26,10 @@
 			"type": "array",
 			"default": [
 				{
-					"id": "default-condition",
+					"id": "",
 					"conditions": [
 						{
-							"id": 1,
+							"id": "",
 							"type": "pageType",
 							"values": {}
 						}
