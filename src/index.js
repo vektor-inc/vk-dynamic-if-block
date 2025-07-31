@@ -318,7 +318,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			const updateValue = ( key, value ) =>
 				updateConditionValue( groupIndex, conditionIndex, key, value );
 
-			// 共通の階層条件
+			// 共通のパネル設定
 			const renderPageHierarchy = () => (
 				<SelectControl
 					label={ __( 'Page Hierarchy', 'vk-dynamic-if-block' ) }
