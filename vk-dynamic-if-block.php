@@ -234,58 +234,76 @@ function vk_dynamic_if_block_migrate_old_attributes( $attributes ) {
 	// Page Type Condition
 	if ( isset( $attributes['ifPageType'] ) && ! empty( $attributes['ifPageType'] ) && 'none' !== $attributes['ifPageType'] ) {
 		$conditions[] = array(
+			'id' => 'migrated_page_type_' . time(),
 			'type' => 'pageType',
-			'value' => $attributes['ifPageType']
+			'values' => array(
+				'ifPageType' => $attributes['ifPageType']
+			)
 		);
 	}
 
 	// Post Type Condition
 	if ( isset( $attributes['ifPostType'] ) && ! empty( $attributes['ifPostType'] ) && 'none' !== $attributes['ifPostType'] ) {
 		$conditions[] = array(
+			'id' => 'migrated_post_type_' . time(),
 			'type' => 'postType',
-			'value' => $attributes['ifPostType']
+			'values' => array(
+				'ifPostType' => $attributes['ifPostType']
+			)
 		);
 	}
 
 	// Language Condition
 	if ( isset( $attributes['ifLanguage'] ) && ! empty( $attributes['ifLanguage'] ) && 'none' !== $attributes['ifLanguage'] ) {
 		$conditions[] = array(
+			'id' => 'migrated_language_' . time(),
 			'type' => 'language',
-			'value' => $attributes['ifLanguage']
+			'values' => array(
+				'ifLanguage' => $attributes['ifLanguage']
+			)
 		);
 	}
 
 	// User Role Condition
 	if ( isset( $attributes['userRole'] ) && ! empty( $attributes['userRole'] ) ) {
 		$conditions[] = array(
+			'id' => 'migrated_user_role_' . time(),
 			'type' => 'userRole',
-			'value' => $attributes['userRole']
+			'values' => array(
+				'userRole' => $attributes['userRole']
+			)
 		);
 	}
 
 	// Post Author Condition
 	if ( isset( $attributes['postAuthor'] ) && ! empty( $attributes['postAuthor'] ) && 0 !== $attributes['postAuthor'] ) {
 		$conditions[] = array(
+			'id' => 'migrated_post_author_' . time(),
 			'type' => 'postAuthor',
-			'value' => $attributes['postAuthor']
+			'values' => array(
+				'postAuthor' => $attributes['postAuthor']
+			)
 		);
 	}
 
 	// Custom Field Condition
 	if ( isset( $attributes['customFieldName'] ) && ! empty( $attributes['customFieldName'] ) ) {
 		$custom_field_condition = array(
+			'id' => 'migrated_custom_field_' . time(),
 			'type' => 'customField',
-			'fieldName' => $attributes['customFieldName']
+			'values' => array(
+				'customFieldName' => $attributes['customFieldName']
+			)
 		);
 
 		// Custom Field Rule
 		if ( isset( $attributes['customFieldRule'] ) && ! empty( $attributes['customFieldRule'] ) ) {
-			$custom_field_condition['rule'] = $attributes['customFieldRule'];
+			$custom_field_condition['values']['customFieldRule'] = $attributes['customFieldRule'];
 		}
 
 		// Custom Field Value
 		if ( isset( $attributes['customFieldValue'] ) && ! empty( $attributes['customFieldValue'] ) ) {
-			$custom_field_condition['value'] = $attributes['customFieldValue'];
+			$custom_field_condition['values']['customFieldValue'] = $attributes['customFieldValue'];
 		}
 
 		$conditions[] = $custom_field_condition;
@@ -294,23 +312,26 @@ function vk_dynamic_if_block_migrate_old_attributes( $attributes ) {
 	// Period Display Condition
 	if ( isset( $attributes['periodDisplaySetting'] ) && ! empty( $attributes['periodDisplaySetting'] ) && 'none' !== $attributes['periodDisplaySetting'] ) {
 		$period_condition = array(
+			'id' => 'migrated_period_' . time(),
 			'type' => 'period',
-			'setting' => $attributes['periodDisplaySetting']
+			'values' => array(
+				'periodDisplaySetting' => $attributes['periodDisplaySetting']
+			)
 		);
 
 		// Period Specification Method
 		if ( isset( $attributes['periodSpecificationMethod'] ) && ! empty( $attributes['periodSpecificationMethod'] ) ) {
-			$period_condition['method'] = $attributes['periodSpecificationMethod'];
+			$period_condition['values']['periodSpecificationMethod'] = $attributes['periodSpecificationMethod'];
 		}
 
 		// Period Display Value
 		if ( isset( $attributes['periodDisplayValue'] ) && ! empty( $attributes['periodDisplayValue'] ) ) {
-			$period_condition['value'] = $attributes['periodDisplayValue'];
+			$period_condition['values']['periodDisplayValue'] = $attributes['periodDisplayValue'];
 		}
 
 		// Period Refer Custom Field
 		if ( isset( $attributes['periodReferCustomField'] ) && ! empty( $attributes['periodReferCustomField'] ) ) {
-			$period_condition['referField'] = $attributes['periodReferCustomField'];
+			$period_condition['values']['periodReferCustomField'] = $attributes['periodReferCustomField'];
 		}
 
 		$conditions[] = $period_condition;
@@ -319,8 +340,11 @@ function vk_dynamic_if_block_migrate_old_attributes( $attributes ) {
 	// Show Only Login User Condition
 	if ( isset( $attributes['showOnlyLoginUser'] ) && ! empty( $attributes['showOnlyLoginUser'] ) ) {
 		$conditions[] = array(
+			'id' => 'migrated_login_user_' . time(),
 			'type' => 'loginUser',
-			'value' => $attributes['showOnlyLoginUser']
+			'values' => array(
+				'showOnlyLoginUser' => $attributes['showOnlyLoginUser']
+			)
 		);
 	}
 
