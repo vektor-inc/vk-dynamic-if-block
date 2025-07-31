@@ -672,23 +672,25 @@ function vk_dynamic_if_block_check_page_hierarchy($values)
 
     // ページ階層の条件
     switch ($hierarchy_type) {
-        case 'has_parent':
-            $parent_id = wp_get_post_parent_id($current_page_id);
-            $result = $parent_id > 0;
-            return $result;
+    case 'has_parent':
+        $parent_id = wp_get_post_parent_id($current_page_id);
+        $result = $parent_id > 0;
+        return $result;
             
-        case 'has_children':
-            $children = get_pages([
-                'parent' => $current_page_id,
-                'number' => 1,
-                'post_type' => 'page',
-                'post_status' => 'publish'
-            ]);
-            $result = !empty($children);
-            return $result;
+    case 'has_children':
+        $children = get_pages(
+            [
+            'parent' => $current_page_id,
+            'number' => 1,
+            'post_type' => 'page',
+            'post_status' => 'publish'
+                ]
+        );
+        $result = !empty($children);
+        return $result;
             
-        default:
-            return true;
+    default:
+        return true;
     }
 }
 
