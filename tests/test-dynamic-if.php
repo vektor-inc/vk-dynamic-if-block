@@ -1612,6 +1612,216 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase {
 				'content'   => 'Unvisible',
 				'expected'  => '',
 			),
+			/******************************************
+			* Page Hierarchy */
+			// Page Type with hierarchy
+			array(
+				'name'      => 'Page Type - is_page with has_parent (child page)',
+				'go_to'     => get_permalink( $test_posts['child_page_id'] ),
+				'attribute' => array(
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 
+								'ifPageType' => 'is_page',
+								'pageHierarchyType' => 'has_parent'
+							),
+						),
+					),
+				),
+				'content'   => 'Page with parent',
+				'expected'  => 'Page with parent',
+			),
+			array(
+				'name'      => 'Page Type - is_page with has_parent (parent page)',
+				'go_to'     => get_permalink( $test_posts['parent_page_id'] ),
+				'attribute' => array(
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 
+								'ifPageType' => 'is_page',
+								'pageHierarchyType' => 'has_parent'
+							),
+						),
+					),
+				),
+				'content'   => 'Page with parent',
+				'expected'  => '',
+			),
+			array(
+				'name'      => 'Page Type - is_page with has_children (parent page)',
+				'go_to'     => get_permalink( $test_posts['parent_page_id'] ),
+				'attribute' => array(
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 
+								'ifPageType' => 'is_page',
+								'pageHierarchyType' => 'has_children'
+							),
+						),
+					),
+				),
+				'content'   => 'Page with children',
+				'expected'  => 'Page with children',
+			),
+			array(
+				'name'      => 'Page Type - is_page with has_children (child page)',
+				'go_to'     => get_permalink( $test_posts['child_page_id'] ),
+				'attribute' => array(
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 
+								'ifPageType' => 'is_page',
+								'pageHierarchyType' => 'has_children'
+							),
+						),
+					),
+				),
+				'content'   => 'Page with children',
+				'expected'  => '',
+			),
+			array(
+				'name'      => 'Page Type - is_page with no hierarchy restriction',
+				'go_to'     => get_permalink( $test_posts['parent_page_id'] ),
+				'attribute' => array(
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 
+								'ifPageType' => 'is_page',
+								'pageHierarchyType' => 'none'
+							),
+						),
+					),
+				),
+				'content'   => 'Page without hierarchy restriction',
+				'expected'  => 'Page without hierarchy restriction',
+			),
+			// Post Type with hierarchy
+			array(
+				'name'      => 'Post Type - page with has_parent (child page)',
+				'go_to'     => get_permalink( $test_posts['child_page_id'] ),
+				'attribute' => array(
+					'conditions' => array(
+						array(
+							'type'   => 'postType',
+							'values' => array( 
+								'ifPostType' => 'page',
+								'pageHierarchyType' => 'has_parent'
+							),
+						),
+					),
+				),
+				'content'   => 'Page post type with parent',
+				'expected'  => 'Page post type with parent',
+			),
+			array(
+				'name'      => 'Post Type - page with has_parent (parent page)',
+				'go_to'     => get_permalink( $test_posts['parent_page_id'] ),
+				'attribute' => array(
+					'conditions' => array(
+						array(
+							'type'   => 'postType',
+							'values' => array( 
+								'ifPostType' => 'page',
+								'pageHierarchyType' => 'has_parent'
+							),
+						),
+					),
+				),
+				'content'   => 'Page post type with parent',
+				'expected'  => '',
+			),
+			array(
+				'name'      => 'Post Type - page with has_children (parent page)',
+				'go_to'     => get_permalink( $test_posts['parent_page_id'] ),
+				'attribute' => array(
+					'conditions' => array(
+						array(
+							'type'   => 'postType',
+							'values' => array( 
+								'ifPostType' => 'page',
+								'pageHierarchyType' => 'has_children'
+							),
+						),
+					),
+				),
+				'content'   => 'Page post type with children',
+				'expected'  => 'Page post type with children',
+			),
+			array(
+				'name'      => 'Post Type - page with has_children (child page)',
+				'go_to'     => get_permalink( $test_posts['child_page_id'] ),
+				'attribute' => array(
+					'conditions' => array(
+						array(
+							'type'   => 'postType',
+							'values' => array( 
+								'ifPostType' => 'page',
+								'pageHierarchyType' => 'has_children'
+							),
+						),
+					),
+				),
+				'content'   => 'Page post type with children',
+				'expected'  => '',
+			),
+			array(
+				'name'      => 'Post Type - page with no hierarchy restriction',
+				'go_to'     => get_permalink( $test_posts['parent_page_id'] ),
+				'attribute' => array(
+					'conditions' => array(
+						array(
+							'type'   => 'postType',
+							'values' => array( 
+								'ifPostType' => 'page',
+								'pageHierarchyType' => 'none'
+							),
+						),
+					),
+				),
+				'content'   => 'Page post type without hierarchy restriction',
+				'expected'  => 'Page post type without hierarchy restriction',
+			),
+			// Non-page post types should not be affected by hierarchy
+			array(
+				'name'      => 'Post Type - post should not be affected by hierarchy',
+				'go_to'     => get_permalink( $test_posts['post_id'] ),
+				'attribute' => array(
+					'conditions' => array(
+						array(
+							'type'   => 'postType',
+							'values' => array( 
+								'ifPostType' => 'post',
+								'pageHierarchyType' => 'has_parent'
+							),
+						),
+					),
+				),
+				'content'   => 'Post should show regardless of hierarchy',
+				'expected'  => 'Post should show regardless of hierarchy',
+			),
+			// Non-page page types should not be affected by hierarchy
+			array(
+				'name'      => 'Page Type - is_single should not be affected by hierarchy',
+				'go_to'     => get_permalink( $test_posts['post_id'] ),
+				'attribute' => array(
+					'conditions' => array(
+						array(
+							'type'   => 'pageType',
+							'values' => array( 
+								'ifPageType' => 'is_single',
+								'pageHierarchyType' => 'has_parent'
+							),
+						),
+					),
+				),
+				'content'   => 'Single should show regardless of hierarchy',
+				'expected'  => 'Single should show regardless of hierarchy',
+			),
 		);
 
 		foreach ( $tests as $test ) {
