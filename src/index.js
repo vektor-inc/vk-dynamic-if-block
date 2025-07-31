@@ -35,6 +35,27 @@ import {
 // グローバル変数の宣言
 /* global vkDynamicIfBlockLocalizeData */
 
+// 条件のIDを再生成する関数
+const regenerateConditionIds = (conditions) => {
+	if (!Array.isArray(conditions)) {
+		return conditions;
+	}
+	
+	return conditions.map(group => {
+		const newGroup = {
+			...group,
+			id: generateId(),
+			conditions: Array.isArray(group.conditions) 
+				? group.conditions.map(condition => ({
+					...condition,
+					id: generateId()
+				}))
+				: []
+		};
+		return newGroup;
+	});
+};
+
 registerBlockType( 'vk-blocks/dynamic-if', {
 	apiVersion: 3,
 	title: __( 'Dynamic If', 'vk-dynamic-if-block' ),
@@ -143,14 +164,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				// 重複するIDがある場合、すべてのIDを再生成
 				const uniqueIds = new Set( allIds );
 				if ( uniqueIds.size !== allIds.length ) {
-					const newConditions = conditions.map( group => ({
-						...group,
-						id: generateId(),
-						conditions: group.conditions ? group.conditions.map( condition => ({
-							...condition,
-							id: generateId()
-						})) : []
-					}));
+					const newConditions = regenerateConditionIds( conditions );
 					setAttributes( { conditions: newConditions } );
 				}
 			}
@@ -202,7 +216,9 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					);
 				}
 
-				setAttributes( { conditions: newConditions } );
+				// IDを確実に生成
+				const conditionsWithIds = regenerateConditionIds( newConditions );
+				setAttributes( { conditions: conditionsWithIds } );
 			}
 		}, [ attributes, conditions, setAttributes ] );
 
@@ -253,7 +269,18 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					operator: BLOCK_CONFIG.defaultOperator,
 				} );
 			} else {
-				newConditions[ 0 ].conditions.push( newCondition );
+				// 深いコピーを作成して新しいIDを生成
+				const updatedConditions = newConditions.map( ( group, index ) => {
+					if ( index === 0 ) {
+						return {
+							...group,
+							conditions: [ ...group.conditions, newCondition ]
+						};
+					}
+					return group;
+				} );
+				setAttributes( { conditions: updatedConditions } );
+				return;
 			}
 
 			setAttributes( { conditions: newConditions } );
@@ -288,8 +315,11 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				],
 				operator: 'or',
 			};
+			
+			// 深いコピーを作成して新しいIDを生成
+			const updatedConditions = [ ...conditions, newConditionGroup ];
 			setAttributes( {
-				conditions: [ ...conditions, newConditionGroup ],
+				conditions: updatedConditions,
 			} );
 		};
 
@@ -303,18 +333,24 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				return;
 			}
 
-			const newConditions = [ ...conditions ];
-			const group = newConditions[ groupIndex ];
-			const condition = group?.conditions?.[ conditionIndex ];
+			const newConditions = conditions.map( ( group, index ) => {
+				if ( index === groupIndex ) {
+					return {
+						...group,
+						conditions: group.conditions.map( ( condition, condIndex ) => {
+							if ( condIndex === conditionIndex ) {
+								return {
+									...condition,
+									...updates,
+								};
+							}
+							return condition;
+						} )
+					};
+				}
+				return group;
+			} );
 
-			if ( ! group || ! condition ) {
-				return;
-			}
-
-			newConditions[ groupIndex ].conditions[ conditionIndex ] = {
-				...condition,
-				...updates,
-			};
 			setAttributes( { conditions: newConditions } );
 		};
 
@@ -332,15 +368,27 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				return;
 			}
 
-			const newConditions = [ ...conditions ];
-			const group = newConditions[ groupIndex ];
-			const condition = group?.conditions?.[ conditionIndex ];
+			const newConditions = conditions.map( ( group, index ) => {
+				if ( index === groupIndex ) {
+					return {
+						...group,
+						conditions: group.conditions.map( ( condition, condIndex ) => {
+							if ( condIndex === conditionIndex ) {
+								return {
+									...condition,
+									values: {
+										...condition.values,
+										[ key ]: value,
+									},
+								};
+							}
+							return condition;
+						} )
+					};
+				}
+				return group;
+			} );
 
-			if ( ! group || ! condition ) {
-				return;
-			}
-
-			condition.values = { ...condition.values, [ key ]: value };
 			setAttributes( { conditions: newConditions } );
 		};
 
