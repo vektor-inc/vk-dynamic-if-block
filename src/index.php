@@ -258,6 +258,11 @@ function vk_dynamic_if_block_check_page_type($values)
         'is_archive' => is_archive()
     ];
 
+    // $page_typeが文字列でない場合はエラーを回避
+    if (!is_string($page_type)) {
+        return false;
+    }
+
     $result = $page_checks[$page_type] ?? false;
 
     // is_pageの場合、階層条件もチェック
@@ -486,20 +491,25 @@ function vk_dynamic_if_block_check_page_hierarchy($values)
         return true;
     }
 
+    
+
     switch ($hierarchy_type) {
         case 'has_parent':
             // 親ページがあるかチェック
             $parent_id = wp_get_post_parent_id($current_page_id);
-            return $parent_id > 0;
+            $result = $parent_id > 0;
+            return $result;
             
         case 'has_children':
             // 子ページがあるかチェック
             $children = get_pages([
-                'child_of' => $current_page_id,
+                'parent' => $current_page_id,
                 'number' => 1,
-                'post_type' => 'page'
+                'post_type' => 'page',
+                'post_status' => 'publish'
             ]);
-            return !empty($children);
+            $result = !empty($children);
+            return $result;
             
         default:
             return true;
