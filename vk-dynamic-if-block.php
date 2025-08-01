@@ -6,7 +6,6 @@
  * Author: Vektor,Inc.
  * Author URI: https://vektor-inc.co.jp/en/
  * Version: 1.1.0
- * Stable tag: 1.1.0
  * License: GPL-2.0-or-later
  * Text Domain: vk-dynamic-if-block
  *
