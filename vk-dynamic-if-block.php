@@ -25,7 +25,7 @@ if (file_exists($autoload_path) ) {
 }
 
 // 移行処理ファイルを読み込み
-require_once plugin_dir_path(__FILE__) . 'inc/migration/functions.php';
+require_once plugin_dir_path(__FILE__) . 'inc/migration/config.php';
 
 /**
  * プラグインアクティベーション時の処理
