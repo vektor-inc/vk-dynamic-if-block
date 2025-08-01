@@ -85,6 +85,19 @@ export const PERIOD_METHODS = [
 	},
 ];
 
+// ページ階層
+export const PAGE_HIERARCHY_OPTIONS = [
+	{ value: 'none', label: __( 'No restriction', 'vk-dynamic-if-block' ) },
+	{
+		value: 'has_parent',
+		label: __( 'Has parent page', 'vk-dynamic-if-block' ),
+	},
+	{
+		value: 'has_children',
+		label: __( 'Has child pages', 'vk-dynamic-if-block' ),
+	},
+];
+
 // 条件演算子
 export const CONDITION_OPERATORS = [
 	{ label: 'AND', value: 'and' },
@@ -176,7 +189,9 @@ export const createMigrationRules = ( attributes ) => [
 ];
 
 // ユーティリティ関数
-export const generateId = () => Date.now() + Math.random();
+export const generateId = () => {
+	return 'vkdif_' + Math.random().toString(36).substr(2, 15) + '_' + Date.now().toString(36);
+};
 
 export const createConditionGroup = ( type, values ) => ( {
 	id: generateId(),

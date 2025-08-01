@@ -23,6 +23,7 @@ import {
 	CUSTOM_FIELD_RULES,
 	PERIOD_SETTINGS,
 	PERIOD_METHODS,
+	PAGE_HIERARCHY_OPTIONS,
 	CONDITION_OPERATORS,
 	BLOCK_CONFIG,
 	createMigrationRules,
@@ -45,7 +46,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			type: 'array',
 			default: [
 				{
-					id: 'default-group',
+					id: '',
 					name: 'Condition 1',
 					conditions: [],
 					operator: 'and',
@@ -119,6 +120,42 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 	},
 	edit: function Edit( { attributes, setAttributes } ) {
 		const { conditions, conditionOperator, exclusion } = attributes;
+
+		// 条件を更新する共通関数
+		const updateConditionAt = ( groupIndex, conditionIndex, updater ) => {
+			const newConditions = [ ...conditions ];
+			newConditions[ groupIndex ] = {
+				...newConditions[ groupIndex ],
+				conditions: [ ...newConditions[ groupIndex ].conditions ]
+			};
+			newConditions[ groupIndex ].conditions[ conditionIndex ] = updater(
+				newConditions[ groupIndex ].conditions[ conditionIndex ]
+			);
+			setAttributes( { conditions: newConditions } );
+		};
+
+		// 空のIDを生成する（ブロック複製対策）
+		useEffect( () => {
+			if ( conditions && conditions.length > 0 ) {
+				const hasEmptyIds = conditions.some( group => 
+					!group.id || 
+					(group.conditions && group.conditions.some( condition => !condition.id ))
+				);
+				
+				if ( hasEmptyIds ) {
+					const newConditions = conditions.map( group => ({
+						...group,
+						id: group.id || generateId(),
+						conditions: group.conditions ? group.conditions.map( condition => ({
+							...condition,
+							id: condition.id || generateId()
+						})) : []
+					}));
+					setAttributes( { conditions: newConditions } );
+				}
+			}
+		}, [ conditions, setAttributes ] );
+
 
 		// 既存ブロックから新形式への移行処理
 		useEffect( () => {
@@ -208,19 +245,23 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				type: BLOCK_CONFIG.defaultConditionType,
 				values: {},
 			};
-			const newConditions = [ ...conditions ];
 
-			if ( newConditions.length === 0 ) {
-				newConditions.push( {
-					id: 'default-group',
-					conditions: [ newCondition ],
-					operator: BLOCK_CONFIG.defaultOperator,
+			if ( conditions.length === 0 ) {
+				setAttributes( {
+					conditions: [ {
+						id: generateId(),
+						conditions: [ newCondition ],
+						operator: BLOCK_CONFIG.defaultOperator,
+					} ]
 				} );
 			} else {
-				newConditions[ 0 ].conditions.push( newCondition );
+				const newConditions = [ ...conditions ];
+				newConditions[ 0 ] = {
+					...newConditions[ 0 ],
+					conditions: [ ...newConditions[ 0 ].conditions, newCondition ]
+				};
+				setAttributes( { conditions: newConditions } );
 			}
-
-			setAttributes( { conditions: newConditions } );
 		};
 
 		const addConditionGroup = () => {
@@ -252,12 +293,14 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				],
 				operator: 'or',
 			};
+			
+			const newConditions = [ ...conditions, newConditionGroup ];
 			setAttributes( {
-				conditions: [ ...conditions, newConditionGroup ],
+				conditions: newConditions,
 			} );
 		};
 
-		const updateCondition = ( groupIndex, conditionIndex, updates ) => {
+				const updateCondition = ( groupIndex, conditionIndex, updates ) => {
 			if (
 				! Array.isArray( conditions ) ||
 				groupIndex < 0 ||
@@ -267,19 +310,10 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				return;
 			}
 
-			const newConditions = [ ...conditions ];
-			const group = newConditions[ groupIndex ];
-			const condition = group?.conditions?.[ conditionIndex ];
-
-			if ( ! group || ! condition ) {
-				return;
-			}
-
-			newConditions[ groupIndex ].conditions[ conditionIndex ] = {
+			updateConditionAt( groupIndex, conditionIndex, condition => ({
 				...condition,
 				...updates,
-			};
-			setAttributes( { conditions: newConditions } );
+			}) );
 		};
 
 		const updateConditionValue = (
@@ -296,16 +330,13 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				return;
 			}
 
-			const newConditions = [ ...conditions ];
-			const group = newConditions[ groupIndex ];
-			const condition = group?.conditions?.[ conditionIndex ];
-
-			if ( ! group || ! condition ) {
-				return;
-			}
-
-			condition.values = { ...condition.values, [ key ]: value };
-			setAttributes( { conditions: newConditions } );
+			updateConditionAt( groupIndex, conditionIndex, condition => ({
+				...condition,
+				values: {
+					...condition.values,
+					[ key ]: value,
+				},
+			}) );
 		};
 
 		const renderConditionSettings = (
@@ -317,29 +348,49 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			const updateValue = ( key, value ) =>
 				updateConditionValue( groupIndex, conditionIndex, key, value );
 
+			// 共通のパネル設定
+			const renderPageHierarchy = () => (
+				<SelectControl
+					label={ __( 'Page Hierarchy', 'vk-dynamic-if-block' ) }
+					value={ values.pageHierarchyType || 'none' }
+					options={ PAGE_HIERARCHY_OPTIONS }
+					onChange={ ( value ) =>
+						updateValue( 'pageHierarchyType', value )
+					}
+				/>
+			);
+
 			const renderers = {
 				pageType: () => (
-					<SelectControl
-						label={ __( 'Page Type', 'vk-dynamic-if-block' ) }
-						value={ values.ifPageType || 'none' }
-						options={ ifPageTypes }
-						onChange={ ( value ) =>
-							updateValue( 'ifPageType', value )
-						}
-					/>
+					<>
+						<SelectControl
+							label={ __( 'Page Type', 'vk-dynamic-if-block' ) }
+							value={ values.ifPageType || 'none' }
+							options={ ifPageTypes }
+							onChange={ ( value ) =>
+								updateValue( 'ifPageType', value )
+							}
+						/>
+						{ values.ifPageType === 'is_page' &&
+							renderPageHierarchy() }
+					</>
 				),
 				postType: () => (
-					<SelectControl
-						label={ __( 'Post Type', 'vk-dynamic-if-block' ) }
-						value={ values.ifPostType || 'none' }
-						options={
-							vkDynamicIfBlockLocalizeData?.postTypeSelectOptions ||
-							[]
-						}
-						onChange={ ( value ) =>
-							updateValue( 'ifPostType', value )
-						}
-					/>
+					<>
+						<SelectControl
+							label={ __( 'Post Type', 'vk-dynamic-if-block' ) }
+							value={ values.ifPostType || 'none' }
+							options={
+								vkDynamicIfBlockLocalizeData?.postTypeSelectOptions ||
+								[]
+							}
+							onChange={ ( value ) =>
+								updateValue( 'ifPostType', value )
+							}
+						/>
+						{ values.ifPostType === 'page' &&
+							renderPageHierarchy() }
+					</>
 				),
 				language: () => {
 					const allLanguages =
@@ -598,20 +649,48 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 
 					const { values = {} } = condition;
 					const labelMap = {
-						pageType: () =>
-							generateLabelFromValues(
+						pageType: () => {
+							const pageTypeLabel = generateLabelFromValues(
 								values,
 								ifPageTypes,
 								'ifPageType',
 								true
-							),
-						postType: () =>
-							generateLabelFromValues(
+							);
+							const hierarchyLabel =
+								values.ifPageType === 'is_page' &&
+								values.pageHierarchyType &&
+								values.pageHierarchyType !== 'none'
+									? generateLabelFromValues(
+											values,
+											PAGE_HIERARCHY_OPTIONS,
+											'pageHierarchyType'
+									  )
+									: null;
+							return hierarchyLabel
+								? `${ pageTypeLabel } (${ hierarchyLabel })`
+								: pageTypeLabel;
+						},
+						postType: () => {
+							const postTypeLabel = generateLabelFromValues(
 								values,
 								vkDynamicIfBlockLocalizeData?.postTypeSelectOptions ||
 									[],
 								'ifPostType'
-							),
+							);
+							const hierarchyLabel =
+								values.ifPostType === 'page' &&
+								values.pageHierarchyType &&
+								values.pageHierarchyType !== 'none'
+									? generateLabelFromValues(
+											values,
+											PAGE_HIERARCHY_OPTIONS,
+											'pageHierarchyType'
+									  )
+									: null;
+							return hierarchyLabel
+								? `${ postTypeLabel } (${ hierarchyLabel })`
+								: postTypeLabel;
+						},
 						language: () =>
 							generateLabelFromValues(
 								values,

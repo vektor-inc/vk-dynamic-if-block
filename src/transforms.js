@@ -7,6 +7,7 @@ import { createBlock } from '@wordpress/blocks';
  * External dependencies
  */
 import { compareVersions } from 'compare-versions';
+import { generateId } from './constants';
 
 // WP6.3以上か NOTE: WP6.2以下をサポートしなくなったら削除すること
 const isLargerThanWp63 = () => {
@@ -40,9 +41,21 @@ const transforms = {
 					);
 				} );
 
+				// 新しいIDを生成してブロックを作成
+				const newAttributes = {
+					conditions: [
+						{
+							id: generateId(),
+							name: 'Condition 1',
+							conditions: [],
+							operator: 'and',
+						},
+					],
+				};
+
 				return createBlock(
 					'vk-blocks/dynamic-if',
-					{},
+					newAttributes,
 					groupInnerBlocks
 				);
 			},
