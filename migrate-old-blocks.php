@@ -11,9 +11,6 @@
 // WordPressを読み込み
 require_once('../../../wp-load.php');
 
-// 移行処理ファイルを読み込み
-require_once('inc/migration.php');
-
 // 管理者権限チェック
 if (!current_user_can('manage_options')) {
     wp_die('管理者権限が必要です。');
