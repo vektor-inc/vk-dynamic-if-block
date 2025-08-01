@@ -27,23 +27,21 @@ if (file_exists($autoload_path) ) {
 require_once plugin_dir_path(__FILE__) . 'inc/migration/config.php';
 
 /**
- * プラグインアクティベーション時の処理
- */
-function vk_dynamic_if_block_activate() {
-	// 移行処理を実行
-	vk_dynamic_if_block_migrate_old_blocks_on_activation();
-	
-	// バージョン情報を保存
-	update_option( 'vk_dynamic_if_block_version', '1.1.0' );
-}
-register_activation_hook( __FILE__, 'vk_dynamic_if_block_activate' );
-
-/**
  * プラグインアップデート時の処理
  */
 function vk_dynamic_if_block_check_version() {
 	$current_version = get_option( 'vk_dynamic_if_block_version', '0.8.6' );
 	$plugin_version = '1.1.0';
+	
+	// 新規インストール判定
+	$is_new_installation = ( $current_version === '0.8.6' );
+	
+	if ( $is_new_installation ) {
+		// 新規インストール時はバージョン情報のみ保存
+		update_option( 'vk_dynamic_if_block_version', $plugin_version );
+		error_log( "VK Dynamic If Block: New installation - version updated to {$plugin_version}" );
+		return;
+	}
 	
 	// 移行完了フラグをチェック
 	$migration_completed = get_option( 'vk_dynamic_if_block_migration_completed', false );
