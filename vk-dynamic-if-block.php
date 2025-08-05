@@ -257,14 +257,21 @@ function vk_dynamic_if_block_migrate_content( $content ) {
  * 移行対象ページ一覧を表示
  */
 function vk_dynamic_if_block_show_migration_posts() {
+	// デバッグ情報を出力
+	error_log( "VK Dynamic If Block: vk_dynamic_if_block_show_migration_posts called" );
+	
 	// 移行完了フラグをチェック
 	$migration_completed = get_option( 'vk_dynamic_if_block_migration_completed', false );
+	error_log( "VK Dynamic If Block: migration_completed = " . ( $migration_completed ? 'true' : 'false' ) );
 	
 	if ( $migration_completed ) {
+		error_log( "VK Dynamic If Block: Migration completed, returning" );
 		return;
 	}
 	
+	error_log( "VK Dynamic If Block: vk_migration = " . ( $_GET['vk_migration'] ?? 'not set' ) );
 	if ( ! isset( $_GET['vk_migration'] ) || $_GET['vk_migration'] !== 'show_posts' ) {
+		error_log( "VK Dynamic If Block: vk_migration not set or not 'show_posts', returning" );
 		return;
 	}
 	
