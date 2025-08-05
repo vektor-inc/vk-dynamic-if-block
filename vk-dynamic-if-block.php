@@ -27,47 +27,27 @@ if (file_exists($autoload_path) ) {
 require_once plugin_dir_path(__FILE__) . 'inc/migration/config.php';
 
 /**
- * プラグインアップデート時の処理
+ * プラグインアップデート時の処理（移行フラグのリセットのみ）
  */
 function vk_dynamic_if_block_check_version() {
-	$current_version = get_option( 'vk_dynamic_if_block_version', '0.8.6' );
+	$current_version = get_option( 'vk_dynamic_if_block_version', '' );
 	$plugin_version = '1.1.0';
 	
-	// 新規インストール判定
-	$is_new_installation = ( $current_version === '0.8.6' );
+	// 新規インストール判定（バージョン情報が存在しない場合）
+	$is_new_installation = empty( $current_version );
 	
 	if ( $is_new_installation ) {
 		// 新規インストール時はバージョン情報のみ保存
 		update_option( 'vk_dynamic_if_block_version', $plugin_version );
-		error_log( "VK Dynamic If Block: New installation - version updated to {$plugin_version}" );
+		update_option( 'vk_dynamic_if_block_migration_completed', true );
+		error_log( "VK Dynamic If Block: New installation - version set to {$plugin_version}" );
 		return;
 	}
 	
-	// 移行完了フラグをチェック
-	$migration_completed = get_option( 'vk_dynamic_if_block_migration_completed', false );
-	
-	// デバッグ用: 移行処理を強制実行
-	error_log( "VK Dynamic If Block Debug - Current Version: {$current_version}, Plugin Version: {$plugin_version}, Migration Completed: " . ( $migration_completed ? 'true' : 'false' ) );
-	
-	// デバッグ用: 移行完了フラグをリセット（開発時のみ使用）
-	if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+	// アップデート時は移行フラグをリセット（管理画面で手動移行）
+	if ( version_compare( $current_version, $plugin_version, '<' ) ) {
 		delete_option( 'vk_dynamic_if_block_migration_completed' );
-		delete_option( 'vk_dynamic_if_block_version' );
-		$migration_completed = false;
-		$current_version = '0.8.6';
-		error_log( "VK Dynamic If Block: Debug mode - reset migration flags" );
-	}
-	
-	// バージョンが異なる場合、かつ移行が未完了の場合のみ移行処理を実行
-	// デバッグ用: 条件を一時的に緩和
-	if ( ( version_compare( $current_version, $plugin_version, '<' ) || true ) && ! $migration_completed ) {
-		error_log( "VK Dynamic If Block: Starting migration process..." );
-		vk_dynamic_if_block_migrate_old_blocks_on_activation();
-		update_option( 'vk_dynamic_if_block_version', $plugin_version );
-		update_option( 'vk_dynamic_if_block_migration_completed', true );
-		error_log( "VK Dynamic If Block: Migration process completed." );
-	} else {
-		error_log( "VK Dynamic If Block: Migration skipped - version: {$current_version}, migration completed: " . ( $migration_completed ? 'true' : 'false' ) );
+		error_log( "VK Dynamic If Block: Update detected - migration flag reset" );
 	}
 }
 add_action( 'plugins_loaded', 'vk_dynamic_if_block_check_version' );

@@ -8,153 +8,287 @@
 defined('ABSPATH') || exit;
 
 /**
- * アクティベーション時・アップデート時の移行処理
+ * 移行が必要なページを検索
  */
-function vk_dynamic_if_block_migrate_old_blocks_on_activation() {
+function vk_dynamic_if_block_find_pages_with_old_blocks() {
 	global $wpdb;
 	
-	error_log( "VK Dynamic If Block: Starting migration function..." );
-	
-	// VK Dynamic If Blockを使用している投稿を取得
 	$posts = $wpdb->get_results("
-		SELECT ID, post_content, post_title 
-		FROM {$wpdb->posts} 
+		SELECT ID, post_title, post_type
+		FROM {$wpdb->posts}
 		WHERE post_content LIKE '%vk-blocks/dynamic-if%'
 		AND post_status IN ('publish', 'draft', 'private')
+		ORDER BY post_type, post_title
 	");
 	
-	error_log( "VK Dynamic If Block: Found " . count( $posts ) . " posts with dynamic-if blocks" );
+	return $posts;
+}
+
+/**
+ * 移行完了フラグを設定
+ */
+function vk_dynamic_if_block_set_migration_completed() {
+	update_option( 'vk_dynamic_if_block_migration_completed', true );
+	update_option( 'vk_dynamic_if_block_version', '1.1.0' );
+}
+
+/**
+ * 管理画面に移行アラートを表示
+ */
+function vk_dynamic_if_block_admin_notice() {
+	// 移行完了フラグをチェック
+	$migration_completed = get_option( 'vk_dynamic_if_block_migration_completed', false );
+	
+	if ( $migration_completed ) {
+		return;
+	}
+	
+	// 移行が必要なページを検索
+	$posts = vk_dynamic_if_block_find_pages_with_old_blocks();
+	
+	if ( empty( $posts ) ) {
+		// 移行対象がない場合は完了フラグを設定
+		vk_dynamic_if_block_set_migration_completed();
+		return;
+	}
+	
+	$post_count = count( $posts );
+	$post_types = array();
+	foreach ( $posts as $post ) {
+		$post_types[ $post->post_type ] = $post->post_type;
+	}
+	
+	?>
+	<div class="notice notice-warning is-dismissible">
+		<h3>VK Dynamic If Block 移行が必要です</h3>
+		<p>
+			<strong><?php echo $post_count; ?>件</strong>のページで古いブロック形式が検出されました。
+			以下のページで一括移行を実行してください。
+		</p>
+		
+		<div style="margin: 15px 0;">
+			<h4>移行対象ページ:</h4>
+			<ul style="margin-left: 20px;">
+				<?php foreach ( $post_types as $post_type ): ?>
+					<li><strong><?php echo get_post_type_object( $post_type )->labels->name; ?></strong></li>
+				<?php endforeach; ?>
+			</ul>
+		</div>
+		
+		<p>
+			<a href="<?php echo admin_url( 'edit.php?post_type=page&vk_migration=show_posts' ); ?>" class="button button-primary">
+				移行対象ページを表示
+			</a>
+			<button type="button" class="button" onclick="vk_dynamic_if_block_dismiss_migration()">
+				移行完了としてマーク
+			</button>
+		</p>
+	</div>
+	
+	<script>
+	function vk_dynamic_if_block_dismiss_migration() {
+		if ( confirm( '移行を完了としてマークしますか？\n\n注意: 実際にページを保存していない場合、古いブロック形式のままになります。' ) ) {
+			// AJAXで移行完了フラグを設定
+			fetch( '<?php echo admin_url( 'admin-ajax.php' ); ?>', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded',
+				},
+				body: 'action=vk_dynamic_if_block_complete_migration'
+			}).then( function() {
+				location.reload();
+			});
+		}
+	}
+	</script>
+	<?php
+}
+add_action( 'admin_notices', 'vk_dynamic_if_block_admin_notice' );
+
+/**
+ * AJAX: 移行完了フラグを設定
+ */
+function vk_dynamic_if_block_ajax_complete_migration() {
+	check_ajax_referer( 'vk_dynamic_if_block_migration', 'nonce' );
+	
+	vk_dynamic_if_block_set_migration_completed();
+	
+	wp_die( 'Migration completed' );
+}
+add_action( 'wp_ajax_vk_dynamic_if_block_complete_migration', 'vk_dynamic_if_block_ajax_complete_migration' );
+
+/**
+ * 一括操作に移行オプションを追加
+ */
+function vk_dynamic_if_block_add_bulk_action( $bulk_actions ) {
+	$bulk_actions['vk_migrate_blocks'] = 'VK Dynamic If Block 移行';
+	return $bulk_actions;
+}
+add_filter( 'bulk_actions-edit-page', 'vk_dynamic_if_block_add_bulk_action' );
+add_filter( 'bulk_actions-edit-post', 'vk_dynamic_if_block_add_bulk_action' );
+
+/**
+ * 一括操作の処理
+ */
+function vk_dynamic_if_block_handle_bulk_action( $redirect_to, $doaction, $post_ids ) {
+	if ( $doaction !== 'vk_migrate_blocks' ) {
+		return $redirect_to;
+	}
 	
 	$migrated_count = 0;
+	$failed_count = 0;
 	
-	foreach ( $posts as $post ) {
-		$original_content = $post->post_content;
-		$updated_content = $original_content;
+	foreach ( $post_ids as $post_id ) {
+		$post = get_post( $post_id );
+		if ( ! $post ) {
+			$failed_count++;
+			continue;
+		}
 		
-		// ブロックの正規表現パターン - より柔軟なパターンに変更
-		$pattern = '/<!-- wp:vk-blocks\/dynamic-if\s+(\{[^}]*\})\s+-->/';
+		// ブロックが含まれているかチェック
+		if ( strpos( $post->post_content, 'vk-blocks/dynamic-if' ) === false ) {
+			continue;
+		}
 		
-		if ( preg_match_all( $pattern, $original_content, $matches, PREG_OFFSET_CAPTURE ) ) {
-			error_log( "VK Dynamic If Block: Found " . count( $matches[0] ) . " blocks in post ID: " . $post->ID . " - " . $post->post_title );
+		// 移行処理を実行
+		$updated_content = vk_dynamic_if_block_migrate_content( $post->post_content );
+		
+		if ( $updated_content !== $post->post_content ) {
+			$result = wp_update_post( array(
+				'ID' => $post_id,
+				'post_content' => $updated_content
+			) );
 			
-			// 後ろから処理（オフセットが変わらないように）
-			for ( $i = count( $matches[0] ) - 1; $i >= 0; $i-- ) {
-				$full_match_data = $matches[0][ $i ];
-				$attributes_json_data = $matches[1][ $i ];
-				
-				// PREG_OFFSET_CAPTUREフラグにより、配列の要素を取得
-				if ( is_array( $full_match_data ) ) {
-					$full_match = $full_match_data[0];
-					$full_match_offset = $full_match_data[1];
-				} else {
-					$full_match = $full_match_data;
-					$full_match_offset = 0;
-				}
-				
-				if ( is_array( $attributes_json_data ) ) {
-					$attributes_json = $attributes_json_data[0];
-				} else {
-					$attributes_json = $attributes_json_data;
-				}
-				
-				// 文字列であることを確認
-				if ( ! is_string( $attributes_json ) ) {
-					error_log( "VK Dynamic If Block: Skipping block - attributes_json is not string: " . var_export( $attributes_json, true ) );
-					continue;
-				}
-				
-				error_log( "VK Dynamic If Block: Processing attributes JSON: " . $attributes_json );
-				
-				$attributes = json_decode( $attributes_json, true );
-				
-				if ( $attributes ) {
-					error_log( "VK Dynamic If Block: Successfully decoded attributes: " . json_encode( $attributes ) );
-					
-					// 古い属性が存在するかチェック
-					$old_attributes = [
-						'customFieldName',
-						'ifPageType',
-						'ifPostType',
-						'ifLanguage',
-						'userRole',
-						'postAuthor',
-						'periodDisplaySetting',
-						'showOnlyLoginUser'
-					];
-					
-					$has_old_attributes = false;
-					$found_old_attributes = [];
-					foreach ( $old_attributes as $attr ) {
-						if ( isset( $attributes[ $attr ] ) && ! empty( $attributes[ $attr ] ) && $attributes[ $attr ] !== 'none' ) {
-							$has_old_attributes = true;
-							$found_old_attributes[] = $attr;
-							error_log( "VK Dynamic If Block: Found old attribute: {$attr} = " . $attributes[ $attr ] );
-						}
-					}
-					
-					if ( $has_old_attributes ) {
-						error_log( "VK Dynamic If Block: Migrating block in post ID: " . $post->ID . " with old attributes: " . implode( ', ', $found_old_attributes ) );
-						
-						// 移行処理を実行
-						$migrated_conditions = vk_dynamic_if_block_migrate_old_attributes( $attributes );
-						$attributes['conditions'] = $migrated_conditions;
-						
-						// 古い属性を削除
-						foreach ( $old_attributes as $attr ) {
-							unset( $attributes[ $attr ] );
-						}
-						
-						// 新しい属性でJSONを生成
-						$new_attributes_json = json_encode( $attributes );
-						error_log( "VK Dynamic If Block: New attributes JSON: " . $new_attributes_json );
-						
-						// 投稿の内容を更新
-						$updated_content = substr_replace(
-							$updated_content,
-							'<!-- wp:vk-blocks/dynamic-if ' . $new_attributes_json . ' -->',
-							$full_match_offset,
-							strlen( $full_match )
-						);
-						
-						$migrated_count++;
-						error_log( "VK Dynamic If Block: Successfully migrated block in post ID: " . $post->ID );
-					} else {
-						error_log( "VK Dynamic If Block: No old attributes found in block" );
-					}
-				} else {
-					error_log( "VK Dynamic If Block: Failed to decode attributes JSON: " . json_last_error_msg() );
-				}
-			}
-			
-			// 内容が変更された場合のみ更新
-			if ( $updated_content !== $original_content ) {
-				$result = wp_update_post( array(
-					'ID' => $post->ID,
-					'post_content' => $updated_content
-				) );
-				
-				if ( is_wp_error( $result ) ) {
-					error_log( "VK Dynamic If Block: Failed to update post ID: " . $post->ID . " - " . $result->get_error_message() );
-				} else {
-					error_log( "VK Dynamic If Block: Successfully updated post ID: " . $post->ID );
-				}
+			if ( is_wp_error( $result ) ) {
+				$failed_count++;
 			} else {
-				error_log( "VK Dynamic If Block: No changes made to post ID: " . $post->ID );
+				$migrated_count++;
 			}
-		} else {
-			error_log( "VK Dynamic If Block: No blocks found in post ID: " . $post->ID );
 		}
 	}
 	
-	// 移行完了をログに記録
-	if ( $migrated_count > 0 ) {
-		error_log( "VK Dynamic If Block: {$migrated_count} blocks migrated successfully." );
-	} else {
-		error_log( "VK Dynamic If Block: No blocks were migrated." );
+	// リダイレクトURLに結果を追加
+	$redirect_to = add_query_arg( array(
+		'vk_migrated' => $migrated_count,
+		'vk_failed' => $failed_count
+	), $redirect_to );
+	
+	return $redirect_to;
+}
+add_filter( 'handle_bulk_actions-edit-page', 'vk_dynamic_if_block_handle_bulk_action', 10, 3 );
+add_filter( 'handle_bulk_actions-edit-post', 'vk_dynamic_if_block_handle_bulk_action', 10, 3 );
+
+/**
+ * 一括操作の結果を表示
+ */
+function vk_dynamic_if_block_bulk_action_admin_notice() {
+	if ( ! isset( $_REQUEST['vk_migrated'] ) && ! isset( $_REQUEST['vk_failed'] ) ) {
+		return;
 	}
 	
-	// 移行完了フラグを設定（移行対象がなくても完了とする）
-	update_option( 'vk_dynamic_if_block_migration_completed', true );
+	$migrated = intval( $_REQUEST['vk_migrated'] ?? 0 );
+	$failed = intval( $_REQUEST['vk_failed'] ?? 0 );
+	
+	$message = '';
+	if ( $migrated > 0 ) {
+		$message .= "{$migrated}件のページを移行しました。";
+	}
+	if ( $failed > 0 ) {
+		$message .= "{$failed}件の移行に失敗しました。";
+	}
+	
+	if ( $message ) {
+		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $message ) . '</p></div>';
+	}
+}
+add_action( 'admin_notices', 'vk_dynamic_if_block_bulk_action_admin_notice' );
+
+/**
+ * コンテンツを移行
+ */
+function vk_dynamic_if_block_migrate_content( $content ) {
+	// ブロックの正規表現パターン
+	$pattern = '/<!-- wp:vk-blocks\/dynamic-if\s+(\{[^}]*\})\s+-->/';
+	
+	if ( ! preg_match_all( $pattern, $content, $matches, PREG_OFFSET_CAPTURE ) ) {
+		return $content;
+	}
+	
+	$updated_content = $content;
+	
+	// 後ろから処理（オフセットが変わらないように）
+	for ( $i = count( $matches[0] ) - 1; $i >= 0; $i-- ) {
+		$full_match_data = $matches[0][ $i ];
+		$attributes_json_data = $matches[1][ $i ];
+		
+		// PREG_OFFSET_CAPTUREフラグにより、配列の要素を取得
+		if ( is_array( $full_match_data ) ) {
+			$full_match = $full_match_data[0];
+			$full_match_offset = $full_match_data[1];
+		} else {
+			$full_match = $full_match_data;
+			$full_match_offset = 0;
+		}
+		
+		if ( is_array( $attributes_json_data ) ) {
+			$attributes_json = $attributes_json_data[0];
+		} else {
+			$attributes_json = $attributes_json_data;
+		}
+		
+		// 文字列であることを確認
+		if ( ! is_string( $attributes_json ) ) {
+			continue;
+		}
+		
+		$attributes = json_decode( $attributes_json, true );
+		
+		if ( $attributes ) {
+			// 古い属性が存在するかチェック
+			$old_attributes = [
+				'customFieldName',
+				'ifPageType',
+				'ifPostType',
+				'ifLanguage',
+				'userRole',
+				'postAuthor',
+				'periodDisplaySetting',
+				'showOnlyLoginUser'
+			];
+			
+			$has_old_attributes = false;
+			foreach ( $old_attributes as $attr ) {
+				if ( isset( $attributes[ $attr ] ) && ! empty( $attributes[ $attr ] ) && $attributes[ $attr ] !== 'none' ) {
+					$has_old_attributes = true;
+					break;
+				}
+			}
+			
+			if ( $has_old_attributes ) {
+				// 移行処理を実行
+				$migrated_conditions = vk_dynamic_if_block_migrate_old_attributes( $attributes );
+				$attributes['conditions'] = $migrated_conditions;
+				
+				// 古い属性を削除
+				foreach ( $old_attributes as $attr ) {
+					unset( $attributes[ $attr ] );
+				}
+				
+				// 新しい属性でJSONを生成
+				$new_attributes_json = json_encode( $attributes );
+				
+				// 投稿の内容を更新
+				$updated_content = substr_replace(
+					$updated_content,
+					'<!-- wp:vk-blocks/dynamic-if ' . $new_attributes_json . ' -->',
+					$full_match_offset,
+					strlen( $full_match )
+				);
+			}
+		}
+	}
+	
+	return $updated_content;
 }
 
 /**
@@ -284,4 +418,61 @@ function vk_dynamic_if_block_migrate_old_attributes( $attributes ) {
 	}
 
 	return $conditions;
-} 
+}
+
+/**
+ * 移行対象ページ一覧を表示
+ */
+function vk_dynamic_if_block_show_migration_posts() {
+	if ( ! isset( $_GET['vk_migration'] ) || $_GET['vk_migration'] !== 'show_posts' ) {
+		return;
+	}
+	
+	$posts = vk_dynamic_if_block_find_pages_with_old_blocks();
+	
+	if ( empty( $posts ) ) {
+		echo '<div class="notice notice-success"><p>移行対象のページはありません。</p></div>';
+		return;
+	}
+	
+	?>
+	<div class="wrap">
+		<h1>VK Dynamic If Block 移行対象ページ</h1>
+		<p>以下のページで一括移行を実行してください。</p>
+		
+		<table class="wp-list-table widefat fixed striped">
+			<thead>
+				<tr>
+					<th>タイトル</th>
+					<th>投稿タイプ</th>
+					<th>ステータス</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php foreach ( $posts as $post ): ?>
+					<tr>
+						<td>
+							<strong>
+								<a href="<?php echo get_edit_post_link( $post->ID ); ?>" target="_blank">
+									<?php echo esc_html( $post->post_title ); ?>
+								</a>
+							</strong>
+						</td>
+						<td><?php echo get_post_type_object( $post->post_type )->labels->singular_name; ?></td>
+						<td><?php echo get_post_status_object( get_post_status( $post->ID ) )->label; ?></td>
+						<td>
+							<a href="<?php echo get_edit_post_link( $post->ID ); ?>" class="button button-small" target="_blank">
+								編集
+							</a>
+						</td>
+					</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
+	</div>
+	<?php
+}
+add_action( 'admin_notices', 'vk_dynamic_if_block_show_migration_posts' );
+
+ 
