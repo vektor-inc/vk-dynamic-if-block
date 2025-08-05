@@ -1,13 +1,6 @@
 <?php
 /**
- * Plugin Name: VK Dynamic If Block
- * Plugin URI: https://github.com/vektor-inc/vk-dynamic-if-block
- * Description: A dynamic block displays its Inner Blocks based on specified conditions, such as whether the current page is the front page or a single post, the post type, or the value of a Custom Field.
- * Author: Vektor,Inc.
- * Author URI: https://vektor-inc.co.jp/en/
- * Version: 1.1.0
- * License: GPL-2.0-or-later
- * Text Domain: vk-dynamic-if-block
+ * VK Dynamic If Block Migration System
  *
  * @package VK Dynamic If Block
  */
@@ -15,42 +8,29 @@
 defined('ABSPATH') || exit;
 
 /**
- * Composer Autoload
+ * 移行が必要なページを検索
  */
-$autoload_path = plugin_dir_path(__FILE__) . 'vendor/autoload.php';
-// Deploy failure countermeasure for Vendor directory.
-if (file_exists($autoload_path) ) {
-    include_once $autoload_path;
+function vk_dynamic_if_block_find_pages_with_old_blocks() {
+	global $wpdb;
+	
+	$posts = $wpdb->get_results("
+		SELECT ID, post_title, post_type
+		FROM {$wpdb->posts} 
+		WHERE post_content LIKE '%vk-blocks/dynamic-if%'
+		AND post_status IN ('publish', 'draft', 'private')
+		ORDER BY post_type, post_title
+	");
+	
+	return $posts;
 }
 
 /**
- * プラグインアップデート時の処理（移行フラグのリセットのみ）
+ * 移行完了フラグを設定
  */
-function vk_dynamic_if_block_check_version() {
-	$current_version = get_option( 'vk_dynamic_if_block_version', '' );
-	$plugin_version = '1.1.0';
-	
-	// 新規インストール判定（バージョン情報が存在しない場合）
-	$is_new_installation = empty( $current_version );
-	
-	if ( $is_new_installation ) {
-		// 新規インストール時はバージョン情報のみ保存
-		update_option( 'vk_dynamic_if_block_version', $plugin_version );
-		update_option( 'vk_dynamic_if_block_migration_completed', true );
-		error_log( "VK Dynamic If Block: New installation - version set to {$plugin_version}" );
-		return;
-	}
-	
-	// アップデート時は移行フラグをリセット（管理画面で手動移行）
-	if ( version_compare( $current_version, $plugin_version, '<' ) ) {
-		delete_option( 'vk_dynamic_if_block_migration_completed' );
-		error_log( "VK Dynamic If Block: Update detected - migration flag reset" );
-	}
+function vk_dynamic_if_block_set_migration_completed() {
+	update_option( 'vk_dynamic_if_block_migration_completed', true );
+	update_option( 'vk_dynamic_if_block_version', '1.1.0' );
 }
-add_action( 'plugins_loaded', 'vk_dynamic_if_block_check_version' );
-
-// 移行システムを読み込み
-require_once plugin_dir_path(__FILE__) . 'inc/migration.php';
 
 /**
  * 管理画面に移行アラートを表示
@@ -136,102 +116,6 @@ function vk_dynamic_if_block_ajax_complete_migration() {
 	wp_die( 'Migration completed' );
 }
 add_action( 'wp_ajax_vk_dynamic_if_block_complete_migration', 'vk_dynamic_if_block_ajax_complete_migration' );
-
-
-
-
-
-/**
- * コンテンツを移行
- */
-function vk_dynamic_if_block_migrate_content( $content ) {
-	// ブロックの正規表現パターン
-		$pattern = '/<!-- wp:vk-blocks\/dynamic-if\s+(\{[^}]*\})\s+-->/';
-		
-	if ( ! preg_match_all( $pattern, $content, $matches, PREG_OFFSET_CAPTURE ) ) {
-		return $content;
-	}
-	
-	$updated_content = $content;
-			
-			// 後ろから処理（オフセットが変わらないように）
-			for ( $i = count( $matches[0] ) - 1; $i >= 0; $i-- ) {
-				$full_match_data = $matches[0][ $i ];
-				$attributes_json_data = $matches[1][ $i ];
-				
-				// PREG_OFFSET_CAPTUREフラグにより、配列の要素を取得
-				if ( is_array( $full_match_data ) ) {
-					$full_match = $full_match_data[0];
-					$full_match_offset = $full_match_data[1];
-				} else {
-					$full_match = $full_match_data;
-					$full_match_offset = 0;
-				}
-				
-				if ( is_array( $attributes_json_data ) ) {
-					$attributes_json = $attributes_json_data[0];
-				} else {
-					$attributes_json = $attributes_json_data;
-				}
-				
-				// 文字列であることを確認
-				if ( ! is_string( $attributes_json ) ) {
-					continue;
-				}
-				
-				$attributes = json_decode( $attributes_json, true );
-				
-				if ( $attributes ) {
-					// 古い属性が存在するかチェック
-					$old_attributes = [
-						'customFieldName',
-						'ifPageType',
-						'ifPostType',
-						'ifLanguage',
-						'userRole',
-						'postAuthor',
-						'periodDisplaySetting',
-						'showOnlyLoginUser'
-					];
-					
-					$has_old_attributes = false;
-					foreach ( $old_attributes as $attr ) {
-						if ( isset( $attributes[ $attr ] ) && ! empty( $attributes[ $attr ] ) && $attributes[ $attr ] !== 'none' ) {
-							$has_old_attributes = true;
-					break;
-						}
-					}
-					
-					if ( $has_old_attributes ) {
-						// 移行処理を実行
-						$migrated_conditions = vk_dynamic_if_block_migrate_old_attributes( $attributes );
-						$attributes['conditions'] = $migrated_conditions;
-						
-						// 古い属性を削除
-						foreach ( $old_attributes as $attr ) {
-							unset( $attributes[ $attr ] );
-						}
-						
-						// 新しい属性でJSONを生成
-						$new_attributes_json = json_encode( $attributes );
-						
-						// 投稿の内容を更新
-						$updated_content = substr_replace(
-							$updated_content,
-							'<!-- wp:vk-blocks/dynamic-if ' . $new_attributes_json . ' -->',
-							$full_match_offset,
-							strlen( $full_match )
-						);
-			}
-		}
-	}
-	
-	return $updated_content;
-}
-
-
-
-
 
 /**
  * 管理メニューに移行ページを追加
@@ -463,75 +347,4 @@ function vk_dynamic_if_block_show_migration_result() {
 		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $message ) . '</p></div>';
 	}
 }
-add_action( 'admin_notices', 'vk_dynamic_if_block_show_migration_result' );
-
-function vk_dynamic_if_block_enqueue_scripts()
-{
-
-    $script_dependencies = include plugin_dir_path(__FILE__) . '/build/index.asset.php';
-
-    // WordPress 6.5 以下の対策
-    if (! wp_script_is('react-jsx-runtime', 'registered') ) {
-        wp_enqueue_script(
-            'react-jsx-runtime',
-            plugins_url('build/react-jsx-runtime.js', __FILE__),
-            array( 'react' ),
-            '18.3.1',
-            true
-        );
-    }
-
-    $handle = 'vk-dynamic-if-block';
-    wp_enqueue_script(
-        $handle,
-        plugins_url('build/index.js', __FILE__),
-        $script_dependencies['dependencies'],
-        filemtime(plugin_dir_path(__FILE__) . 'build/index.js')
-    );
-
-    wp_enqueue_style(
-        'vk-dynamic-if-block-editor',
-        plugins_url('build/editor.css', __FILE__),
-        array(),
-        filemtime(plugin_dir_path(__FILE__) . 'build/editor.css')
-    );
-}
-
-add_action('enqueue_block_editor_assets', 'vk_dynamic_if_block_enqueue_scripts');
-
-require_once plugin_dir_path(__FILE__) . 'build/index.php';
-
-if (! function_exists('vk_dynamic_if_block_set_script_translations') ) {
-    /**
-     * Set text domain for translations.
-     */
-    function vk_dynamic_if_block_set_script_translations()
-    {
-        if (function_exists('wp_set_script_translations') ) {
-            wp_set_script_translations('vk-dynamic-if-block', 'vk-dynamic-if-block');
-        }
-    }
-    add_action('enqueue_block_editor_assets', 'vk_dynamic_if_block_set_script_translations');
-}
-
-if (! function_exists('vk_blocks_set_wp_version') ) {
-    /**
-     * VK Blocks Set WP Version
-     */
-    function vk_blocks_set_wp_version()
-    {
-        global $wp_version;
-
-        // RC版の場合ハイフンを削除.
-        if (strpos($wp_version, '-') !== false ) {
-            $_wp_version = strstr($wp_version, '-', true);
-        } else {
-            $_wp_version = $wp_version;
-        }
-
-        echo '<script>',
-        'var wpVersion = "' . esc_attr($_wp_version) . '";',
-        '</script>';
-    }
-    add_action('admin_head', 'vk_blocks_set_wp_version');
-}
+add_action( 'admin_notices', 'vk_dynamic_if_block_show_migration_result' ); 
