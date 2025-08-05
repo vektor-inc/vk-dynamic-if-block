@@ -295,12 +295,12 @@ function vk_dynamic_if_block_handle_migration_bulk_action() {
 		// 移行処理を実行してから保存
 		$updated_content = vk_dynamic_if_block_migrate_content( $post->post_content );
 		
-		$result = wp_update_post( array(
+				$result = wp_update_post( array(
 			'ID' => $post_id,
-			'post_content' => $updated_content
-		) );
-		
-		if ( is_wp_error( $result ) ) {
+					'post_content' => $updated_content
+				) );
+				
+				if ( is_wp_error( $result ) ) {
 			$failed_count++;
 		} else {
 			$migrated_count++;
