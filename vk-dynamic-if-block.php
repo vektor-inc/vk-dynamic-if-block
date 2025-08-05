@@ -78,9 +78,10 @@ function vk_dynamic_if_block_set_migration_completed() {
  * 管理画面に移行アラートを表示
  */
 function vk_dynamic_if_block_admin_notice() {
-	delete_option( 'vk_dynamic_if_block_migration_completed' );
-	delete_option( 'vk_dynamic_if_block_version' );
-	error_log( "VK Dynamic If Block: Debug mode - reset migration flags" );
+	// 移行完了フラグを設定（移行が完了したため）
+	update_option( 'vk_dynamic_if_block_migration_completed', true );
+	update_option( 'vk_dynamic_if_block_version', '1.1.0' );
+	error_log( "VK Dynamic If Block: Migration completed - flags set" );
 	
 	// 移行完了フラグをチェック
 	$migration_completed = get_option( 'vk_dynamic_if_block_migration_completed', false );
