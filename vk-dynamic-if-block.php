@@ -419,6 +419,11 @@ function vk_dynamic_if_block_handle_migration_bulk_action() {
 		}
 	}
 	
+	// 移行が成功した場合は自動で移行完了フラグを設定
+	if ( $migrated_count > 0 ) {
+		vk_dynamic_if_block_set_migration_completed();
+	}
+	
 	// 結果をセッションに保存
 	$_SESSION['vk_migration_result'] = array(
 		'migrated' => $migrated_count,
