@@ -33,7 +33,7 @@ function vk_dynamic_if_block_set_migration_completed() {
 }
 
 /**
- * プラグインアップデート時の処理（移行フラグのリセットのみ）
+ * プラグインアップデート時の処理
  */
 function vk_dynamic_if_block_check_version() {
 	$current_version = get_option( 'vk_dynamic_if_block_version', '' );
@@ -174,14 +174,13 @@ function vk_dynamic_if_block_admin_notice() {
 	
 	?>
 	<div class="notice notice-warning is-dismissible">
-		<h3>VK Dynamic If Block 移行が必要です</h3>
+		<h3><?php _e( 'VK Dynamic If Block Migration Required', 'vk-dynamic-if-block' ); ?></h3>
 		<p>
-			<strong><?php echo $post_count; ?>件</strong>のページで古いブロック形式が検出されました。
-			以下のページで一括移行を実行してください。
+			<?php printf( __( '<strong>%d pages</strong> with old block format detected. Please perform bulk migration on the following pages.', 'vk-dynamic-if-block' ), $post_count ); ?>
 		</p>
 		
 		<div style="margin: 15px 0;">
-			<h4>移行対象ページ:</h4>
+			<h4><?php _e( 'Migration Target Pages:', 'vk-dynamic-if-block' ); ?></h4>
 			<ul style="margin-left: 20px;">
 				<?php foreach ( $post_types as $post_type ): ?>
 					<li><strong><?php echo get_post_type_object( $post_type )->labels->name; ?></strong></li>
@@ -191,17 +190,17 @@ function vk_dynamic_if_block_admin_notice() {
 		
 		<p>
 			<a href="<?php echo admin_url( 'tools.php?page=vk-dynamic-if-block-migration' ); ?>" class="button button-primary">
-				移行対象ページを表示
+				<?php _e( 'Show Migration Target Pages', 'vk-dynamic-if-block' ); ?>
 			</a>
 			<button type="button" class="button" onclick="vk_dynamic_if_block_dismiss_migration()">
-				移行完了としてマーク
+				<?php _e( 'Mark Migration as Complete', 'vk-dynamic-if-block' ); ?>
 			</button>
 		</p>
 	</div>
 	
 	<script>
 	function vk_dynamic_if_block_dismiss_migration() {
-		if ( confirm( '移行を完了としてマークしますか？\n\n注意: 実際にページを保存していない場合、古いブロック形式のままになります。' ) ) {
+		if ( confirm( '<?php echo esc_js( __( 'Mark migration as complete?\n\nNote: If you haven\'t actually saved the pages, they will remain in the old block format.', 'vk-dynamic-if-block' ) ); ?>' ) ) {
 			// AJAXで移行完了フラグを設定
 			fetch( '<?php echo admin_url( 'admin-ajax.php' ); ?>', {
 				method: 'POST',
@@ -251,8 +250,8 @@ function vk_dynamic_if_block_add_admin_menu() {
 	
 	add_submenu_page(
 		'tools.php', // 親メニュー（ツール）
-		'VK Dynamic If Block 移行', // ページタイトル
-		'VK Dynamic If Block 移行', // メニュータイトル
+		__( 'VK Dynamic If Block Migration', 'vk-dynamic-if-block' ), // ページタイトル
+		__( 'VK Dynamic If Block Migration', 'vk-dynamic-if-block' ), // メニュータイトル
 		'manage_options', // 必要な権限
 		'vk-dynamic-if-block-migration', // メニュースラッグ
 		'vk_dynamic_if_block_migration_page' // コールバック関数
@@ -268,20 +267,20 @@ function vk_dynamic_if_block_migration_page() {
 	$migration_completed = get_option( 'vk_dynamic_if_block_migration_completed', false );
 	
 	if ( $migration_completed ) {
-		wp_die( '移行は既に完了しています。' );
+		wp_die( __( 'Migration is already completed.', 'vk-dynamic-if-block' ) );
 	}
 	
 	$posts = vk_dynamic_if_block_find_pages_with_old_blocks();
 	
 	if ( empty( $posts ) ) {
-		echo '<div class="wrap"><h1>VK Dynamic If Block 移行</h1><div class="notice notice-success"><p>移行対象のページはありません。</p></div></div>';
+		echo '<div class="wrap"><h1>' . __( 'VK Dynamic If Block Migration', 'vk-dynamic-if-block' ) . '</h1><div class="notice notice-success"><p>' . __( 'No pages require migration.', 'vk-dynamic-if-block' ) . '</p></div></div>';
 		return;
 	}
 	
 	?>
 	<div class="wrap">
-		<h1>VK Dynamic If Block 移行</h1>
-		<p>以下のページで一括移行を実行してください。</p>
+		<h1><?php _e( 'VK Dynamic If Block Migration', 'vk-dynamic-if-block' ); ?></h1>
+		<p><?php _e( 'Please perform bulk migration on the following pages.', 'vk-dynamic-if-block' ); ?></p>
 		
 		<form method="post" action="">
 			<?php wp_nonce_field( 'vk_migration_bulk_action', 'vk_migration_nonce' ); ?>
@@ -289,13 +288,13 @@ function vk_dynamic_if_block_migration_page() {
 			<div class="tablenav top">
 				<div class="alignleft actions bulkactions">
 					<select name="vk_bulk_action">
-						<option value="-1">一括操作</option>
-						<option value="vk_migrate_blocks">VK Dynamic If Block 移行</option>
+						<option value="-1"><?php _e( 'Bulk Actions', 'vk-dynamic-if-block' ); ?></option>
+						<option value="vk_migrate_blocks"><?php _e( 'VK Dynamic If Block Migration', 'vk-dynamic-if-block' ); ?></option>
 					</select>
-					<input type="submit" class="button action" value="適用">
+					<input type="submit" class="button action" value="<?php _e( 'Apply', 'vk-dynamic-if-block' ); ?>">
 				</div>
 				<div class="alignright">
-					<span class="displaying-num"><?php echo count( $posts ); ?>個の項目</span>
+					<span class="displaying-num"><?php printf( __( '%d items', 'vk-dynamic-if-block' ), count( $posts ) ); ?></span>
 				</div>
 				<br class="clear">
 			</div>
@@ -306,10 +305,10 @@ function vk_dynamic_if_block_migration_page() {
 						<th class="check-column">
 							<input type="checkbox" id="cb-select-all-1">
 						</th>
-						<th>タイトル</th>
-						<th>投稿タイプ</th>
-						<th>ステータス</th>
-						<th>操作</th>
+						<th><?php _e( 'Title', 'vk-dynamic-if-block' ); ?></th>
+						<th><?php _e( 'Post Type', 'vk-dynamic-if-block' ); ?></th>
+						<th><?php _e( 'Status', 'vk-dynamic-if-block' ); ?></th>
+						<th><?php _e( 'Actions', 'vk-dynamic-if-block' ); ?></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -329,7 +328,7 @@ function vk_dynamic_if_block_migration_page() {
 							<td><?php echo get_post_status_object( get_post_status( $post->ID ) )->label; ?></td>
 							<td>
 								<a href="<?php echo get_edit_post_link( $post->ID ); ?>" class="button button-small" target="_blank">
-									編集
+									<?php _e( 'Edit', 'vk-dynamic-if-block' ); ?>
 								</a>
 							</td>
 						</tr>
@@ -340,13 +339,13 @@ function vk_dynamic_if_block_migration_page() {
 			<div class="tablenav bottom">
 				<div class="alignleft actions bulkactions">
 					<select name="vk_bulk_action2">
-						<option value="-1">一括操作</option>
-						<option value="vk_migrate_blocks">VK Dynamic If Block 移行</option>
+						<option value="-1"><?php _e( 'Bulk Actions', 'vk-dynamic-if-block' ); ?></option>
+						<option value="vk_migrate_blocks"><?php _e( 'VK Dynamic If Block Migration', 'vk-dynamic-if-block' ); ?></option>
 					</select>
-					<input type="submit" class="button action" value="適用">
+					<input type="submit" class="button action" value="<?php _e( 'Apply', 'vk-dynamic-if-block' ); ?>">
 				</div>
 				<div class="alignright">
-					<span class="displaying-num"><?php echo count( $posts ); ?>個の項目</span>
+					<span class="displaying-num"><?php printf( __( '%d items', 'vk-dynamic-if-block' ), count( $posts ) ); ?></span>
 				</div>
 				<br class="clear">
 			</div>
@@ -388,7 +387,7 @@ function vk_dynamic_if_block_handle_migration_bulk_action() {
 	$post_ids = $_POST['post_ids'] ?? array();
 	
 	if ( empty( $post_ids ) ) {
-		wp_die( '移行対象を選択してください。' );
+		wp_die( __( 'Please select migration targets.', 'vk-dynamic-if-block' ) );
 	}
 	
 	$migrated_count = 0;
@@ -451,10 +450,10 @@ function vk_dynamic_if_block_show_migration_result() {
 	
 	$message = '';
 	if ( $result['migrated'] > 0 ) {
-		$message .= "{$result['migrated']}件のページを移行しました。";
+		$message .= sprintf( __( '%d pages migrated.', 'vk-dynamic-if-block' ), $result['migrated'] );
 	}
 	if ( $result['failed'] > 0 ) {
-		$message .= "{$result['failed']}件の移行に失敗しました。";
+		$message .= sprintf( __( '%d migrations failed.', 'vk-dynamic-if-block' ), $result['failed'] );
 	}
 	
 	if ( $message ) {
