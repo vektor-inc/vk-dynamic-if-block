@@ -78,8 +78,13 @@ function vk_dynamic_if_block_set_migration_completed() {
  * 管理画面に移行アラートを表示
  */
 function vk_dynamic_if_block_admin_notice() {
+	// デバッグ: 移行完了フラグを強制的にリセット（テスト用）
+	delete_option( 'vk_dynamic_if_block_migration_completed' );
+	error_log( "VK Dynamic If Block: Migration flag reset for testing" );
+	
 	// 移行完了フラグをチェック
 	$migration_completed = get_option( 'vk_dynamic_if_block_migration_completed', false );
+	error_log( "VK Dynamic If Block: admin_notice - migration_completed = " . ( $migration_completed ? 'true' : 'false' ) );
 	
 	if ( $migration_completed ) {
 		return;
