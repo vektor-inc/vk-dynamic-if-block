@@ -33,6 +33,120 @@ function vk_dynamic_if_block_set_migration_completed() {
 }
 
 /**
+ * プラグインアップデート時の処理（移行フラグのリセットのみ）
+ */
+function vk_dynamic_if_block_check_version() {
+	$current_version = get_option( 'vk_dynamic_if_block_version', '' );
+	$plugin_version = '1.1.0';
+
+	// 新規インストール判定（バージョン情報が存在しない場合）
+	$is_new_installation = empty( $current_version );
+
+	if ( $is_new_installation ) {
+		// 新規インストール時はバージョン情報のみ保存
+		update_option( 'vk_dynamic_if_block_version', $plugin_version );
+		update_option( 'vk_dynamic_if_block_migration_completed', true );
+		error_log( "VK Dynamic If Block: New installation - version set to {$plugin_version}" );
+		return;
+	}
+
+	// アップデート時は移行フラグをリセット（管理画面で手動移行）
+	if ( version_compare( $current_version, $plugin_version, '<' ) ) {
+		delete_option( 'vk_dynamic_if_block_migration_completed' );
+		error_log( "VK Dynamic If Block: Update detected - migration flag reset" );
+	}
+}
+add_action( 'plugins_loaded', 'vk_dynamic_if_block_check_version' );
+
+/**
+ * コンテンツを移行
+ */
+function vk_dynamic_if_block_migrate_content( $content ) {
+	// ブロックの正規表現パターン
+	$pattern = '/<!-- wp:vk-blocks\/dynamic-if\s+(\{[^}]*\})\s+-->/';
+	
+	if ( ! preg_match_all( $pattern, $content, $matches, PREG_OFFSET_CAPTURE ) ) {
+		return $content;
+	}
+	
+	$updated_content = $content;
+		
+	// 後ろから処理（オフセットが変わらないように）
+	for ( $i = count( $matches[0] ) - 1; $i >= 0; $i-- ) {
+		$full_match_data = $matches[0][ $i ];
+		$attributes_json_data = $matches[1][ $i ];
+		
+		// PREG_OFFSET_CAPTUREフラグにより、配列の要素を取得
+		if ( is_array( $full_match_data ) ) {
+			$full_match = $full_match_data[0];
+			$full_match_offset = $full_match_data[1];
+		} else {
+			$full_match = $full_match_data;
+			$full_match_offset = 0;
+		}
+		
+		if ( is_array( $attributes_json_data ) ) {
+			$attributes_json = $attributes_json_data[0];
+		} else {
+			$attributes_json = $attributes_json_data;
+		}
+		
+		// 文字列であることを確認
+		if ( ! is_string( $attributes_json ) ) {
+			continue;
+		}
+		
+		$attributes = json_decode( $attributes_json, true );
+		
+		if ( $attributes ) {
+			// 古い属性が存在するかチェック
+			$old_attributes = [
+				'customFieldName',
+				'ifPageType',
+				'ifPostType',
+				'ifLanguage',
+				'userRole',
+				'postAuthor',
+				'periodDisplaySetting',
+				'showOnlyLoginUser'
+			];
+			
+			$has_old_attributes = false;
+			foreach ( $old_attributes as $attr ) {
+				if ( isset( $attributes[ $attr ] ) && ! empty( $attributes[ $attr ] ) && $attributes[ $attr ] !== 'none' ) {
+					$has_old_attributes = true;
+					break;
+				}
+			}
+			
+			if ( $has_old_attributes ) {
+				// 移行処理を実行
+				$migrated_conditions = vk_dynamic_if_block_migrate_old_attributes( $attributes );
+				$attributes['conditions'] = $migrated_conditions;
+				
+				// 古い属性を削除
+				foreach ( $old_attributes as $attr ) {
+					unset( $attributes[ $attr ] );
+				}
+				
+				// 新しい属性でJSONを生成
+				$new_attributes_json = json_encode( $attributes );
+				
+				// 投稿の内容を更新
+				$updated_content = substr_replace(
+					$updated_content,
+					'<!-- wp:vk-blocks/dynamic-if ' . $new_attributes_json . ' -->',
+					$full_match_offset,
+					strlen( $full_match )
+				);
+			}
+		}
+	}
+	
+	return $updated_content;
+}
+
+/**
  * 管理画面に移行アラートを表示
  */
 function vk_dynamic_if_block_admin_notice() {
@@ -295,12 +409,12 @@ function vk_dynamic_if_block_handle_migration_bulk_action() {
 		// 移行処理を実行してから保存
 		$updated_content = vk_dynamic_if_block_migrate_content( $post->post_content );
 		
-				$result = wp_update_post( array(
+		$result = wp_update_post( array(
 			'ID' => $post_id,
-					'post_content' => $updated_content
-				) );
-				
-				if ( is_wp_error( $result ) ) {
+			'post_content' => $updated_content
+		) );
+		
+		if ( is_wp_error( $result ) ) {
 			$failed_count++;
 		} else {
 			$migrated_count++;
