@@ -164,91 +164,9 @@ function vk_dynamic_if_block_ajax_complete_migration() {
 }
 add_action( 'wp_ajax_vk_dynamic_if_block_complete_migration', 'vk_dynamic_if_block_ajax_complete_migration' );
 
-/**
- * 一括操作に移行オプションを追加
- */
-function vk_dynamic_if_block_add_bulk_action( $bulk_actions ) {
-	$bulk_actions['vk_migrate_blocks'] = 'VK Dynamic If Block 移行';
-	return $bulk_actions;
-}
-add_filter( 'bulk_actions-edit-page', 'vk_dynamic_if_block_add_bulk_action' );
-add_filter( 'bulk_actions-edit-post', 'vk_dynamic_if_block_add_bulk_action' );
 
-/**
- * 一括操作の処理
- */
-function vk_dynamic_if_block_handle_bulk_action( $redirect_to, $doaction, $post_ids ) {
-	if ( $doaction !== 'vk_migrate_blocks' ) {
-		return $redirect_to;
-	}
-	
-	$migrated_count = 0;
-	$failed_count = 0;
-	
-	foreach ( $post_ids as $post_id ) {
-		$post = get_post( $post_id );
-		if ( ! $post ) {
-			$failed_count++;
-			continue;
-		}
-		
-		// ブロックが含まれているかチェック
-		if ( strpos( $post->post_content, 'vk-blocks/dynamic-if' ) === false ) {
-			continue;
-		}
-		
-		// 移行処理を実行
-		$updated_content = vk_dynamic_if_block_migrate_content( $post->post_content );
-		
-		if ( $updated_content !== $post->post_content ) {
-			$result = wp_update_post( array(
-				'ID' => $post_id,
-				'post_content' => $updated_content
-			) );
-			
-			if ( is_wp_error( $result ) ) {
-				$failed_count++;
-			} else {
-				$migrated_count++;
-			}
-		}
-	}
-	
-	// リダイレクトURLに結果を追加
-	$redirect_to = add_query_arg( array(
-		'vk_migrated' => $migrated_count,
-		'vk_failed' => $failed_count
-	), $redirect_to );
-	
-	return $redirect_to;
-}
-add_filter( 'handle_bulk_actions-edit-page', 'vk_dynamic_if_block_handle_bulk_action', 10, 3 );
-add_filter( 'handle_bulk_actions-edit-post', 'vk_dynamic_if_block_handle_bulk_action', 10, 3 );
 
-/**
- * 一括操作の結果を表示
- */
-function vk_dynamic_if_block_bulk_action_admin_notice() {
-	if ( ! isset( $_REQUEST['vk_migrated'] ) && ! isset( $_REQUEST['vk_failed'] ) ) {
-		return;
-	}
-	
-	$migrated = intval( $_REQUEST['vk_migrated'] ?? 0 );
-	$failed = intval( $_REQUEST['vk_failed'] ?? 0 );
-	
-	$message = '';
-	if ( $migrated > 0 ) {
-		$message .= "{$migrated}件のページを移行しました。";
-	}
-	if ( $failed > 0 ) {
-		$message .= "{$failed}件の移行に失敗しました。";
-	}
-	
-	if ( $message ) {
-		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $message ) . '</p></div>';
-	}
-}
-add_action( 'admin_notices', 'vk_dynamic_if_block_bulk_action_admin_notice' );
+
 
 /**
  * コンテンツを移行
