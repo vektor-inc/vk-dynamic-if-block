@@ -78,13 +78,8 @@ function vk_dynamic_if_block_set_migration_completed() {
  * 管理画面に移行アラートを表示
  */
 function vk_dynamic_if_block_admin_notice() {
-	// デバッグ: 移行完了フラグを強制的にリセット（テスト用）
-	delete_option( 'vk_dynamic_if_block_migration_completed' );
-	error_log( "VK Dynamic If Block: Migration flag reset for testing" );
-	
 	// 移行完了フラグをチェック
 	$migration_completed = get_option( 'vk_dynamic_if_block_migration_completed', false );
-	error_log( "VK Dynamic If Block: admin_notice - migration_completed = " . ( $migration_completed ? 'true' : 'false' ) );
 	
 	if ( $migration_completed ) {
 		return;
@@ -262,21 +257,14 @@ function vk_dynamic_if_block_migrate_content( $content ) {
  * 移行対象ページ一覧を表示
  */
 function vk_dynamic_if_block_show_migration_posts() {
-	// デバッグ情報を出力
-	error_log( "VK Dynamic If Block: vk_dynamic_if_block_show_migration_posts called" );
-	
 	// 移行完了フラグをチェック
 	$migration_completed = get_option( 'vk_dynamic_if_block_migration_completed', false );
-	error_log( "VK Dynamic If Block: migration_completed = " . ( $migration_completed ? 'true' : 'false' ) );
 	
 	if ( $migration_completed ) {
-		error_log( "VK Dynamic If Block: Migration completed, returning" );
 		return;
 	}
 	
-	error_log( "VK Dynamic If Block: vk_migration = " . ( $_GET['vk_migration'] ?? 'not set' ) );
 	if ( ! isset( $_GET['vk_migration'] ) || $_GET['vk_migration'] !== 'show_posts' ) {
-		error_log( "VK Dynamic If Block: vk_migration not set or not 'show_posts', returning" );
 		return;
 	}
 	
