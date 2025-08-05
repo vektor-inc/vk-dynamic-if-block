@@ -23,31 +23,7 @@ if (file_exists($autoload_path) ) {
     include_once $autoload_path;
 }
 
-/**
- * プラグインアップデート時の処理（移行フラグのリセットのみ）
- */
-function vk_dynamic_if_block_check_version() {
-	$current_version = get_option( 'vk_dynamic_if_block_version', '' );
-	$plugin_version = '1.1.0';
-	
-	// 新規インストール判定（バージョン情報が存在しない場合）
-	$is_new_installation = empty( $current_version );
-	
-	if ( $is_new_installation ) {
-		// 新規インストール時はバージョン情報のみ保存
-		update_option( 'vk_dynamic_if_block_version', $plugin_version );
-		update_option( 'vk_dynamic_if_block_migration_completed', true );
-		error_log( "VK Dynamic If Block: New installation - version set to {$plugin_version}" );
-		return;
-	}
-	
-	// アップデート時は移行フラグをリセット（管理画面で手動移行）
-	if ( version_compare( $current_version, $plugin_version, '<' ) ) {
-		delete_option( 'vk_dynamic_if_block_migration_completed' );
-		error_log( "VK Dynamic If Block: Update detected - migration flag reset" );
-	}
-}
-add_action( 'plugins_loaded', 'vk_dynamic_if_block_check_version' );
+
 
 // 移行システムを読み込み
 require_once plugin_dir_path(__FILE__) . 'inc/migration/config.php';
