@@ -404,10 +404,12 @@ function vk_dynamic_if_block_handle_migration_bulk_action() {
 			continue;
 		}
 		
-		// 空保存を実行（ブロックの再構築が自動で行われる）
+		// 移行処理を実行してから保存
+		$updated_content = vk_dynamic_if_block_migrate_content( $post->post_content );
+		
 		$result = wp_update_post( array(
 			'ID' => $post_id,
-			'post_content' => $post->post_content // 同じ内容で保存
+			'post_content' => $updated_content
 		) );
 		
 		if ( is_wp_error( $result ) ) {
