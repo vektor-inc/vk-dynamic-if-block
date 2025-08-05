@@ -78,6 +78,13 @@ function vk_dynamic_if_block_set_migration_completed() {
  * 管理画面に移行アラートを表示
  */
 function vk_dynamic_if_block_admin_notice() {
+	// デバッグ用: 移行フラグを強制リセット（開発時のみ）
+	if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+		delete_option( 'vk_dynamic_if_block_migration_completed' );
+		delete_option( 'vk_dynamic_if_block_version' );
+		error_log( "VK Dynamic If Block: Debug mode - reset migration flags" );
+	}
+	
 	// 移行完了フラグをチェック
 	$migration_completed = get_option( 'vk_dynamic_if_block_migration_completed', false );
 	
