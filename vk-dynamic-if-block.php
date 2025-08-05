@@ -50,7 +50,7 @@ function vk_dynamic_if_block_check_version() {
 add_action( 'plugins_loaded', 'vk_dynamic_if_block_check_version' );
 
 // 移行システムを読み込み
-require_once plugin_dir_path(__FILE__) . 'inc/migration/migration.php';
+require_once plugin_dir_path(__FILE__) . 'inc/migration/config.php';
 
 /**
  * 管理画面に移行アラートを表示
