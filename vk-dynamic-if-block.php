@@ -283,44 +283,181 @@ function vk_dynamic_if_block_show_migration_posts() {
 	?>
 	<div class="wrap">
 		<h1>VK Dynamic If Block 移行対象ページ</h1>
-		<p>以下のページでエディターを開いて保存してください。</p>
+		<p>以下のページで一括移行を実行してください。</p>
 		
-		<table class="wp-list-table widefat fixed striped">
-			<thead>
-				<tr>
-					<th>タイトル</th>
-					<th>投稿タイプ</th>
-					<th>ステータス</th>
-					<th>操作</th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php foreach ( $posts as $post ): ?>
+		<form method="post" action="">
+			<?php wp_nonce_field( 'vk_migration_bulk_action', 'vk_migration_nonce' ); ?>
+			
+			<div class="tablenav top">
+				<div class="alignleft actions bulkactions">
+					<select name="vk_bulk_action">
+						<option value="-1">一括操作</option>
+						<option value="vk_migrate_blocks">VK Dynamic If Block 移行</option>
+					</select>
+					<input type="submit" class="button action" value="適用">
+				</div>
+				<div class="alignright">
+					<span class="displaying-num"><?php echo count( $posts ); ?>個の項目</span>
+				</div>
+				<br class="clear">
+			</div>
+			
+			<table class="wp-list-table widefat fixed striped">
+				<thead>
 					<tr>
-						<td>
-							<strong>
-								<a href="<?php echo get_edit_post_link( $post->ID ); ?>" target="_blank">
-									<?php echo esc_html( $post->post_title ); ?>
-								</a>
-							</strong>
-						</td>
-						<td><?php echo get_post_type_object( $post->post_type )->labels->singular_name; ?></td>
-						<td><?php echo get_post_status_object( get_post_status( $post->ID ) )->label; ?></td>
-						<td>
-							<a href="<?php echo get_edit_post_link( $post->ID ); ?>" class="button button-small" target="_blank">
-								編集
-							</a>
-						</td>
+						<th class="check-column">
+							<input type="checkbox" id="cb-select-all-1">
+						</th>
+						<th>タイトル</th>
+						<th>投稿タイプ</th>
+						<th>ステータス</th>
+						<th>操作</th>
 					</tr>
-				<?php endforeach; ?>
-			</tbody>
-		</table>
+				</thead>
+				<tbody>
+					<?php foreach ( $posts as $post ): ?>
+						<tr>
+							<th scope="row" class="check-column">
+								<input type="checkbox" name="post_ids[]" value="<?php echo $post->ID; ?>">
+							</th>
+							<td>
+								<strong>
+									<a href="<?php echo get_edit_post_link( $post->ID ); ?>" target="_blank">
+										<?php echo esc_html( $post->post_title ); ?>
+									</a>
+								</strong>
+							</td>
+							<td><?php echo get_post_type_object( $post->post_type )->labels->singular_name; ?></td>
+							<td><?php echo get_post_status_object( get_post_status( $post->ID ) )->label; ?></td>
+							<td>
+								<a href="<?php echo get_edit_post_link( $post->ID ); ?>" class="button button-small" target="_blank">
+									編集
+								</a>
+							</td>
+						</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
+			
+			<div class="tablenav bottom">
+				<div class="alignleft actions bulkactions">
+					<select name="vk_bulk_action2">
+						<option value="-1">一括操作</option>
+						<option value="vk_migrate_blocks">VK Dynamic If Block 移行</option>
+					</select>
+					<input type="submit" class="button action" value="適用">
+				</div>
+				<div class="alignright">
+					<span class="displaying-num"><?php echo count( $posts ); ?>個の項目</span>
+				</div>
+				<br class="clear">
+			</div>
+		</form>
 	</div>
+	
+	<script>
+	jQuery(document).ready(function($) {
+		// 全選択チェックボックスの処理
+		$('#cb-select-all-1').on('change', function() {
+			$('input[name="post_ids[]"]').prop('checked', this.checked);
+		});
+		
+		// 個別チェックボックスの処理
+		$('input[name="post_ids[]"]').on('change', function() {
+			var total = $('input[name="post_ids[]"]').length;
+			var checked = $('input[name="post_ids[]"]:checked').length;
+			$('#cb-select-all-1').prop('checked', total === checked);
+		});
+	});
+	</script>
 	<?php
 }
 add_action( 'admin_notices', 'vk_dynamic_if_block_show_migration_posts' );
 
+/**
+ * 移行対象ページ一覧での一括操作を処理
+ */
+function vk_dynamic_if_block_handle_migration_bulk_action() {
+	if ( ! isset( $_POST['vk_migration_nonce'] ) || ! wp_verify_nonce( $_POST['vk_migration_nonce'], 'vk_migration_bulk_action' ) ) {
+		return;
+	}
+	
+	$bulk_action = $_POST['vk_bulk_action'] ?? $_POST['vk_bulk_action2'] ?? '';
+	
+	if ( $bulk_action !== 'vk_migrate_blocks' ) {
+		return;
+	}
+	
+	$post_ids = $_POST['post_ids'] ?? array();
+	
+	if ( empty( $post_ids ) ) {
+		wp_die( '移行対象を選択してください。' );
+	}
+	
+	$migrated_count = 0;
+	$failed_count = 0;
+	
+	foreach ( $post_ids as $post_id ) {
+		$post = get_post( $post_id );
+		if ( ! $post ) {
+			$failed_count++;
+			continue;
+		}
+		
+		// ブロックが含まれているかチェック
+		if ( strpos( $post->post_content, 'vk-blocks/dynamic-if' ) === false ) {
+			continue;
+		}
+		
+		// 空保存を実行（ブロックの再構築が自動で行われる）
+		$result = wp_update_post( array(
+			'ID' => $post_id,
+			'post_content' => $post->post_content // 同じ内容で保存
+		) );
+		
+		if ( is_wp_error( $result ) ) {
+			$failed_count++;
+		} else {
+			$migrated_count++;
+		}
+	}
+	
+	// 結果をセッションに保存
+	$_SESSION['vk_migration_result'] = array(
+		'migrated' => $migrated_count,
+		'failed' => $failed_count
+	);
+	
+	// 同じページにリダイレクト
+	wp_redirect( add_query_arg( 'vk_migration', 'show_posts', admin_url( 'edit.php?post_type=page' ) ) );
+	exit;
+}
+add_action( 'admin_init', 'vk_dynamic_if_block_handle_migration_bulk_action' );
 
+/**
+ * 移行結果を表示
+ */
+function vk_dynamic_if_block_show_migration_result() {
+	if ( ! isset( $_SESSION['vk_migration_result'] ) ) {
+		return;
+	}
+	
+	$result = $_SESSION['vk_migration_result'];
+	unset( $_SESSION['vk_migration_result'] );
+	
+	$message = '';
+	if ( $result['migrated'] > 0 ) {
+		$message .= "{$result['migrated']}件のページを移行しました。";
+	}
+	if ( $result['failed'] > 0 ) {
+		$message .= "{$result['failed']}件の移行に失敗しました。";
+	}
+	
+	if ( $message ) {
+		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $message ) . '</p></div>';
+	}
+}
+add_action( 'admin_notices', 'vk_dynamic_if_block_show_migration_result' );
 
 function vk_dynamic_if_block_enqueue_scripts()
 {
