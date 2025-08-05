@@ -118,7 +118,7 @@ function vk_dynamic_if_block_admin_notice() {
 		</div>
 		
 		<p>
-			<a href="<?php echo admin_url( 'edit.php?post_type=page&vk_migration=show_posts' ); ?>" class="button button-primary">
+			<a href="<?php echo admin_url( 'tools.php?page=vk-dynamic-if-block-migration' ); ?>" class="button button-primary">
 				移行対象ページを表示
 			</a>
 			<button type="button" class="button" onclick="vk_dynamic_if_block_dismiss_migration()">
@@ -253,10 +253,12 @@ function vk_dynamic_if_block_migrate_content( $content ) {
 
 
 
+
+
 /**
- * 移行対象ページ一覧を表示
+ * 管理メニューに移行ページを追加
  */
-function vk_dynamic_if_block_show_migration_posts() {
+function vk_dynamic_if_block_add_admin_menu() {
 	// 移行完了フラグをチェック
 	$migration_completed = get_option( 'vk_dynamic_if_block_migration_completed', false );
 	
@@ -264,20 +266,45 @@ function vk_dynamic_if_block_show_migration_posts() {
 		return;
 	}
 	
-	if ( ! isset( $_GET['vk_migration'] ) || $_GET['vk_migration'] !== 'show_posts' ) {
+	// 移行が必要なページを検索
+	$posts = vk_dynamic_if_block_find_pages_with_old_blocks();
+	
+	if ( empty( $posts ) ) {
 		return;
+	}
+	
+	add_submenu_page(
+		'tools.php', // 親メニュー（ツール）
+		'VK Dynamic If Block 移行', // ページタイトル
+		'VK Dynamic If Block 移行', // メニュータイトル
+		'manage_options', // 必要な権限
+		'vk-dynamic-if-block-migration', // メニュースラッグ
+		'vk_dynamic_if_block_migration_page' // コールバック関数
+	);
+}
+add_action( 'admin_menu', 'vk_dynamic_if_block_add_admin_menu' );
+
+/**
+ * 移行専用ページの表示
+ */
+function vk_dynamic_if_block_migration_page() {
+	// 移行完了フラグをチェック
+	$migration_completed = get_option( 'vk_dynamic_if_block_migration_completed', false );
+	
+	if ( $migration_completed ) {
+		wp_die( '移行は既に完了しています。' );
 	}
 	
 	$posts = vk_dynamic_if_block_find_pages_with_old_blocks();
 	
 	if ( empty( $posts ) ) {
-		echo '<div class="notice notice-success"><p>移行対象のページはありません。</p></div>';
+		echo '<div class="wrap"><h1>VK Dynamic If Block 移行</h1><div class="notice notice-success"><p>移行対象のページはありません。</p></div></div>';
 		return;
 	}
 	
 	?>
 	<div class="wrap">
-		<h1>VK Dynamic If Block 移行対象ページ</h1>
+		<h1>VK Dynamic If Block 移行</h1>
 		<p>以下のページで一括移行を実行してください。</p>
 		
 		<form method="post" action="">
@@ -367,7 +394,6 @@ function vk_dynamic_if_block_show_migration_posts() {
 	</script>
 	<?php
 }
-add_action( 'admin_notices', 'vk_dynamic_if_block_show_migration_posts' );
 
 /**
  * 移行対象ページ一覧での一括操作を処理
