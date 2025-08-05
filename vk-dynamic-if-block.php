@@ -344,6 +344,13 @@ function vk_dynamic_if_block_migrate_content( $content ) {
  * 移行対象ページ一覧を表示
  */
 function vk_dynamic_if_block_show_migration_posts() {
+	// 移行完了フラグをチェック
+	$migration_completed = get_option( 'vk_dynamic_if_block_migration_completed', false );
+	
+	if ( $migration_completed ) {
+		return;
+	}
+	
 	if ( ! isset( $_GET['vk_migration'] ) || $_GET['vk_migration'] !== 'show_posts' ) {
 		return;
 	}
