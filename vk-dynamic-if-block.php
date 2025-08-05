@@ -57,7 +57,7 @@ function vk_dynamic_if_block_find_pages_with_old_blocks() {
 	
 	$posts = $wpdb->get_results("
 		SELECT ID, post_title, post_type
-		FROM {$wpdb->posts}
+		FROM {$wpdb->posts} 
 		WHERE post_content LIKE '%vk-blocks/dynamic-if%'
 		AND post_status IN ('publish', 'draft', 'private')
 		ORDER BY post_type, post_title
@@ -173,82 +173,82 @@ add_action( 'wp_ajax_vk_dynamic_if_block_complete_migration', 'vk_dynamic_if_blo
  */
 function vk_dynamic_if_block_migrate_content( $content ) {
 	// ブロックの正規表現パターン
-	$pattern = '/<!-- wp:vk-blocks\/dynamic-if\s+(\{[^}]*\})\s+-->/';
-	
+		$pattern = '/<!-- wp:vk-blocks\/dynamic-if\s+(\{[^}]*\})\s+-->/';
+		
 	if ( ! preg_match_all( $pattern, $content, $matches, PREG_OFFSET_CAPTURE ) ) {
 		return $content;
 	}
 	
 	$updated_content = $content;
-	
-	// 後ろから処理（オフセットが変わらないように）
-	for ( $i = count( $matches[0] ) - 1; $i >= 0; $i-- ) {
-		$full_match_data = $matches[0][ $i ];
-		$attributes_json_data = $matches[1][ $i ];
-		
-		// PREG_OFFSET_CAPTUREフラグにより、配列の要素を取得
-		if ( is_array( $full_match_data ) ) {
-			$full_match = $full_match_data[0];
-			$full_match_offset = $full_match_data[1];
-		} else {
-			$full_match = $full_match_data;
-			$full_match_offset = 0;
-		}
-		
-		if ( is_array( $attributes_json_data ) ) {
-			$attributes_json = $attributes_json_data[0];
-		} else {
-			$attributes_json = $attributes_json_data;
-		}
-		
-		// 文字列であることを確認
-		if ( ! is_string( $attributes_json ) ) {
-			continue;
-		}
-		
-		$attributes = json_decode( $attributes_json, true );
-		
-		if ( $attributes ) {
-			// 古い属性が存在するかチェック
-			$old_attributes = [
-				'customFieldName',
-				'ifPageType',
-				'ifPostType',
-				'ifLanguage',
-				'userRole',
-				'postAuthor',
-				'periodDisplaySetting',
-				'showOnlyLoginUser'
-			];
 			
-			$has_old_attributes = false;
-			foreach ( $old_attributes as $attr ) {
-				if ( isset( $attributes[ $attr ] ) && ! empty( $attributes[ $attr ] ) && $attributes[ $attr ] !== 'none' ) {
-					$has_old_attributes = true;
+			// 後ろから処理（オフセットが変わらないように）
+			for ( $i = count( $matches[0] ) - 1; $i >= 0; $i-- ) {
+				$full_match_data = $matches[0][ $i ];
+				$attributes_json_data = $matches[1][ $i ];
+				
+				// PREG_OFFSET_CAPTUREフラグにより、配列の要素を取得
+				if ( is_array( $full_match_data ) ) {
+					$full_match = $full_match_data[0];
+					$full_match_offset = $full_match_data[1];
+				} else {
+					$full_match = $full_match_data;
+					$full_match_offset = 0;
+				}
+				
+				if ( is_array( $attributes_json_data ) ) {
+					$attributes_json = $attributes_json_data[0];
+				} else {
+					$attributes_json = $attributes_json_data;
+				}
+				
+				// 文字列であることを確認
+				if ( ! is_string( $attributes_json ) ) {
+					continue;
+				}
+				
+				$attributes = json_decode( $attributes_json, true );
+				
+				if ( $attributes ) {
+					// 古い属性が存在するかチェック
+					$old_attributes = [
+						'customFieldName',
+						'ifPageType',
+						'ifPostType',
+						'ifLanguage',
+						'userRole',
+						'postAuthor',
+						'periodDisplaySetting',
+						'showOnlyLoginUser'
+					];
+					
+					$has_old_attributes = false;
+					foreach ( $old_attributes as $attr ) {
+						if ( isset( $attributes[ $attr ] ) && ! empty( $attributes[ $attr ] ) && $attributes[ $attr ] !== 'none' ) {
+							$has_old_attributes = true;
 					break;
-				}
-			}
-			
-			if ( $has_old_attributes ) {
-				// 移行処理を実行
-				$migrated_conditions = vk_dynamic_if_block_migrate_old_attributes( $attributes );
-				$attributes['conditions'] = $migrated_conditions;
-				
-				// 古い属性を削除
-				foreach ( $old_attributes as $attr ) {
-					unset( $attributes[ $attr ] );
-				}
-				
-				// 新しい属性でJSONを生成
-				$new_attributes_json = json_encode( $attributes );
-				
-				// 投稿の内容を更新
-				$updated_content = substr_replace(
-					$updated_content,
-					'<!-- wp:vk-blocks/dynamic-if ' . $new_attributes_json . ' -->',
-					$full_match_offset,
-					strlen( $full_match )
-				);
+						}
+					}
+					
+					if ( $has_old_attributes ) {
+						// 移行処理を実行
+						$migrated_conditions = vk_dynamic_if_block_migrate_old_attributes( $attributes );
+						$attributes['conditions'] = $migrated_conditions;
+						
+						// 古い属性を削除
+						foreach ( $old_attributes as $attr ) {
+							unset( $attributes[ $attr ] );
+						}
+						
+						// 新しい属性でJSONを生成
+						$new_attributes_json = json_encode( $attributes );
+						
+						// 投稿の内容を更新
+						$updated_content = substr_replace(
+							$updated_content,
+							'<!-- wp:vk-blocks/dynamic-if ' . $new_attributes_json . ' -->',
+							$full_match_offset,
+							strlen( $full_match )
+						);
 			}
 		}
 	}
