@@ -148,17 +148,10 @@ function vk_dynamic_if_block_migrate_content( $content ) {
 			}
 
 			if ( $has_old_attributes ) {
-				// エディターと同じ移行処理を使用
-				$migrated_conditions = function_exists( 'vk_dynamic_if_block_migrate_old_attributes' )
-					? vk_dynamic_if_block_migrate_old_attributes( $attributes )
-					: [];
-				
-				// エディターと同じ形式でconditionsを設定
-				$attributes['conditions'] = $migrated_conditions;
-
-				// 古い属性を削除
-				foreach ( $old_attributes as $attr ) {
-					unset( $attributes[ $attr ] );
+				// 古い属性が存在する場合、conditionsは空にしてエディターでの移行に任せる
+				// エディターが移行処理を実行するように、条件をクリアする
+				if ( isset( $attributes['conditions'] ) ) {
+					unset( $attributes['conditions'] );
 				}
 
 				// 新しい属性でJSONを生成
