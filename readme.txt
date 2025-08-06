@@ -36,7 +36,7 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 == Changelog ==
 
 = 1.1.0 =
-[ Add Function ] Add migration system for ver0→ver1 block format conversion with bulk save functionality. 
+[ Add Function ] Add migration system to convert legacy block attributes to new conditions structure with bulk migration functionality. 
 [ Add Function ] Add page hierarchy conditions (parent/child page) to page type and post type conditions for pages.
 [ Bug fix ] Fix an issue where duplicating the VK Dynamic If Block caused all instances to share the same condition.
 [ Bug fix ] Fix Label color
