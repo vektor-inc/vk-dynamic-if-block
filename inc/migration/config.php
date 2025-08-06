@@ -279,6 +279,11 @@ function vk_dynamic_if_block_migrate_content( $content ) {
  * @return void
  */
 function vk_dynamic_if_block_admin_notice() {
+	// 移行ページではアラートを表示しない
+	if ( isset( $_GET['page'] ) && $_GET['page'] === 'vk-dynamic-if-block-migration' ) {
+		return;
+	}
+	
 	// デバッグ用：強制的に移行アラートを表示する場合
 	if ( isset( $_GET['force_migration_alert'] ) && current_user_can( 'manage_options' ) ) {
 		delete_option( 'vk_dynamic_if_block_migration_completed' );
