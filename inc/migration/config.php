@@ -84,16 +84,13 @@ add_action( 'plugins_loaded', 'vk_dynamic_if_block_check_version' );
  * @return array 移行後の条件配列
  */
 function vk_dynamic_if_block_migrate_old_attributes_simple( $attributes ) {
-	$groups = [];
+	$group_conditions = [];
 	$migrations = [
 		'ifPageType' => 'pageType',
 		'ifPostType' => 'postType',
 		'ifLanguage' => 'language',
 		'postAuthor' => 'postAuthor'
 	];
-
-	$group_conditions = [];
-	$group_id = 'migrated_group_' . time();
 
 	foreach ( $migrations as $old_key => $new_type ) {
 		if ( isset( $attributes[ $old_key ] ) && $attributes[ $old_key ] !== 'none' ) {
@@ -180,17 +177,19 @@ function vk_dynamic_if_block_migrate_old_attributes_simple( $attributes ) {
 		];
 	}
 
-	// 条件がある場合はグループを作成
+	// JavaScriptが期待する形式（グループの配列）に変換
 	if ( ! empty( $group_conditions ) ) {
-		$groups[] = [
-			'id' => $group_id,
-			'name' => 'Migrated Conditions',
-			'conditions' => $group_conditions,
-			'operator' => 'and'
+		return [
+			[
+				'id' => 'migrated_group_' . time(),
+				'name' => 'Migrated Conditions',
+				'conditions' => $group_conditions,
+				'operator' => 'and'
+			]
 		];
 	}
 
-	return $groups;
+	return [];
 }
 
 /**
@@ -259,10 +258,10 @@ function vk_dynamic_if_block_migrate_content( $content ) {
 
 			if ( $has_old_attributes ) {
 				// 移行処理を実行
-				$migrated_groups = function_exists( 'vk_dynamic_if_block_migrate_old_attributes' )
+				$migrated_conditions = function_exists( 'vk_dynamic_if_block_migrate_old_attributes' )
 					? vk_dynamic_if_block_migrate_old_attributes( $attributes )
 					: vk_dynamic_if_block_migrate_old_attributes_simple( $attributes );
-				$attributes['groups'] = $migrated_groups;
+				$attributes['conditions'] = $migrated_conditions;
 
 				// 古い属性を削除
 				foreach ( $old_attributes as $attr ) {
