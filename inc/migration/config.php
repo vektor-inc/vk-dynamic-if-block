@@ -282,20 +282,57 @@ function vk_dynamic_if_block_admin_notice() {
 	// デバッグ用：強制的に移行アラートを表示する場合
 	if ( isset( $_GET['force_migration_alert'] ) && current_user_can( 'manage_options' ) ) {
 		delete_option( 'vk_dynamic_if_block_migration_completed' );
-		error_log( "VK Dynamic If Block Debug: Force migration alert enabled" );
 	}
 	
-	// テスト用：強制的に移行アラートを表示（管理者のみ）
+	// テスト用：強制的に移行アラートを表示
 	if ( isset( $_GET['test_migration_alert'] ) && current_user_can( 'manage_options' ) ) {
-		delete_option( 'vk_dynamic_if_block_migration_completed' );
-		error_log( "VK Dynamic If Block Debug: Test migration alert enabled" );
+		$migration_completed = false;
+		$posts = array( (object) array( 'ID' => 1, 'post_title' => 'Test Page', 'post_type' => 'page' ) );
+		$post_count = 1;
+		$post_types = array( 'page' => 'page' );
 		
-		// テスト用のアラートを表示
 		?>
 		<div class="notice notice-warning is-dismissible">
-			<h3><?php _e( 'VK Dynamic If Block Migration Test', 'vk-dynamic-if-block' ); ?></h3>
-			<p><?php _e( 'This is a test migration alert. If you can see this, the migration system is working.', 'vk-dynamic-if-block' ); ?></p>
+			<h3><?php _e( 'VK Dynamic If Block Migration Required (TEST)', 'vk-dynamic-if-block' ); ?></h3>
+			<p>
+				<?php printf( __( '<strong>%d pages</strong> with old block format detected. Please perform bulk migration on the following pages.', 'vk-dynamic-if-block' ), $post_count ); ?>
+			</p>
+
+			<div style="margin: 15px 0;">
+				<h4><?php _e( 'Migration Target Pages:', 'vk-dynamic-if-block' ); ?></h4>
+				<ul style="margin-left: 20px;">
+					<?php foreach ( $post_types as $post_type ) : ?>
+						<li><strong><?php echo get_post_type_object( $post_type )->labels->name; ?></strong></li>
+					<?php endforeach; ?>
+				</ul>
+			</div>
+
+			<p>
+				<a href="<?php echo admin_url( 'tools.php?page=vk-dynamic-if-block-migration' ); ?>" class="button button-primary">
+					<?php _e( 'Show Migration Target Pages', 'vk-dynamic-if-block' ); ?>
+				</a>
+				<button type="button" class="button" onclick="vk_dynamic_if_block_dismiss_migration()">
+					<?php _e( 'Mark Migration as Complete', 'vk-dynamic-if-block' ); ?>
+				</button>
+			</p>
 		</div>
+
+		<script>
+		function vk_dynamic_if_block_dismiss_migration() {
+			if ( confirm( '<?php echo esc_js( __( 'Mark migration as complete?\n\nNote: If you haven\'t actually saved the pages, they will remain in the old block format.', 'vk-dynamic-if-block' ) ); ?>' ) ) {
+				// AJAXで移行完了フラグを設定
+				fetch( '<?php echo admin_url( 'admin-ajax.php' ); ?>', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+					},
+					body: 'action=vk_dynamic_if_block_complete_migration&nonce=<?php echo wp_create_nonce( 'vk_dynamic_if_block_migration' ); ?>'
+				}).then( function() {
+					location.reload();
+				});
+			}
+		}
+		</script>
 		<?php
 		return;
 	}
@@ -303,23 +340,33 @@ function vk_dynamic_if_block_admin_notice() {
 	// 移行完了フラグをチェック
 	$migration_completed = get_option( 'vk_dynamic_if_block_migration_completed', false );
 
-	// デバッグ情報をログに出力
-	error_log( "VK Dynamic If Block Debug: migration_completed = " . ( $migration_completed ? 'true' : 'false' ) );
+	// デバッグ情報を出力
+	if ( isset( $_GET['debug_migration'] ) && current_user_can( 'manage_options' ) ) {
+		echo '<div class="notice notice-info"><p><strong>Debug Info:</strong></p>';
+		echo '<p>Migration completed: ' . ( $migration_completed ? 'true' : 'false' ) . '</p>';
+		
+		$posts = vk_dynamic_if_block_find_pages_with_old_blocks();
+		echo '<p>Found pages with old blocks: ' . count( $posts ) . '</p>';
+		
+		if ( ! empty( $posts ) ) {
+			echo '<p>Pages found:</p><ul>';
+			foreach ( $posts as $post ) {
+				echo '<li>' . esc_html( $post->post_title ) . ' (ID: ' . $post->ID . ')</li>';
+			}
+			echo '</ul>';
+		}
+		echo '</div>';
+	}
 
 	if ( $migration_completed ) {
-		error_log( "VK Dynamic If Block Debug: Migration already completed, skipping notice" );
 		return;
 	}
 
 	// 移行が必要なページを検索
 	$posts = vk_dynamic_if_block_find_pages_with_old_blocks();
-	
-	// デバッグ情報をログに出力
-	error_log( "VK Dynamic If Block Debug: Found " . count( $posts ) . " posts with old blocks" );
 
 	if ( empty( $posts ) ) {
 		// 移行対象がない場合は完了フラグを設定
-		error_log( "VK Dynamic If Block Debug: No posts found, setting migration completed" );
 		vk_dynamic_if_block_set_migration_completed();
 		return;
 	}
@@ -329,9 +376,6 @@ function vk_dynamic_if_block_admin_notice() {
 	foreach ( $posts as $post ) {
 		$post_types[ $post->post_type ] = $post->post_type;
 	}
-
-	// デバッグ情報をログに出力
-	error_log( "VK Dynamic If Block Debug: Showing migration notice for " . $post_count . " posts" );
 
 	?>
 	<div class="notice notice-warning is-dismissible">
