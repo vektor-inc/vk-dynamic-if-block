@@ -17,7 +17,7 @@ function vk_dynamic_if_block_find_pages_with_old_blocks() {
 
 	$posts = $wpdb->get_results(
 		"
-		SELECT ID, post_title, post_type
+		SELECT ID, post_title, post_type, post_content
 		FROM {$wpdb->posts} 
 		WHERE post_content LIKE '%vk-blocks/dynamic-if%'
 		AND post_status IN ('publish', 'draft', 'private')
@@ -25,7 +25,53 @@ function vk_dynamic_if_block_find_pages_with_old_blocks() {
 		"
 	);
 
-	return $posts;
+	$old_posts = [];
+	
+	// 各投稿の内容をチェックして、古い属性を持つブロックがあるかを確認
+	foreach ( $posts as $post ) {
+		$has_old_blocks = false;
+		
+		// ブロックの正規表現パターン
+		$pattern = '/<!-- wp:vk-blocks\/dynamic-if\s+(\{[^}]*\})\s+-->/';
+		
+		if ( preg_match_all( $pattern, $post->post_content, $matches ) ) {
+			foreach ( $matches[1] as $attributes_json ) {
+				$attributes = json_decode( $attributes_json, true );
+				
+				if ( $attributes ) {
+					// conditionsが存在しない、または空の場合は古いブロック
+					if ( ! isset( $attributes['conditions'] ) || empty( $attributes['conditions'] ) ) {
+						// 古い属性が存在するかチェック
+						$old_attributes = [
+							'customFieldName',
+							'ifPageType',
+							'ifPostType',
+							'ifLanguage',
+							'userRole',
+							'postAuthor',
+							'periodDisplaySetting',
+							'showOnlyLoginUser'
+						];
+						
+						foreach ( $old_attributes as $attr ) {
+							if ( isset( $attributes[ $attr ] ) && ! empty( $attributes[ $attr ] ) && $attributes[ $attr ] !== 'none' ) {
+								$has_old_blocks = true;
+								break 2; // 内側と外側のループを抜ける
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		if ( $has_old_blocks ) {
+			// post_contentは不要なので削除
+			unset( $post->post_content );
+			$old_posts[] = $post;
+		}
+	}
+
+	return $old_posts;
 }
 
 /**
