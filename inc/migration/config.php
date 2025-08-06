@@ -282,20 +282,44 @@ function vk_dynamic_if_block_admin_notice() {
 	// デバッグ用：強制的に移行アラートを表示する場合
 	if ( isset( $_GET['force_migration_alert'] ) && current_user_can( 'manage_options' ) ) {
 		delete_option( 'vk_dynamic_if_block_migration_completed' );
+		error_log( "VK Dynamic If Block Debug: Force migration alert enabled" );
+	}
+	
+	// テスト用：強制的に移行アラートを表示（管理者のみ）
+	if ( isset( $_GET['test_migration_alert'] ) && current_user_can( 'manage_options' ) ) {
+		delete_option( 'vk_dynamic_if_block_migration_completed' );
+		error_log( "VK Dynamic If Block Debug: Test migration alert enabled" );
+		
+		// テスト用のアラートを表示
+		?>
+		<div class="notice notice-warning is-dismissible">
+			<h3><?php _e( 'VK Dynamic If Block Migration Test', 'vk-dynamic-if-block' ); ?></h3>
+			<p><?php _e( 'This is a test migration alert. If you can see this, the migration system is working.', 'vk-dynamic-if-block' ); ?></p>
+		</div>
+		<?php
+		return;
 	}
 	
 	// 移行完了フラグをチェック
 	$migration_completed = get_option( 'vk_dynamic_if_block_migration_completed', false );
 
+	// デバッグ情報をログに出力
+	error_log( "VK Dynamic If Block Debug: migration_completed = " . ( $migration_completed ? 'true' : 'false' ) );
+
 	if ( $migration_completed ) {
+		error_log( "VK Dynamic If Block Debug: Migration already completed, skipping notice" );
 		return;
 	}
 
 	// 移行が必要なページを検索
 	$posts = vk_dynamic_if_block_find_pages_with_old_blocks();
+	
+	// デバッグ情報をログに出力
+	error_log( "VK Dynamic If Block Debug: Found " . count( $posts ) . " posts with old blocks" );
 
 	if ( empty( $posts ) ) {
 		// 移行対象がない場合は完了フラグを設定
+		error_log( "VK Dynamic If Block Debug: No posts found, setting migration completed" );
 		vk_dynamic_if_block_set_migration_completed();
 		return;
 	}
@@ -305,6 +329,9 @@ function vk_dynamic_if_block_admin_notice() {
 	foreach ( $posts as $post ) {
 		$post_types[ $post->post_type ] = $post->post_type;
 	}
+
+	// デバッグ情報をログに出力
+	error_log( "VK Dynamic If Block Debug: Showing migration notice for " . $post_count . " posts" );
 
 	?>
 	<div class="notice notice-warning is-dismissible">
