@@ -34,8 +34,12 @@ function vk_dynamic_if_block_find_pages_with_old_blocks() {
  * @return void
  */
 function vk_dynamic_if_block_set_migration_completed() {
-	update_option( 'vk_dynamic_if_block_migration_completed', true );
-	update_option( 'vk_dynamic_if_block_version', '1.1.0' );
+	// 実際に古いブロックを持つページが存在しない場合のみ完了フラグを設定
+	$posts = vk_dynamic_if_block_find_pages_with_old_blocks();
+	if ( empty( $posts ) ) {
+		update_option( 'vk_dynamic_if_block_migration_completed', true );
+		update_option( 'vk_dynamic_if_block_version', '1.1.0' );
+	}
 }
 
 /**
@@ -364,12 +368,13 @@ function vk_dynamic_if_block_admin_notice() {
 	// 移行完了フラグをチェック
 	$migration_completed = get_option( 'vk_dynamic_if_block_migration_completed', false );
 
+	// 移行が必要なページを検索
+	$posts = vk_dynamic_if_block_find_pages_with_old_blocks();
+
 	// デバッグ情報を出力
 	if ( isset( $_GET['debug_migration'] ) && current_user_can( 'manage_options' ) ) {
 		echo '<div class="notice notice-info"><p><strong>Debug Info:</strong></p>';
 		echo '<p>Migration completed: ' . ( $migration_completed ? 'true' : 'false' ) . '</p>';
-		
-		$posts = vk_dynamic_if_block_find_pages_with_old_blocks();
 		echo '<p>Found pages with old blocks: ' . count( $posts ) . '</p>';
 		
 		if ( ! empty( $posts ) ) {
@@ -388,15 +393,16 @@ function vk_dynamic_if_block_admin_notice() {
 		return;
 	}
 
-	if ( $migration_completed ) {
-		return;
-	}
-
 	// 移行が必要なページを検索
 	$posts = vk_dynamic_if_block_find_pages_with_old_blocks();
 
+	// 移行完了フラグがtrueで、かつ古いブロックを持つページが存在しない場合のみアラートを非表示
+	if ( $migration_completed && empty( $posts ) ) {
+		return;
+	}
+
 	if ( empty( $posts ) ) {
-		// 移行対象がない場合は完了フラグを設定
+		// 移行対象がない場合のみ完了フラグを設定
 		vk_dynamic_if_block_set_migration_completed();
 		return;
 	}
