@@ -81,120 +81,7 @@ function vk_dynamic_if_block_check_version() {
 }
 add_action( 'plugins_loaded', 'vk_dynamic_if_block_check_version' );
 
-/**
- * 古い属性を新しい形式に移行（移行ツール用の簡易版）
- *
- * @param array $attributes ブロック属性
- * @return array 移行後の条件配列
- */
-function vk_dynamic_if_block_migrate_old_attributes_simple( $attributes ) {
-	$group_conditions = [];
-	$migrations = [
-		'ifPageType' => 'pageType',
-		'ifPostType' => 'postType',
-		'ifLanguage' => 'language',
-		'postAuthor' => 'postAuthor'
-	];
 
-	foreach ( $migrations as $old_key => $new_type ) {
-		if ( isset( $attributes[ $old_key ] ) && $attributes[ $old_key ] !== 'none' ) {
-			// 昔の状態では単一値だったので、配列の場合は最初の値を使用
-			$value = is_array( $attributes[ $old_key ] )
-				? $attributes[ $old_key ][0]
-				: $attributes[ $old_key ];
-			$group_conditions[] = [
-				'id' => "migrated_{$new_type}_" . time(),
-				'type' => $new_type,
-				'values' => [
-					$old_key => $value
-				]
-			];
-		}
-	}
-
-	// 特殊なケース - userRoleは配列のまま
-	if ( isset( $attributes['userRole'] ) && ! empty( $attributes['userRole'] ) ) {
-		// userRoleは複数選択可能なので配列として処理
-		$values = is_array( $attributes['userRole'] )
-			? $attributes['userRole']
-			: [ $attributes['userRole'] ];
-		$group_conditions[] = [
-			'id' => 'migrated_user_role_' . time(),
-			'type' => 'userRole',
-			'values' => [ 'userRole' => $values ]
-		];
-	}
-
-	if ( isset( $attributes['customFieldName'] )
-		&& ! empty( $attributes['customFieldName'] )
-	) {
-		$values = [
-			'customFieldName' => $attributes['customFieldName']
-		];
-		if ( isset( $attributes['customFieldRule'] ) ) {
-			$values['customFieldRule'] = $attributes['customFieldRule'];
-		}
-		if ( isset( $attributes['customFieldValue'] ) ) {
-			$values['customFieldValue'] = $attributes['customFieldValue'];
-		}
-
-		$group_conditions[] = [
-			'id' => 'migrated_custom_field_' . time(),
-			'type' => 'customField',
-			'values' => $values
-		];
-	}
-
-	if ( isset( $attributes['periodDisplaySetting'] )
-		&& $attributes['periodDisplaySetting'] !== 'none'
-	) {
-		$values = [
-			'periodDisplaySetting' => $attributes['periodDisplaySetting']
-		];
-		$period_keys = [
-			'periodSpecificationMethod',
-			'periodDisplayValue',
-			'periodReferCustomField'
-		];
-		foreach ( $period_keys as $key ) {
-			if ( isset( $attributes[ $key ] ) ) {
-				$values[ $key ] = $attributes[ $key ];
-			}
-		}
-
-		$group_conditions[] = [
-			'id' => 'migrated_period_' . time(),
-			'type' => 'period',
-			'values' => $values
-		];
-	}
-
-	if ( isset( $attributes['showOnlyLoginUser'] )
-		&& $attributes['showOnlyLoginUser']
-	) {
-		$group_conditions[] = [
-			'id' => 'migrated_login_user_' . time(),
-			'type' => 'loginUser',
-			'values' => [
-				'showOnlyLoginUser' => $attributes['showOnlyLoginUser']
-			]
-		];
-	}
-
-	// JavaScriptが期待する形式（グループの配列）に変換
-	if ( ! empty( $group_conditions ) ) {
-		return [
-			[
-				'id' => 'migrated_group_' . time(),
-				'name' => 'Migrated Conditions',
-				'conditions' => $group_conditions,
-				'operator' => 'and'
-			]
-		];
-	}
-
-	return [];
-}
 
 /**
  * コンテンツを移行
@@ -261,10 +148,12 @@ function vk_dynamic_if_block_migrate_content( $content ) {
 			}
 
 			if ( $has_old_attributes ) {
-				// 移行処理を実行
+				// エディターと同じ移行処理を使用
 				$migrated_conditions = function_exists( 'vk_dynamic_if_block_migrate_old_attributes' )
 					? vk_dynamic_if_block_migrate_old_attributes( $attributes )
-					: vk_dynamic_if_block_migrate_old_attributes_simple( $attributes );
+					: [];
+				
+				// エディターと同じ形式でconditionsを設定
 				$attributes['conditions'] = $migrated_conditions;
 
 				// 古い属性を削除

@@ -162,7 +162,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			if (
 				! conditions ||
 				conditions.length === 0 ||
-				( conditions[ 0 ] && conditions[ 0 ].conditions.length === 0 )
+				( conditions[ 0 ] && ( !conditions[ 0 ].conditions || conditions[ 0 ].conditions.length === 0 ) )
 			) {
 				const newConditions = [];
 				let groupIndex = 1;
@@ -203,7 +203,19 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					);
 				}
 
-				setAttributes( { conditions: newConditions } );
+				// 移行後のconditionsが正しい構造を持つことを確認
+				const validatedConditions = newConditions.map( group => ({
+					...group,
+					id: group.id || generateId(),
+					conditions: Array.isArray( group.conditions ) ? group.conditions.map( condition => ({
+						...condition,
+						id: condition.id || generateId(),
+						type: condition.type || BLOCK_CONFIG.defaultConditionType,
+						values: condition.values || {}
+					})) : []
+				}));
+				
+				setAttributes( { conditions: validatedConditions } );
 			}
 		}, [ attributes, conditions, setAttributes ] );
 
@@ -640,9 +652,12 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					: __( 'No conditions set', 'vk-dynamic-if-block' );
 			}
 
-					const groupLabels = ( conditions || [] )
-			.map( ( group ) => {
-					const { conditions: groupConditions = [] } = group || {};
+								const groupLabels = ( conditions || [] )
+				.map( ( group ) => {
+					if ( !group || typeof group !== 'object' ) {
+						return null;
+					}
+					const { conditions: groupConditions = [] } = group;
 					if ( ! groupConditions || ! groupConditions.length ) {
 						return null;
 					}
