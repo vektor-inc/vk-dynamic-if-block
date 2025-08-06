@@ -633,6 +633,11 @@ add_action('admin_menu', 'vk_dynamic_if_block_add_admin_menu');
  */
 function vk_dynamic_if_block_migration_page() 
 {
+    // セッションを開始
+    if (!session_id()) {
+        session_start();
+    }
+    
     // 権限チェック
     if (!  current_user_can('manage_options')) {
         wp_die(__('You do not have sufficient permissions to access this page.', 'vk-dynamic-if-block'));
@@ -667,7 +672,7 @@ function vk_dynamic_if_block_migration_page()
         
         if ($message) {
             echo '<div class="wrap"><h1>' . __('VK Dynamic If Block Migration', 'vk-dynamic-if-block') . '</h1>';
-            echo '<div class="notice notice-success"><p>' . $message . '</p></div>';
+            echo '<div class="notice notice-success is-dismissible"><p><strong>' . __('Migration Completed!', 'vk-dynamic-if-block') . '</strong> ' . $message . '</p></div>';
             echo '<p><a href="' . admin_url('tools.php?page=vk-dynamic-if-block-migration') . '" class="button button-primary">' . __('Continue Migration', 'vk-dynamic-if-block') . '</a></p></div>';
             return;
         }
@@ -773,6 +778,11 @@ function vk_dynamic_if_block_migration_page()
  */
 function vk_dynamic_if_block_handle_migration_bulk_action() 
 {
+    // セッションを開始
+    if (!session_id()) {
+        session_start();
+    }
+    
     // 権限チェック
     if (!  current_user_can('manage_options')) {
         wp_die(__('You do not have sufficient permissions to access this page.', 'vk-dynamic-if-block'));
@@ -837,8 +847,24 @@ function vk_dynamic_if_block_handle_migration_bulk_action()
     $_SESSION['vk_migration_result'] = array('migrated' => $migrated_count,
         'failed' => $failed_count);
 
-    // 移行ページに戻って結果を表示
-    wp_redirect(add_query_arg('migration_result', 'success', admin_url('tools.php?page=vk-dynamic-if-block-migration')));
+    // 移行結果を即座に表示
+    $result_message = '';
+    if ($migrated_count > 0) {
+        $result_message .= sprintf(__('%d pages migrated successfully.', 'vk-dynamic-if-block'), $migrated_count);
+    }
+    if ($failed_count > 0) {
+        $result_message .= sprintf(__('%d migrations failed.', 'vk-dynamic-if-block'), $failed_count);
+    }
+    
+    // 結果をセッションに保存して即座に表示
+    $_SESSION['vk_migration_result'] = array(
+        'migrated' => $migrated_count,
+        'failed' => $failed_count,
+        'message' => $result_message
+    );
+    
+    // 同じページに戻って結果を表示
+    wp_safe_redirect(admin_url('tools.php?page=vk-dynamic-if-block-migration&migration_result=success'));
     exit;
 }
 add_action('admin_init', 'vk_dynamic_if_block_handle_migration_bulk_action');
