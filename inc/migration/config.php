@@ -607,12 +607,16 @@ function vk_dynamic_if_block_add_admin_menu()
     // 移行完了フラグをチェック（実際に古いブロックが存在しない場合のみ完了とみなす）
     $migration_completed = get_option('vk_dynamic_if_block_migration_completed', false);
 
-    if ( $migration_completed && empty($posts)) {
-        return;
-    }
-
-    if ( empty($posts)) {
-        return;
+    // 移行処理中または古いブロックが存在する場合はメニューを表示
+    if ( !empty($posts) || (isset($_GET['migration_result']) && $_GET['migration_result'] === 'success')) {
+        add_submenu_page(
+            'tools.php', // 親メニュー（ツール）
+            __('VK Dynamic If Block Migration', 'vk-dynamic-if-block'), // ページタイトル
+            __('VK Dynamic If Block Migration', 'vk-dynamic-if-block'), // メニュータイトル
+            'manage_options', // 必要な権限
+            'vk-dynamic-if-block-migration', // メニュースラッグ
+            'vk_dynamic_if_block_migration_page' // コールバック関数
+        );
     }
 
     add_submenu_page(
@@ -623,8 +627,58 @@ function vk_dynamic_if_block_add_admin_menu()
         'vk-dynamic-if-block-migration', // メニュースラッグ
         'vk_dynamic_if_block_migration_page' // コールバック関数
     );
+    
+    // 移行完了メッセージ用のページを追加
+    add_submenu_page(
+        'tools.php', // 親メニュー（ツール）
+        __('Migration Complete', 'vk-dynamic-if-block'), // ページタイトル
+        __('Migration Complete', 'vk-dynamic-if-block'), // メニュータイトル
+        'manage_options', // 必要な権限
+        'vk-dynamic-if-block-migration-complete', // メニュースラッグ
+        'vk_dynamic_if_block_migration_complete_page' // コールバック関数
+    );
 }
 add_action('admin_menu', 'vk_dynamic_if_block_add_admin_menu');
+
+/**
+ * 移行完了メッセージページの表示
+ *
+ * @return void
+ */
+function vk_dynamic_if_block_migration_complete_page() 
+{
+    // セッションを開始
+    if (!session_id()) {
+        session_start();
+    }
+    
+    // 権限チェック
+    if (!  current_user_can('manage_options')) {
+        wp_die(__('You do not have sufficient permissions to access this page.', 'vk-dynamic-if-block'));
+    }
+    
+    // 移行結果を表示
+    if (isset($_SESSION['vk_migration_result'])) {
+        $result = $_SESSION['vk_migration_result'];
+        unset($_SESSION['vk_migration_result']);
+        
+        $message = '';
+        if ($result['migrated'] > 0) {
+            $message .= sprintf(__('%d pages migrated successfully.', 'vk-dynamic-if-block'), $result['migrated']);
+        }
+        if ($result['failed'] > 0) {
+            $message .= sprintf(__('%d migrations failed.', 'vk-dynamic-if-block'), $result['failed']);
+        }
+        
+        echo '<div class="wrap"><h1>' . __('Migration Complete', 'vk-dynamic-if-block') . '</h1>';
+        echo '<div class="notice notice-success is-dismissible"><p><strong>' . __('Migration Completed!', 'vk-dynamic-if-block') . '</strong> ' . $message . '</p></div>';
+        echo '<p><a href="' . admin_url('tools.php?page=vk-dynamic-if-block-migration') . '" class="button button-primary">' . __('Continue Migration', 'vk-dynamic-if-block') . '</a></p></div>';
+    } else {
+        echo '<div class="wrap"><h1>' . __('Migration Complete', 'vk-dynamic-if-block') . '</h1>';
+        echo '<div class="notice notice-info"><p>' . __('No migration result found.', 'vk-dynamic-if-block') . '</p></div>';
+        echo '<p><a href="' . admin_url('tools.php?page=vk-dynamic-if-block-migration') . '" class="button button-primary">' . __('Back to Migration', 'vk-dynamic-if-block') . '</a></p></div>';
+    }
+}
 
 /**
  * 移行専用ページの表示
@@ -879,8 +933,8 @@ function vk_dynamic_if_block_handle_migration_bulk_action()
         'message' => $result_message
     );
     
-    // 一括編集と同様に、同じページに戻って結果を表示
-    wp_redirect(admin_url('tools.php?page=vk-dynamic-if-block-migration&migration_result=success'));
+    // 移行完了メッセージを表示するページにリダイレクト
+    wp_redirect(admin_url('admin.php?page=vk-dynamic-if-block-migration-complete&migration_result=success'));
     exit;
 }
 add_action('admin_init', 'vk_dynamic_if_block_handle_migration_bulk_action');
