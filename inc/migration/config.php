@@ -2,11 +2,7 @@
 /**
  * VK Dynamic If Block Migration System
  *
- * @package VK_Dynamic_If_Block
- * @category WordPress_Plugin
- * @author VektorInc
- * @license GPL-2.0+
- * @link https://github.com/vektor-inc/vk-dynamic-if-block
+ * @package VK Dynamic If Block
  */
 
 defined('ABSPATH') || exit;
@@ -412,12 +408,14 @@ function vk_dynamic_if_block_add_admin_menu()
         return;
     }
 
-    add_submenu_page('tools.php', // 親メニュー（ツール）
+    add_submenu_page(
+        'tools.php', // 親メニュー（ツール）
         __('VK Dynamic If Block Migration', 'vk-dynamic-if-block'), // ページタイトル
         __('VK Dynamic If Block Migration', 'vk-dynamic-if-block'), // メニュータイトル
         'manage_options', // 必要な権限
         'vk-dynamic-if-block-migration', // メニュースラッグ
-        'vk_dynamic_if_block_migration_page' // コールバック関数);
+        'vk_dynamic_if_block_migration_page' // コールバック関数
+    );
 }
 add_action('admin_menu', 'vk_dynamic_if_block_add_admin_menu');
 
