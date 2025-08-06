@@ -38,6 +38,11 @@ function vk_dynamic_if_block_find_pages_with_old_blocks()
                 $attributes = json_decode($attributes_json, true);
                 
                 if ($attributes) {
+                    // 移行済みフラグがある場合はスキップ
+                    if (isset($attributes['_migrated']) && $attributes['_migrated'] === true) {
+                        continue;
+                    }
+                    
                     // conditionsが存在しない、または空の場合は古いブロック
                     if (!  isset($attributes['conditions']) || empty($attributes['conditions'])) {
                         // 古い属性が存在するかチェック
@@ -52,11 +57,18 @@ function vk_dynamic_if_block_find_pages_with_old_blocks()
                             'showOnlyLoginUser'
                         ];
                         
+                        $has_old_attributes = false;
                         foreach ( $old_attributes as $attr) {
                             if ( isset($attributes[ $attr ]) && ! empty($attributes[ $attr ]) && $attributes[ $attr ] !== 'none') {
-                                $has_old_blocks = true;
-                                break 2; // 内側と外側のループを抜ける
+                                $has_old_attributes = true;
+                                break;
                             }
+                        }
+                        
+                        // 古い属性が存在する場合のみ古いブロックとして扱う
+                        if ($has_old_attributes) {
+                            $has_old_blocks = true;
+                            break 2; // 内側と外側のループを抜ける
                         }
                     }
                 }
@@ -201,6 +213,9 @@ function vk_dynamic_if_block_migrate_content($content)
                 if ( isset($attributes['conditions'])) {
                     unset($attributes['conditions']);
                 }
+                
+                // 移行済みフラグを追加（エディターでの移行をスキップするため）
+                $attributes['_migrated'] = true;
 
                 // 新しい属性でJSONを生成
                 $new_attributes_json = json_encode($attributes);
@@ -333,7 +348,8 @@ function vk_dynamic_if_block_admin_notice()
                                 $found_old = [];
                                 foreach ($old_attributes as $attr) {
                                     if (isset($attributes[$attr]) && !empty($attributes[$attr]) && $attributes[$attr] !== 'none') {
-                                        $found_old[] = $attr . ': ' . $attributes[$attr];
+                                        $value = is_array($attributes[$attr]) ? json_encode($attributes[$attr]) : $attributes[$attr];
+                                        $found_old[] = $attr . ': ' . $value;
                                     }
                                 }
                                 echo '<li>Old attributes found: ' . (empty($found_old) ? 'None' : implode(', ', $found_old)) . '</li>';
@@ -456,6 +472,12 @@ function vk_dynamic_if_block_ajax_test_migration() {
     
     // 移行処理を実行
     $updated_content = vk_dynamic_if_block_migrate_content($post->post_content);
+    
+    // デバッグログ
+    error_log("VK Dynamic If Block Test Migration: Processing post ID {$post_id}");
+    error_log("VK Dynamic If Block Test Migration: Original content length: " . strlen($post->post_content));
+    error_log("VK Dynamic If Block Test Migration: Updated content length: " . strlen($updated_content));
+    error_log("VK Dynamic If Block Test Migration: Content changed: " . ($post->post_content !== $updated_content ? 'true' : 'false'));
     
     // 投稿を更新
     $result = wp_update_post(array(
