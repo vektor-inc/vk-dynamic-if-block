@@ -284,6 +284,13 @@ function vk_dynamic_if_block_admin_notice() {
 		delete_option( 'vk_dynamic_if_block_migration_completed' );
 	}
 	
+	// 移行完了フラグをリセットする場合
+	if ( isset( $_GET['reset_migration'] ) && current_user_can( 'manage_options' ) ) {
+		delete_option( 'vk_dynamic_if_block_migration_completed' );
+		echo '<div class="notice notice-success"><p>Migration flag has been reset. Please refresh the page.</p></div>';
+		return;
+	}
+	
 	// テスト用：強制的に移行アラートを表示
 	if ( isset( $_GET['test_migration_alert'] ) && current_user_can( 'manage_options' ) ) {
 		$migration_completed = false;
@@ -356,6 +363,12 @@ function vk_dynamic_if_block_admin_notice() {
 			echo '</ul>';
 		}
 		echo '</div>';
+	}
+
+	// フックが動作しているかテスト
+	if ( isset( $_GET['test_hook'] ) && current_user_can( 'manage_options' ) ) {
+		echo '<div class="notice notice-success"><p><strong>Hook Test:</strong> admin_notices hook is working!</p></div>';
+		return;
 	}
 
 	if ( $migration_completed ) {
