@@ -346,6 +346,11 @@ function vk_dynamic_if_block_admin_notice()
             }
             echo '</ul>';
         }
+        
+        // 手動移行テストボタンを追加
+        echo '<p><strong>Manual Migration Test:</strong></p>';
+        echo '<p><a href="' . admin_url('admin-ajax.php?action=vk_dynamic_if_block_test_migration&post_id=2100&nonce=' . wp_create_nonce('vk_test_migration')) . '" class="button button-secondary">Test Migration for ID 2100</a></p>';
+        
         echo '</div>';
     }
 
@@ -426,6 +431,47 @@ function vk_dynamic_if_block_ajax_complete_migration()
     wp_die('Migration completed');
 }
 add_action('wp_ajax_vk_dynamic_if_block_complete_migration', 'vk_dynamic_if_block_ajax_complete_migration');
+
+/**
+ * AJAX: 手動移行テスト
+ *
+ * @return void
+ */
+function vk_dynamic_if_block_ajax_test_migration() {
+    check_ajax_referer('vk_test_migration', 'nonce');
+    
+    if (!current_user_can('manage_options')) {
+        wp_die('Permission denied');
+    }
+    
+    $post_id = intval($_GET['post_id'] ?? 0);
+    if (!$post_id) {
+        wp_die('Invalid post ID');
+    }
+    
+    $post = get_post($post_id);
+    if (!$post) {
+        wp_die('Post not found');
+    }
+    
+    // 移行処理を実行
+    $updated_content = vk_dynamic_if_block_migrate_content($post->post_content);
+    
+    // 投稿を更新
+    $result = wp_update_post(array(
+        'ID' => $post_id,
+        'post_content' => $updated_content
+    ));
+    
+    if (is_wp_error($result)) {
+        echo 'Migration failed: ' . $result->get_error_message();
+    } else {
+        echo 'Migration completed successfully for post ID ' . $post_id;
+    }
+    
+    wp_die();
+}
+add_action('wp_ajax_vk_dynamic_if_block_test_migration', 'vk_dynamic_if_block_ajax_test_migration');
 
 /**
  * 管理メニューに移行ページを追加
