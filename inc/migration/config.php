@@ -315,7 +315,34 @@ function vk_dynamic_if_block_admin_notice()
         if (!empty($posts)) {
             echo '<p>Pages found:</p><ul>';
             foreach ($posts as $post) {
-                echo '<li>' . esc_html($post->post_title) . ' (ID: ' . $post->ID . ')</li>';
+                echo '<li>' . esc_html($post->post_title) . ' (ID: ' . $post->ID . ')';
+                
+                // 詳細デバッグ: 投稿の内容を取得してブロックの状態を確認
+                $full_post = get_post($post->ID);
+                if ($full_post) {
+                    $pattern = '/<!-- wp:vk-blocks\/dynamic-if\s+(\{[^}]*\})\s+-->/';
+                    if (preg_match_all($pattern, $full_post->post_content, $matches)) {
+                        echo '<ul>';
+                        foreach ($matches[1] as $attributes_json) {
+                            $attributes = json_decode($attributes_json, true);
+                            if ($attributes) {
+                                echo '<li>Block attributes: ' . esc_html(json_encode($attributes, JSON_PRETTY_PRINT)) . '</li>';
+                                echo '<li>Has conditions: ' . (isset($attributes['conditions']) ? 'Yes (' . count($attributes['conditions']) . ' groups)' : 'No') . '</li>';
+                                
+                                $old_attributes = ['customFieldName', 'ifPageType', 'ifPostType', 'ifLanguage', 'userRole', 'postAuthor', 'periodDisplaySetting', 'showOnlyLoginUser'];
+                                $found_old = [];
+                                foreach ($old_attributes as $attr) {
+                                    if (isset($attributes[$attr]) && !empty($attributes[$attr]) && $attributes[$attr] !== 'none') {
+                                        $found_old[] = $attr . ': ' . $attributes[$attr];
+                                    }
+                                }
+                                echo '<li>Old attributes found: ' . (empty($found_old) ? 'None' : implode(', ', $found_old)) . '</li>';
+                            }
+                        }
+                        echo '</ul>';
+                    }
+                }
+                echo '</li>';
             }
             echo '</ul>';
         }
