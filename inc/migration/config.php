@@ -479,15 +479,15 @@ add_action( 'wp_ajax_vk_dynamic_if_block_complete_migration', 'vk_dynamic_if_blo
  * @return void
  */
 function vk_dynamic_if_block_add_admin_menu() {
-	// 移行完了フラグをチェック
-	$migration_completed = get_option( 'vk_dynamic_if_block_migration_completed', false );
-
-	if ( $migration_completed ) {
-		return;
-	}
-
 	// 移行が必要なページを検索
 	$posts = vk_dynamic_if_block_find_pages_with_old_blocks();
+
+	// 移行完了フラグをチェック（実際に古いブロックが存在しない場合のみ完了とみなす）
+	$migration_completed = get_option( 'vk_dynamic_if_block_migration_completed', false );
+
+	if ( $migration_completed && empty( $posts ) ) {
+		return;
+	}
 
 	if ( empty( $posts ) ) {
 		return;
@@ -510,14 +510,19 @@ add_action( 'admin_menu', 'vk_dynamic_if_block_add_admin_menu' );
  * @return void
  */
 function vk_dynamic_if_block_migration_page() {
-	// 移行完了フラグをチェック
-	$migration_completed = get_option( 'vk_dynamic_if_block_migration_completed', false );
-
-	if ( $migration_completed ) {
-		wp_die( __( 'Migration is already completed.', 'vk-dynamic-if-block' ) );
+	// 権限チェック
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_die( __( 'You do not have sufficient permissions to access this page.', 'vk-dynamic-if-block' ) );
 	}
 
 	$posts = vk_dynamic_if_block_find_pages_with_old_blocks();
+
+	// 移行完了フラグをチェック（実際に古いブロックが存在しない場合のみ完了とみなす）
+	$migration_completed = get_option( 'vk_dynamic_if_block_migration_completed', false );
+
+	if ( $migration_completed && empty( $posts ) ) {
+		wp_die( __( 'Migration is already completed.', 'vk-dynamic-if-block' ) );
+	}
 
 	if ( empty( $posts ) ) {
 		echo '<div class="wrap"><h1>' . __( 'VK Dynamic If Block Migration', 'vk-dynamic-if-block' ) . '</h1><div class="notice notice-success"><p>' . __( 'No pages require migration.', 'vk-dynamic-if-block' ) . '</p></div></div>';
@@ -623,6 +628,11 @@ function vk_dynamic_if_block_migration_page() {
  * @return void
  */
 function vk_dynamic_if_block_handle_migration_bulk_action() {
+	// 権限チェック
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_die( __( 'You do not have sufficient permissions to access this page.', 'vk-dynamic-if-block' ) );
+	}
+
 	if ( ! isset( $_POST['vk_migration_nonce'] ) || ! wp_verify_nonce( $_POST['vk_migration_nonce'], 'vk_migration_bulk_action' ) ) {
 		return;
 	}
@@ -694,6 +704,11 @@ add_action( 'admin_init', 'vk_dynamic_if_block_handle_migration_bulk_action' );
  * @return void
  */
 function vk_dynamic_if_block_show_migration_result() {
+	// 権限チェック
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
 	if ( ! isset( $_SESSION['vk_migration_result'] ) ) {
 		return;
 	}

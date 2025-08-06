@@ -234,7 +234,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			value: key,
 			// eslint-disable-next-line @wordpress/i18n-no-variables
 			label: __( label, 'vk-dynamic-if-block' ),
-		} ) );
+		} ) ) || [];
 
 		const userSelectOptions =
 			vkDynamicIfBlockLocalizeData?.userSelectOptions || [];
@@ -414,32 +414,37 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						/>
 					);
 				},
-				userRole: () => (
-					<BaseControl
-						__nextHasNoMarginBottom
-						className="dynamic-if-user-role"
-					>
-						{ userRoles.map( ( role, index ) => (
-							<CheckboxControl
-								__nextHasNoMarginBottom
-								key={ role?.value || index }
-								label={ role?.label || '' }
-								checked={ ( values.userRole || [] ).includes(
-									role.value
-								) }
-								onChange={ ( checked ) => {
-									const currentRoles = values.userRole || [];
-									const newRoles = checked
-										? [ ...currentRoles, role.value ]
-										: currentRoles.filter(
-												( r ) => r !== role.value
-										  );
-									updateValue( 'userRole', newRoles );
-								} }
-							/>
-						) ) }
-					</BaseControl>
-				),
+				userRole: () => {
+					// userRolesが配列でない場合の安全な処理
+					const safeUserRoles = Array.isArray( userRoles ) ? userRoles : [];
+					
+					return (
+						<BaseControl
+							__nextHasNoMarginBottom
+							className="dynamic-if-user-role"
+						>
+							{ safeUserRoles.map( ( role, index ) => (
+								<CheckboxControl
+									__nextHasNoMarginBottom
+									key={ role?.value || index }
+									label={ role?.label || '' }
+									checked={ ( values.userRole || [] ).includes(
+										role.value
+									) }
+									onChange={ ( checked ) => {
+										const currentRoles = values.userRole || [];
+										const newRoles = checked
+											? [ ...currentRoles, role.value ]
+											: currentRoles.filter(
+													( r ) => r !== role.value
+											  );
+										updateValue( 'userRole', newRoles );
+									} }
+								/>
+							) ) }
+						</BaseControl>
+					);
+				},
 				postAuthor: () => (
 					<SelectControl
 						label={ __( 'Post Author', 'vk-dynamic-if-block' ) }
@@ -703,10 +708,12 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							if ( ! selectedRoles.length ) {
 								return null;
 							}
+							// userRolesが配列でない場合の安全な処理
+							const safeUserRoles = Array.isArray( userRoles ) ? userRoles : [];
 							return selectedRoles
 								.map(
 									( role ) =>
-										userRoles.find(
+										safeUserRoles.find(
 											( r ) => r.value === role
 										)?.label || role
 								)

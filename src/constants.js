@@ -136,7 +136,13 @@ export const createMigrationRules = ( attributes ) => [
 		attr: 'userRole',
 		type: 'userRole',
 		key: 'userRole',
-		condition: ( val ) => val && val.length > 0,
+		condition: ( val ) => val && ( Array.isArray( val ) ? val.length > 0 : val !== 'none' ),
+		customValues: () => {
+			const userRoleValue = attributes.userRole;
+			// 文字列の場合は配列に変換
+			const userRoleArray = Array.isArray( userRoleValue ) ? userRoleValue : [ userRoleValue ];
+			return { userRole: userRoleArray };
+		},
 	},
 	{
 		attr: 'postAuthor',
