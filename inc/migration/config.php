@@ -196,20 +196,10 @@ function vk_dynamic_if_block_migrate_content($content)
             }
 
             if ($has_old_attributes) {
-                // エディターと同じ移行処理を実行
-                if (function_exists('vk_dynamic_if_block_migrate_old_attributes')) {
-                    $migrated_conditions = vk_dynamic_if_block_migrate_old_attributes($attributes);
-                    $attributes['conditions'] = $migrated_conditions;
-                    
-                    // 古い属性を削除
-                    foreach ($old_attributes as $attr) {
-                        unset($attributes[$attr]);
-                    }
-                } else {
-                    // フォールバック: conditionsをクリアしてエディターでの移行に任せる
-                    if (isset($attributes['conditions'])) {
-                        unset($attributes['conditions']);
-                    }
+                // 古い属性が存在する場合、conditionsは空にしてエディターでの移行に任せる
+                // エディターが移行処理を実行するように、条件をクリアする
+                if ( isset($attributes['conditions'])) {
+                    unset($attributes['conditions']);
                 }
 
                 // 新しい属性でJSONを生成
@@ -343,8 +333,7 @@ function vk_dynamic_if_block_admin_notice()
                                 $found_old = [];
                                 foreach ($old_attributes as $attr) {
                                     if (isset($attributes[$attr]) && !empty($attributes[$attr]) && $attributes[$attr] !== 'none') {
-                                        $value = is_array($attributes[$attr]) ? json_encode($attributes[$attr]) : $attributes[$attr];
-                                        $found_old[] = $attr . ': ' . $value;
+                                        $found_old[] = $attr . ': ' . $attributes[$attr];
                                     }
                                 }
                                 echo '<li>Old attributes found: ' . (empty($found_old) ? 'None' : implode(', ', $found_old)) . '</li>';
@@ -634,6 +623,12 @@ function vk_dynamic_if_block_handle_migration_bulk_action()
 
         // 移行処理を実行してから保存
         $updated_content = vk_dynamic_if_block_migrate_content($post->post_content);
+        
+        // デバッグログ
+        error_log("VK Dynamic If Block Migration: Processing post ID {$post_id}");
+        error_log("VK Dynamic If Block Migration: Original content length: " . strlen($post->post_content));
+        error_log("VK Dynamic If Block Migration: Updated content length: " . strlen($updated_content));
+        error_log("VK Dynamic If Block Migration: Content changed: " . ($post->post_content !== $updated_content ? 'true' : 'false'));
 
         $result = wp_update_post(array('ID' => $post_id,
                 'post_content' => $updated_content));
