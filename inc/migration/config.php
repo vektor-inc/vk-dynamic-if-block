@@ -321,54 +321,7 @@ function vk_dynamic_if_block_admin_notice()
         return;
     }
     
-    // デバッグ情報を出力
-    if (isset($_GET['debug_migration']) && current_user_can('manage_options')) {
-        echo '<div class="notice notice-info"><p><strong>Debug Info:</strong></p>';
-        echo '<p>Migration completed: ' . ($migration_completed ? 'true' : 'false') . '</p>';
-        echo '<p>Found pages with old blocks: ' . count($posts) . '</p>';
-        
-        if (!empty($posts)) {
-            echo '<p>Pages found:</p><ul>';
-            foreach ($posts as $post) {
-                echo '<li>' . esc_html($post->post_title) . ' (ID: ' . $post->ID . ')';
-                
-                // 詳細デバッグ: 投稿の内容を取得してブロックの状態を確認
-                $full_post = get_post($post->ID);
-                if ($full_post) {
-                    $pattern = '/<!-- wp:vk-blocks\/dynamic-if\s+(\{[^}]*\})\s+-->/';
-                    if (preg_match_all($pattern, $full_post->post_content, $matches)) {
-                        echo '<ul>';
-                        foreach ($matches[1] as $attributes_json) {
-                            $attributes = json_decode($attributes_json, true);
-                            if ($attributes) {
-                                echo '<li>Block attributes: ' . esc_html(json_encode($attributes, JSON_PRETTY_PRINT)) . '</li>';
-                                echo '<li>Has conditions: ' . (isset($attributes['conditions']) ? 'Yes (' . count($attributes['conditions']) . ' groups)' : 'No') . '</li>';
-                                
-                                $old_attributes = ['customFieldName', 'ifPageType', 'ifPostType', 'ifLanguage', 'userRole', 'postAuthor', 'periodDisplaySetting', 'showOnlyLoginUser'];
-                                $found_old = [];
-                                foreach ($old_attributes as $attr) {
-                                    if (isset($attributes[$attr]) && !empty($attributes[$attr]) && $attributes[$attr] !== 'none') {
-                                        $value = is_array($attributes[$attr]) ? json_encode($attributes[$attr]) : $attributes[$attr];
-                                        $found_old[] = $attr . ': ' . $value;
-                                    }
-                                }
-                                echo '<li>Old attributes found: ' . (empty($found_old) ? 'None' : implode(', ', $found_old)) . '</li>';
-                            }
-                        }
-                        echo '</ul>';
-                    }
-                }
-                echo '</li>';
-            }
-            echo '</ul>';
-        }
-        
-        // 手動移行テストボタンを追加
-        echo '<p><strong>Manual Migration Test:</strong></p>';
-        echo '<p><a href="' . admin_url('admin-ajax.php?action=vk_dynamic_if_block_test_migration&post_id=2100&nonce=' . wp_create_nonce('vk_test_migration')) . '" class="button button-secondary">Test Migration for ID 2100</a></p>';
-        
-        echo '</div>';
-    }
+
 
     // 移行完了フラグがtrueで、かつ古いブロックを持つページが存在しない場合のみアラートを非表示
     if ( $migration_completed && empty($posts)) {
@@ -448,52 +401,7 @@ function vk_dynamic_if_block_ajax_complete_migration()
 }
 add_action('wp_ajax_vk_dynamic_if_block_complete_migration', 'vk_dynamic_if_block_ajax_complete_migration');
 
-/**
- * AJAX: 手動移行テスト
- *
- * @return void
- */
-function vk_dynamic_if_block_ajax_test_migration() {
-    check_ajax_referer('vk_test_migration', 'nonce');
-    
-    if (!current_user_can('manage_options')) {
-        wp_die('Permission denied');
-    }
-    
-    $post_id = intval($_GET['post_id'] ?? 0);
-    if (!$post_id) {
-        wp_die('Invalid post ID');
-    }
-    
-    $post = get_post($post_id);
-    if (!$post) {
-        wp_die('Post not found');
-    }
-    
-    // 移行処理を実行
-    $updated_content = vk_dynamic_if_block_migrate_content($post->post_content);
-    
-    // デバッグログ
-    error_log("VK Dynamic If Block Test Migration: Processing post ID {$post_id}");
-    error_log("VK Dynamic If Block Test Migration: Original content length: " . strlen($post->post_content));
-    error_log("VK Dynamic If Block Test Migration: Updated content length: " . strlen($updated_content));
-    error_log("VK Dynamic If Block Test Migration: Content changed: " . ($post->post_content !== $updated_content ? 'true' : 'false'));
-    
-    // 投稿を更新
-    $result = wp_update_post(array(
-        'ID' => $post_id,
-        'post_content' => $updated_content
-    ));
-    
-    if (is_wp_error($result)) {
-        echo 'Migration failed: ' . $result->get_error_message();
-    } else {
-        echo 'Migration completed successfully for post ID ' . $post_id;
-    }
-    
-    wp_die();
-}
-add_action('wp_ajax_vk_dynamic_if_block_test_migration', 'vk_dynamic_if_block_ajax_test_migration');
+
 
 /**
  * 管理メニューに移行ページを追加
@@ -691,12 +599,6 @@ function vk_dynamic_if_block_handle_migration_bulk_action()
 
         // 移行処理を実行してから保存
         $updated_content = vk_dynamic_if_block_migrate_content($post->post_content);
-        
-        // デバッグログ
-        error_log("VK Dynamic If Block Migration: Processing post ID {$post_id}");
-        error_log("VK Dynamic If Block Migration: Original content length: " . strlen($post->post_content));
-        error_log("VK Dynamic If Block Migration: Updated content length: " . strlen($updated_content));
-        error_log("VK Dynamic If Block Migration: Content changed: " . ($post->post_content !== $updated_content ? 'true' : 'false'));
 
         $result = wp_update_post(array('ID' => $post_id,
                 'post_content' => $updated_content));
