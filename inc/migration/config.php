@@ -305,9 +305,22 @@ function vk_dynamic_if_block_admin_notice()
         echo '<div class="notice notice-success"><p><strong>Hook Test:</strong> admin_notices hook is working!</p></div>';
         return;
     }
-
-    // 移行が必要なページを検索
-    $posts = vk_dynamic_if_block_find_pages_with_old_blocks();
+    
+    // デバッグ情報を出力
+    if (isset($_GET['debug_migration']) && current_user_can('manage_options')) {
+        echo '<div class="notice notice-info"><p><strong>Debug Info:</strong></p>';
+        echo '<p>Migration completed: ' . ($migration_completed ? 'true' : 'false') . '</p>';
+        echo '<p>Found pages with old blocks: ' . count($posts) . '</p>';
+        
+        if (!empty($posts)) {
+            echo '<p>Pages found:</p><ul>';
+            foreach ($posts as $post) {
+                echo '<li>' . esc_html($post->post_title) . ' (ID: ' . $post->ID . ')</li>';
+            }
+            echo '</ul>';
+        }
+        echo '</div>';
+    }
 
     // 移行完了フラグがtrueで、かつ古いブロックを持つページが存在しない場合のみアラートを非表示
     if ( $migration_completed && empty($posts)) {
