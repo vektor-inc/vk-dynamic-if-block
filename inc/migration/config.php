@@ -196,10 +196,20 @@ function vk_dynamic_if_block_migrate_content($content)
             }
 
             if ($has_old_attributes) {
-                // 古い属性が存在する場合、conditionsは空にしてエディターでの移行に任せる
-                // エディターが移行処理を実行するように、条件をクリアする
-                if ( isset($attributes['conditions'])) {
-                    unset($attributes['conditions']);
+                // エディターと同じ移行処理を実行
+                if (function_exists('vk_dynamic_if_block_migrate_old_attributes')) {
+                    $migrated_conditions = vk_dynamic_if_block_migrate_old_attributes($attributes);
+                    $attributes['conditions'] = $migrated_conditions;
+                    
+                    // 古い属性を削除
+                    foreach ($old_attributes as $attr) {
+                        unset($attributes[$attr]);
+                    }
+                } else {
+                    // フォールバック: conditionsをクリアしてエディターでの移行に任せる
+                    if (isset($attributes['conditions'])) {
+                        unset($attributes['conditions']);
+                    }
                 }
 
                 // 新しい属性でJSONを生成
@@ -333,7 +343,8 @@ function vk_dynamic_if_block_admin_notice()
                                 $found_old = [];
                                 foreach ($old_attributes as $attr) {
                                     if (isset($attributes[$attr]) && !empty($attributes[$attr]) && $attributes[$attr] !== 'none') {
-                                        $found_old[] = $attr . ': ' . $attributes[$attr];
+                                        $value = is_array($attributes[$attr]) ? json_encode($attributes[$attr]) : $attributes[$attr];
+                                        $found_old[] = $attr . ': ' . $value;
                                     }
                                 }
                                 echo '<li>Old attributes found: ' . (empty($found_old) ? 'None' : implode(', ', $found_old)) . '</li>';
