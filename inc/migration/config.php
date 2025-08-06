@@ -84,7 +84,7 @@ add_action( 'plugins_loaded', 'vk_dynamic_if_block_check_version' );
  * @return array 移行後の条件配列
  */
 function vk_dynamic_if_block_migrate_old_attributes_simple( $attributes ) {
-	$conditions = [];
+	$groups = [];
 	$migrations = [
 		'ifPageType' => 'pageType',
 		'ifPostType' => 'postType',
@@ -92,13 +92,16 @@ function vk_dynamic_if_block_migrate_old_attributes_simple( $attributes ) {
 		'postAuthor' => 'postAuthor'
 	];
 
+	$group_conditions = [];
+	$group_id = 'migrated_group_' . time();
+
 	foreach ( $migrations as $old_key => $new_type ) {
 		if ( isset( $attributes[ $old_key ] ) && $attributes[ $old_key ] !== 'none' ) {
 			// 昔の状態では単一値だったので、配列の場合は最初の値を使用
 			$value = is_array( $attributes[ $old_key ] )
 				? $attributes[ $old_key ][0]
 				: $attributes[ $old_key ];
-			$conditions[] = [
+			$group_conditions[] = [
 				'id' => "migrated_{$new_type}_" . time(),
 				'type' => $new_type,
 				'values' => [
@@ -114,7 +117,7 @@ function vk_dynamic_if_block_migrate_old_attributes_simple( $attributes ) {
 		$values = is_array( $attributes['userRole'] )
 			? $attributes['userRole']
 			: [ $attributes['userRole'] ];
-		$conditions[] = [
+		$group_conditions[] = [
 			'id' => 'migrated_user_role_' . time(),
 			'type' => 'userRole',
 			'values' => [ 'userRole' => $values ]
@@ -134,7 +137,7 @@ function vk_dynamic_if_block_migrate_old_attributes_simple( $attributes ) {
 			$values['customFieldValue'] = $attributes['customFieldValue'];
 		}
 
-		$conditions[] = [
+		$group_conditions[] = [
 			'id' => 'migrated_custom_field_' . time(),
 			'type' => 'customField',
 			'values' => $values
@@ -158,7 +161,7 @@ function vk_dynamic_if_block_migrate_old_attributes_simple( $attributes ) {
 			}
 		}
 
-		$conditions[] = [
+		$group_conditions[] = [
 			'id' => 'migrated_period_' . time(),
 			'type' => 'period',
 			'values' => $values
@@ -168,7 +171,7 @@ function vk_dynamic_if_block_migrate_old_attributes_simple( $attributes ) {
 	if ( isset( $attributes['showOnlyLoginUser'] )
 		&& $attributes['showOnlyLoginUser']
 	) {
-		$conditions[] = [
+		$group_conditions[] = [
 			'id' => 'migrated_login_user_' . time(),
 			'type' => 'loginUser',
 			'values' => [
@@ -177,7 +180,17 @@ function vk_dynamic_if_block_migrate_old_attributes_simple( $attributes ) {
 		];
 	}
 
-	return $conditions;
+	// 条件がある場合はグループを作成
+	if ( ! empty( $group_conditions ) ) {
+		$groups[] = [
+			'id' => $group_id,
+			'name' => 'Migrated Conditions',
+			'conditions' => $group_conditions,
+			'operator' => 'and'
+		];
+	}
+
+	return $groups;
 }
 
 /**
@@ -246,10 +259,10 @@ function vk_dynamic_if_block_migrate_content( $content ) {
 
 			if ( $has_old_attributes ) {
 				// 移行処理を実行
-				$migrated_conditions = function_exists( 'vk_dynamic_if_block_migrate_old_attributes' )
+				$migrated_groups = function_exists( 'vk_dynamic_if_block_migrate_old_attributes' )
 					? vk_dynamic_if_block_migrate_old_attributes( $attributes )
 					: vk_dynamic_if_block_migrate_old_attributes_simple( $attributes );
-				$attributes['conditions'] = $migrated_conditions;
+				$attributes['groups'] = $migrated_groups;
 
 				// 古い属性を削除
 				foreach ( $old_attributes as $attr ) {
