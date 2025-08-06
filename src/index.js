@@ -123,10 +123,10 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 
 		// 条件を更新する共通関数
 		const updateConditionAt = ( groupIndex, conditionIndex, updater ) => {
-			const newConditions = [ ...conditions ];
+			const newConditions = [ ...( conditions || [] ) ];
 			newConditions[ groupIndex ] = {
 				...newConditions[ groupIndex ],
-				conditions: [ ...newConditions[ groupIndex ].conditions ]
+				conditions: [ ...( newConditions[ groupIndex ].conditions || [] ) ]
 			};
 			newConditions[ groupIndex ].conditions[ conditionIndex ] = updater(
 				newConditions[ groupIndex ].conditions[ conditionIndex ]
@@ -246,7 +246,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				values: {},
 			};
 
-			if ( conditions.length === 0 ) {
+			if ( !conditions || conditions.length === 0 ) {
 				setAttributes( {
 					conditions: [ {
 						id: generateId(),
@@ -255,10 +255,10 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					} ]
 				} );
 			} else {
-				const newConditions = [ ...conditions ];
+				const newConditions = [ ...( conditions || [] ) ];
 				newConditions[ 0 ] = {
 					...newConditions[ 0 ],
-					conditions: [ ...newConditions[ 0 ].conditions, newCondition ]
+					conditions: [ ...( newConditions[ 0 ].conditions || [] ), newCondition ]
 				};
 				setAttributes( { conditions: newConditions } );
 			}
@@ -294,7 +294,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				operator: 'or',
 			};
 			
-			const newConditions = [ ...conditions, newConditionGroup ];
+			const newConditions = [ ...( conditions || [] ), newConditionGroup ];
 			setAttributes( {
 				conditions: newConditions,
 			} );
@@ -640,10 +640,10 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					: __( 'No conditions set', 'vk-dynamic-if-block' );
 			}
 
-			const groupLabels = conditions
-				.map( ( group ) => {
+					const groupLabels = ( conditions || [] )
+			.map( ( group ) => {
 					const { conditions: groupConditions = [] } = group || {};
-					if ( ! groupConditions.length ) {
+					if ( ! groupConditions || ! groupConditions.length ) {
 						return null;
 					}
 
@@ -772,7 +772,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						) }
 						className={ 'vkdif' }
 					>
-						{ conditions.length === 0 ? (
+						{ !conditions || conditions.length === 0 ? (
 							<div>
 								<BaseControl
 									__nextHasNoMarginBottom
@@ -807,13 +807,13 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							</div>
 						) : (
 							<>
-								{ conditions.map( ( group, groupIndex ) => (
+								{ ( conditions || [] ).map( ( group, groupIndex ) => (
 									<div
 										key={ group.id }
 										className="vkdif__group"
 									>
 										<div className="vkdif__group-conditions">
-											{ group.conditions.map(
+											{ ( group.conditions || [] ).map(
 												(
 													condition,
 													conditionIndex
