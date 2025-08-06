@@ -51,9 +51,20 @@ function vk_dynamic_if_block_check_version() {
 	$is_new_installation = empty( $current_version );
 
 	if ( $is_new_installation ) {
-		// 新規インストール時はバージョン情報のみ保存
+		// 新規インストール時はバージョン情報を保存
 		update_option( 'vk_dynamic_if_block_version', $plugin_version );
-		update_option( 'vk_dynamic_if_block_migration_completed', true );
+		
+		// 移行が必要なページがあるかチェック
+		$posts = vk_dynamic_if_block_find_pages_with_old_blocks();
+		
+		if ( empty( $posts ) ) {
+			// 移行対象がない場合のみ完了フラグを設定
+			update_option( 'vk_dynamic_if_block_migration_completed', true );
+		} else {
+			// 移行対象がある場合は完了フラグを設定しない（アラートを表示するため）
+			delete_option( 'vk_dynamic_if_block_migration_completed' );
+		}
+		
 		error_log( "VK Dynamic If Block: New installation - version set to {$plugin_version}" );
 		return;
 	}
@@ -268,6 +279,11 @@ function vk_dynamic_if_block_migrate_content( $content ) {
  * @return void
  */
 function vk_dynamic_if_block_admin_notice() {
+	// デバッグ用：強制的に移行アラートを表示する場合
+	if ( isset( $_GET['force_migration_alert'] ) && current_user_can( 'manage_options' ) ) {
+		delete_option( 'vk_dynamic_if_block_migration_completed' );
+	}
+	
 	// 移行完了フラグをチェック
 	$migration_completed = get_option( 'vk_dynamic_if_block_migration_completed', false );
 
