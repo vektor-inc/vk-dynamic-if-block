@@ -203,9 +203,87 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					);
 				}
 
-				setAttributes( { conditions: newConditions } );
+				// 新しいconditionsを設定し、古い属性をクリア
+				const attributesToUpdate = { conditions: newConditions };
+				
+				// 古い属性をクリア
+				const oldAttributesToClear = [
+					'ifPageType',
+					'ifPostType', 
+					'ifLanguage',
+					'userRole',
+					'postAuthor',
+					'customFieldName',
+					'customFieldRule',
+					'customFieldValue',
+					'periodDisplaySetting',
+					'periodSpecificationMethod',
+					'periodDisplayValue',
+					'periodReferCustomField',
+					'showOnlyLoginUser'
+				];
+
+				oldAttributesToClear.forEach( attr => {
+					attributesToUpdate[ attr ] = attr === 'userRole' ? [] : 
+						attr === 'postAuthor' ? 0 : 
+						attr === 'showOnlyLoginUser' ? false : 
+						attr === 'customFieldRule' ? 'valueExists' : 
+						attr === 'periodSpecificationMethod' ? 'direct' : 
+						'none';
+				});
+
+				setAttributes( attributesToUpdate );
 			}
 		}, [ attributes, conditions, setAttributes ] );
+
+		// 新しい形式を使用している場合に古い属性をクリア
+		useEffect( () => {
+			if ( conditions && conditions.length > 0 && conditions[ 0 ] && conditions[ 0 ].conditions.length > 0 ) {
+				// 新しい形式が使用されている場合、古い属性をクリア
+				const oldAttributesToClear = [
+					'ifPageType',
+					'ifPostType', 
+					'ifLanguage',
+					'userRole',
+					'postAuthor',
+					'customFieldName',
+					'customFieldRule',
+					'customFieldValue',
+					'periodDisplaySetting',
+					'periodSpecificationMethod',
+					'periodDisplayValue',
+					'periodReferCustomField',
+					'showOnlyLoginUser'
+				];
+
+				const hasOldAttributes = oldAttributesToClear.some( attr => {
+					const value = attributes[ attr ];
+					if ( attr === 'userRole' ) {
+						return Array.isArray( value ) && value.length > 0;
+					}
+					if ( attr === 'postAuthor' ) {
+						return value !== 0;
+					}
+					if ( attr === 'showOnlyLoginUser' ) {
+						return value === true;
+					}
+					return value && value !== 'none' && value !== '';
+				});
+
+				if ( hasOldAttributes ) {
+					const attributesToUpdate = {};
+					oldAttributesToClear.forEach( attr => {
+						attributesToUpdate[ attr ] = attr === 'userRole' ? [] : 
+							attr === 'postAuthor' ? 0 : 
+							attr === 'showOnlyLoginUser' ? false : 
+							attr === 'customFieldRule' ? 'valueExists' : 
+							attr === 'periodSpecificationMethod' ? 'direct' : 
+							'none';
+					});
+					setAttributes( attributesToUpdate );
+				}
+			}
+		}, [ conditions, attributes, setAttributes ] );
 
 		const conditionTypes = Object.entries( CONDITION_TYPE_LABELS ).map(
 			( [ value, label ] ) => ( {
