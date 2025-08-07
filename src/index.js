@@ -203,9 +203,72 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					);
 				}
 
-				setAttributes( { conditions: newConditions } );
+				// 新しい形式に移行する際に古い属性をクリア
+				const oldAttributesToClear = [
+					'ifPageType',
+					'ifPostType', 
+					'ifLanguage',
+					'userRole',
+					'postAuthor',
+					'customFieldName',
+					'customFieldRule',
+					'customFieldValue',
+					'periodDisplaySetting',
+					'periodSpecificationMethod',
+					'periodDisplayValue',
+					'periodReferCustomField',
+					'showOnlyLoginUser'
+				];
+
+				const clearedAttributes = { ...attributes };
+				oldAttributesToClear.forEach( attr => {
+					delete clearedAttributes[ attr ];
+				});
+
+				setAttributes( { 
+					conditions: newConditions,
+					...clearedAttributes
+				} );
 			}
 		}, [ attributes, conditions, setAttributes ] );
+
+		// 新しい形式を使用している場合に古い属性をクリア
+		useEffect( () => {
+			if ( conditions && conditions.length > 0 && conditions[ 0 ].conditions.length > 0 ) {
+				const oldAttributesToClear = [
+					'ifPageType',
+					'ifPostType', 
+					'ifLanguage',
+					'userRole',
+					'postAuthor',
+					'customFieldName',
+					'customFieldRule',
+					'customFieldValue',
+					'periodDisplaySetting',
+					'periodSpecificationMethod',
+					'periodDisplayValue',
+					'periodReferCustomField',
+					'showOnlyLoginUser'
+				];
+
+				const hasOldAttributes = oldAttributesToClear.some( attr => 
+					attributes[ attr ] !== undefined && 
+					attributes[ attr ] !== '' && 
+					attributes[ attr ] !== 'none' && 
+					attributes[ attr ] !== 0 &&
+					!Array.isArray( attributes[ attr ] ) &&
+					( !Array.isArray( attributes[ attr ] ) || attributes[ attr ].length > 0 )
+				);
+
+				if ( hasOldAttributes ) {
+					const clearedAttributes = { ...attributes };
+					oldAttributesToClear.forEach( attr => {
+						delete clearedAttributes[ attr ];
+					});
+					setAttributes( clearedAttributes );
+				}
+			}
+		}, [ conditions, attributes, setAttributes ] );
 
 		const conditionTypes = Object.entries( CONDITION_TYPE_LABELS ).map(
 			( [ value, label ] ) => ( {
