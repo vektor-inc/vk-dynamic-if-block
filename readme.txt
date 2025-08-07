@@ -4,7 +4,7 @@ Tags: dynamic block, if, Conditional branch, Conditional Display, Custom Field, 
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 0.9.3
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -35,7 +35,9 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+= 1.2.0 =
 [ Add Function ] Added condition to display only to mobile devices.
+[ Other ] Prevent automatic migration of old block structure on frontend and migrate to new structure when saving in editor.
 
 = 1.1.0 =
 [ Add Function ] Add page hierarchy conditions (parent/child page) to page type and post type conditions for pages.
@@ -44,6 +46,16 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 = 1.0.0 =
 [ Specification Change ] Changed UI to stacked condition format. 
+
+= 0.9.4 =
+[ Other ] Update alert message
+
+= 0.9.3 =
+[ Specification change ] Change version 1 download url to GitHub from .org
+[ Bug fix ] Fix Label color
+
+= 0.9.2 =
+[ Specification change ] Added update notification for version 1.
 
 = 0.9.1 =
 [ Specification change ] Add the condition !is_year() && !is_month() && !is_date() for Post Type Archives.

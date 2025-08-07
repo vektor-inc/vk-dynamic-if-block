@@ -40,9 +40,6 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 	);
 	$attributes         = array_merge( $attributes_default, $attributes );
 
-	// デバッグ用ログ
-	error_log('VK Dynamic If Block Debug - Attributes: ' . json_encode($attributes));
-
 	// 古い属性のチェック
 	$old_attributes = [
 		'customFieldName',
@@ -65,26 +62,21 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 				// 配列の場合は空でないかチェック
 				if (!empty($value)) {
 					$has_old_attributes = true;
-					error_log('VK Dynamic If Block Debug - Found old attribute: ' . $attr . ' = ' . json_encode($value));
 					break;
 				}
 			} elseif (is_string($value) || is_numeric($value)) {
 				// 文字列や数値の場合は空でなく、'none'でもないかチェック
 				if (!empty($value) && $value !== 'none' && $value !== 0) {
 					$has_old_attributes = true;
-					error_log('VK Dynamic If Block Debug - Found old attribute: ' . $attr . ' = ' . json_encode($value));
 					break;
 				}
 			}
 		}
 	}
 
-	error_log('VK Dynamic If Block Debug - Has old attributes: ' . ($has_old_attributes ? 'true' : 'false'));
-
 	// 古い属性が存在する場合は古い構造で処理（新しいconditionsやgroupsを無視）
 	if ($has_old_attributes) {
-		error_log('VK Dynamic If Block Debug - Using old attributes structure (ignoring new conditions/groups)');
-		return vk_dynamic_if_block_render_with_old_attributes(
+		return vk_dynamic_if_block_render_old_attributes(
 			$attributes, 
 			$content
 		);
@@ -92,8 +84,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 
 	// conditionsが明示的に設定されている場合は新しい構造を優先
 	if (! empty($attributes['conditions'])) {
-		error_log('VK Dynamic If Block Debug - Using new conditions structure');
-		return vk_dynamic_if_block_render_with_conditions(
+		return vk_dynamic_if_block_render_conditions(
 			$attributes, 
 			$content
 		);
@@ -101,15 +92,13 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 
 	// groupsが設定されている場合はgroupsを使用
 	if (! empty($attributes['groups'])) {
-		error_log('VK Dynamic If Block Debug - Using groups structure');
-		return vk_dynamic_if_block_render_with_groups(
+		return vk_dynamic_if_block_render_groups(
 			$attributes, 
 			$content
 		);
 	}
 
 	// 条件が設定されていない場合はコンテンツを表示
-	error_log('VK Dynamic If Block Debug - No conditions set, showing content');
 	return $content;
 }
 
@@ -121,7 +110,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
  *
  * @return string Rendered content.
  */
-function vk_dynamic_if_block_render_with_groups($attributes, $content)
+function vk_dynamic_if_block_render_groups($attributes, $content)
 {
 	$groups = $attributes['groups'];
 	$groupOperator = $attributes['groupOperator'] ?? 'and';
@@ -165,7 +154,7 @@ function vk_dynamic_if_block_render_with_groups($attributes, $content)
  *
  * @return string Rendered content.
  */
-function vk_dynamic_if_block_render_with_conditions($attributes, $content)
+function vk_dynamic_if_block_render_conditions($attributes, $content)
 {
 	if (empty($attributes['conditions'])) {
 		return $content;
@@ -212,15 +201,13 @@ function vk_dynamic_if_block_render_with_conditions($attributes, $content)
  *
  * @return string Rendered content.
  */
-function vk_dynamic_if_block_render_with_old_attributes($attributes, $content)
+function vk_dynamic_if_block_render_old_attributes($attributes, $content)
 {
-	error_log('VK Dynamic If Block Debug - Starting old attributes processing');
 	$display = true;
 
 	// Page Type Check
 	if (!empty($attributes['ifPageType']) && $attributes['ifPageType'] !== 'none') {
 		$page_type = $attributes['ifPageType'];
-		error_log('VK Dynamic If Block Debug - Checking page type: ' . $page_type);
 		$page_checks = [
 			'is_front_page' => is_front_page(),
 			'is_single' => is_single(),
@@ -242,16 +229,13 @@ function vk_dynamic_if_block_render_with_old_attributes($attributes, $content)
 		];
 
 		if (is_string($page_type) && isset($page_checks[$page_type])) {
-			$page_result = $page_checks[$page_type];
-			$display = $display && $page_result;
-			error_log('VK Dynamic If Block Debug - Page type check result: ' . ($page_result ? 'true' : 'false'));
+			$display = $display && $page_checks[$page_type];
 		}
 	}
 
 	// Post Type Check
 	if (!empty($attributes['ifPostType']) && $attributes['ifPostType'] !== 'none') {
 		$post_type = $attributes['ifPostType'];
-		error_log('VK Dynamic If Block Debug - Checking post type: ' . $post_type);
 		$current_type = get_post_type();
 		
 		if (empty($current_type)) {
@@ -264,36 +248,32 @@ function vk_dynamic_if_block_render_with_old_attributes($attributes, $content)
 			}
 		}
 
-		$post_result = ($current_type === $post_type);
-		$display = $display && $post_result;
-		error_log('VK Dynamic If Block Debug - Post type check result: ' . ($post_result ? 'true' : 'false') . ' (current: ' . $current_type . ')');
+		$display = $display && ($current_type === $post_type);
 	}
 
 	// Language Check
 	if (!empty($attributes['ifLanguage']) && $attributes['ifLanguage'] !== 'none') {
 		$language = $attributes['ifLanguage'];
-		$lang_result = ($language === get_locale());
-		$display = $display && $lang_result;
-		error_log('VK Dynamic If Block Debug - Language check result: ' . ($lang_result ? 'true' : 'false') . ' (expected: ' . $language . ', current: ' . get_locale() . ')');
+		$display = $display && ($language === get_locale());
 	}
 
 	// User Role Check
 	if (!empty($attributes['userRole'])) {
 		$user_roles = $attributes['userRole'];
+		// userRoleが配列でない場合は配列に変換
+		if (!is_array($user_roles)) {
+			$user_roles = array($user_roles);
+		}
 		$current_user = wp_get_current_user();
-		$role_result = is_user_logged_in() && array_intersect($current_user->roles, $user_roles);
-		$display = $display && $role_result;
-		error_log('VK Dynamic If Block Debug - User role check result: ' . ($role_result ? 'true' : 'false'));
+		$display = $display && is_user_logged_in() && array_intersect($current_user->roles, $user_roles);
 	}
 
 	// Post Author Check
 	if (!empty($attributes['postAuthor']) && $attributes['postAuthor'] !== 0) {
 		$author = (int)$attributes['postAuthor'];
 		$author_id = (int)get_post_field('post_author', get_the_ID());
-		$author_result = ($author === 0 || is_author($author) 
+		$display = $display && ($author === 0 || is_author($author) 
 			|| (is_singular() && $author_id === $author));
-		$display = $display && $author_result;
-		error_log('VK Dynamic If Block Debug - Post author check result: ' . ($author_result ? 'true' : 'false'));
 	}
 
 	// Custom Field Check
@@ -303,17 +283,14 @@ function vk_dynamic_if_block_render_with_old_attributes($attributes, $content)
 		$rule = $attributes['customFieldRule'] ?? 'valueExists';
 		$expected_value = $attributes['customFieldValue'] ?? '';
 
-		$field_result = false;
 		switch ($rule) {
 			case 'valueExists':
-				$field_result = ($field_value || $field_value === '0');
+				$display = $display && ($field_value || $field_value === '0');
 				break;
 			case 'valueEquals':
-				$field_result = ($field_value === $expected_value);
+				$display = $display && ($field_value === $expected_value);
 				break;
 		}
-		$display = $display && $field_result;
-		error_log('VK Dynamic If Block Debug - Custom field check result: ' . ($field_result ? 'true' : 'false') . ' (field: ' . $field_name . ', value: ' . $field_value . ')');
 	}
 
 	// Period Check
@@ -332,15 +309,12 @@ function vk_dynamic_if_block_render_with_old_attributes($attributes, $content)
 		if (isset($checkers[$setting])) {
 			$period_result = $checkers[$setting]($method, $value, $refer_field);
 			$display = $display && $period_result;
-			error_log('VK Dynamic If Block Debug - Period check result: ' . ($period_result ? 'true' : 'false'));
 		}
 	}
 
 	// Login User Check
 	if (!empty($attributes['showOnlyLoginUser'])) {
-		$login_result = is_user_logged_in();
-		$display = $display && $login_result;
-		error_log('VK Dynamic If Block Debug - Login user check result: ' . ($login_result ? 'true' : 'false'));
+		$display = $display && is_user_logged_in();
 	}
 
 	// Device Type Check
@@ -359,7 +333,6 @@ function vk_dynamic_if_block_render_with_old_attributes($attributes, $content)
 
 	// Exclusion Check
 	$final_result = ($attributes['exclusion'] ? !$display : $display);
-	error_log('VK Dynamic If Block Debug - Final result: ' . ($final_result ? 'true' : 'false') . ' (display: ' . ($display ? 'true' : 'false') . ', exclusion: ' . ($attributes['exclusion'] ? 'true' : 'false') . ')');
 
 	return $final_result ? $content : '';
 }
@@ -529,6 +502,10 @@ function vk_dynamic_if_block_check_language($values)
 function vk_dynamic_if_block_check_user_role($values)
 {
 	$user_roles = $values['userRole'] ?? [];
+	// userRoleが配列でない場合は配列に変換
+	if (!is_array($user_roles)) {
+		$user_roles = array($user_roles);
+	}
 	if (empty($user_roles)) {
 		return true;
 	}
