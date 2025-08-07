@@ -784,13 +784,17 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							),
 						userRole: () => {
 							const selectedRoles = values.userRole || [];
-							if ( ! selectedRoles.length ) {
+							// selectedRolesが配列でない場合は配列に変換
+							const roles = Array.isArray(selectedRoles) ? selectedRoles : [selectedRoles];
+							if ( ! roles.length ) {
 								return null;
 							}
-							return selectedRoles
+							// userRolesが配列でない場合は空配列を使用
+							const availableRoles = Array.isArray(userRoles) ? userRoles : [];
+							return roles
 								.map(
 									( role ) =>
-										userRoles.find(
+										availableRoles.find(
 											( r ) => r.value === role
 										)?.label || role
 								)
