@@ -35,6 +35,8 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+[ Bug fix ] Prevent automatic migration of old block structure on frontend and migrate to new structure when saving in editor.
+
 = 1.1.0 =
 [ Add Function ] Add page hierarchy conditions (parent/child page) to page type and post type conditions for pages.
 [ Bug fix ] Fix an issue where duplicating the VK Dynamic If Block caused all instances to share the same condition.
