@@ -53,12 +53,31 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 
 	$has_old_attributes = false;
 	foreach ($old_attributes as $attr) {
-		if (isset($attributes[ $attr ]) && ! empty($attributes[ $attr ]) 
-			&& $attributes[ $attr ] !== 'none'
-		) {
-			$has_old_attributes = true;
-			break;
+		// 属性が存在し、空でなく、'none'でもない場合のみ古い属性とみなす
+		if (isset($attributes[ $attr ])) {
+			$value = $attributes[ $attr ];
+			if (is_array($value)) {
+				// 配列の場合は空でないかチェック
+				if (!empty($value)) {
+					$has_old_attributes = true;
+					break;
+				}
+			} elseif (is_string($value) || is_numeric($value)) {
+				// 文字列や数値の場合は空でなく、'none'でもないかチェック
+				if (!empty($value) && $value !== 'none' && $value !== 0) {
+					$has_old_attributes = true;
+					break;
+				}
+			}
 		}
+	}
+
+	// 古い属性が存在する場合は古い構造で処理（新しいconditionsやgroupsを無視）
+	if ($has_old_attributes) {
+		return vk_dynamic_if_block_render_with_old_attributes(
+			$attributes, 
+			$content
+		);
 	}
 
 	// conditionsが明示的に設定されている場合は新しい構造を優先
@@ -72,14 +91,6 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 	// groupsが設定されている場合はgroupsを使用
 	if (! empty($attributes['groups'])) {
 		return vk_dynamic_if_block_render_with_groups(
-			$attributes, 
-			$content
-		);
-	}
-
-	// 古い属性が存在する場合は古い構造で処理
-	if ($has_old_attributes) {
-		return vk_dynamic_if_block_render_with_old_attributes(
 			$attributes, 
 			$content
 		);
