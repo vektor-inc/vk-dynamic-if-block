@@ -306,13 +306,19 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			};
 		} );
 
-		const userRoles = Object.entries(
-			vkDynamicIfBlockLocalizeData?.userRoles || {}
-		).map( ( [ key, label ] ) => ( {
-			value: key,
-			// eslint-disable-next-line @wordpress/i18n-no-variables
-			label: __( label, 'vk-dynamic-if-block' ),
-		} ) ) || [];
+		const userRoles = (() => {
+			try {
+				const userRolesData = vkDynamicIfBlockLocalizeData?.userRoles || {};
+				return Object.entries(userRolesData).map( ( [ key, label ] ) => ( {
+					value: key,
+					// eslint-disable-next-line @wordpress/i18n-no-variables
+					label: __( label, 'vk-dynamic-if-block' ),
+				} ) );
+			} catch (error) {
+				console.warn('VK Dynamic If Block: Error processing userRoles', error);
+				return [];
+			}
+		})();
 
 		const userSelectOptions =
 			vkDynamicIfBlockLocalizeData?.userSelectOptions || [];
