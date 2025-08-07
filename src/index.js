@@ -120,8 +120,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 	},
 	edit: function Edit( { attributes, setAttributes } ) {
 		const { conditions, conditionOperator, exclusion } = attributes;
-
-		// 条件を更新する共通関数
+		
 		const updateConditionAt = ( groupIndex, conditionIndex, updater ) => {
 			const newConditions = [ ...conditions ];
 			newConditions[ groupIndex ] = {
@@ -308,6 +307,9 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 
 		const userRoles = useMemo(() => {
 			try {
+				if (!vkDynamicIfBlockLocalizeData) {
+					return [];
+				}
 				const userRolesData = vkDynamicIfBlockLocalizeData?.userRoles || {};
 				const result = Object.entries(userRolesData).map( ( [ key, label ] ) => ( {
 					value: key,
@@ -500,106 +502,163 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					);
 				},
 				userRole: () => {
-					// userRolesが配列でない場合は空配列を使用
-					const roles = Array.isArray(userRoles) ? userRoles : [];
-					// values.userRoleが配列でない場合は配列に変換
-					const currentUserRoles = Array.isArray(values.userRole) ? values.userRole : (values.userRole ? [values.userRole] : []);
-					
-					// rolesが空の場合は何も表示しない
-					if (roles.length === 0) {
+					try {
+						// valuesが無効な場合は何も表示しない
+						if (!values) {
+							return (
+								<BaseControl
+									__nextHasNoMarginBottom
+									className="dynamic-if-user-role"
+								>
+									<p>{ __('No values available', 'vk-dynamic-if-block') }</p>
+								</BaseControl>
+							);
+						}
+						
+						// userRolesが配列でない場合は空配列を使用
+						const roles = Array.isArray(userRoles) ? userRoles : [];
+						// values.userRoleが配列でない場合は配列に変換
+						const currentUserRoles = Array.isArray(values.userRole) ? values.userRole : (values.userRole ? [values.userRole] : []);
+						
+						// rolesが空の場合は何も表示しない
+						if (roles.length === 0) {
+							return (
+								<BaseControl
+									__nextHasNoMarginBottom
+									className="dynamic-if-user-role"
+								>
+									<p>{ __('No user roles available', 'vk-dynamic-if-block') }</p>
+								</BaseControl>
+							);
+						}
+						
 						return (
 							<BaseControl
 								__nextHasNoMarginBottom
 								className="dynamic-if-user-role"
 							>
-								<p>{ __('No user roles available', 'vk-dynamic-if-block') }</p>
+								{ roles.map( ( role, index ) => {
+									// roleが無効な場合はスキップ
+									if (!role || !role.value) {
+										return <div key={`empty-${index}`}></div>;
+									}
+									
+									// role.valueが無効な場合はスキップ
+									if (!role.value || typeof role.value !== 'string') {
+										return <div key={`invalid-${index}`}></div>;
+									}
+									
+									return (
+										<CheckboxControl
+											__nextHasNoMarginBottom
+											key={ role.value || index }
+											label={ role.label || '' }
+											checked={ currentUserRoles.includes(role.value) }
+											onChange={ ( checked ) => {
+												const newRoles = checked
+													? [ ...currentUserRoles, role.value ]
+													: currentUserRoles.filter( ( r ) => r !== role.value );
+												updateValue( 'userRole', newRoles );
+											} }
+										/>
+									);
+								} ) }
+							</BaseControl>
+						);
+					} catch (error) {
+						console.error('VK Dynamic If Block: Error in userRole component', error);
+						return (
+							<BaseControl
+								__nextHasNoMarginBottom
+								className="dynamic-if-user-role"
+							>
+								<p>{ __('Error loading user roles', 'vk-dynamic-if-block') }</p>
 							</BaseControl>
 						);
 					}
-					
-					return (
-						<BaseControl
-							__nextHasNoMarginBottom
-							className="dynamic-if-user-role"
-						>
-							{ roles.map( ( role, index ) => {
-								// roleが無効な場合はスキップ
-								if (!role || !role.value) {
-									return null;
-								}
-								
-								return (
-									<CheckboxControl
-										__nextHasNoMarginBottom
-										key={ role.value || index }
-										label={ role.label || '' }
-										checked={ currentUserRoles.includes(role.value) }
-										onChange={ ( checked ) => {
-											const newRoles = checked
-												? [ ...currentUserRoles, role.value ]
-												: currentUserRoles.filter( ( r ) => r !== role.value );
-											updateValue( 'userRole', newRoles );
-										} }
-									/>
-								);
-							} ) }
-						</BaseControl>
-					);
 				},
-				postAuthor: () => (
-					<SelectControl
-						label={ __( 'Post Author', 'vk-dynamic-if-block' ) }
-						value={ values.postAuthor || 0 }
-						options={ userSelectOptions }
-						onChange={ ( value ) =>
-							updateValue( 'postAuthor', parseInt( value ) || 0 )
-						}
-					/>
-				),
-				customField: () => (
-					<>
-						<TextControl
-							label={ __(
-								'Custom Field Name',
-								'vk-dynamic-if-block'
-							) }
-							value={ values.customFieldName || '' }
-							onChange={ ( value ) =>
-								updateValue( 'customFieldName', value )
-							}
-						/>
-						{ values.customFieldName && (
+				postAuthor: () => {
+					try {
+						return (
+							<SelectControl
+								label={ __( 'Post Author', 'vk-dynamic-if-block' ) }
+								value={ values.postAuthor || 0 }
+								options={ userSelectOptions }
+								onChange={ ( value ) =>
+									updateValue( 'postAuthor', parseInt( value ) || 0 )
+								}
+							/>
+						);
+					} catch (error) {
+						console.error('VK Dynamic If Block: Error in postAuthor component', error);
+						return (
+							<BaseControl
+								__nextHasNoMarginBottom
+								className="dynamic-if-post-author"
+							>
+								<p>{ __('Error loading post author', 'vk-dynamic-if-block') }</p>
+							</BaseControl>
+						);
+					}
+				},
+				customField: () => {
+					try {
+						return (
 							<>
-								<SelectControl
+								<TextControl
 									label={ __(
-										'Custom Field Rule',
+										'Custom Field Name',
 										'vk-dynamic-if-block'
 									) }
-									value={ values.customFieldRule || '' }
-									options={ CUSTOM_FIELD_RULES }
+									value={ values.customFieldName || '' }
 									onChange={ ( value ) =>
-										updateValue( 'customFieldRule', value )
+										updateValue( 'customFieldName', value )
 									}
 								/>
-								{ values.customFieldRule === 'valueEquals' && (
-									<TextControl
-										label={ __(
-											'Custom Field Value',
-											'vk-dynamic-if-block'
+								{ values.customFieldName && (
+									<>
+										<SelectControl
+											label={ __(
+												'Custom Field Rule',
+												'vk-dynamic-if-block'
+											) }
+											value={ values.customFieldRule || '' }
+											options={ CUSTOM_FIELD_RULES }
+											onChange={ ( value ) =>
+												updateValue( 'customFieldRule', value )
+											}
+										/>
+										{ values.customFieldRule === 'valueEquals' && (
+											<TextControl
+												label={ __(
+													'Custom Field Value',
+													'vk-dynamic-if-block'
+												) }
+												value={ values.customFieldValue || '' }
+												onChange={ ( value ) =>
+													updateValue(
+														'customFieldValue',
+														value
+													)
+												}
+											/>
 										) }
-										value={ values.customFieldValue || '' }
-										onChange={ ( value ) =>
-											updateValue(
-												'customFieldValue',
-												value
-											)
-										}
-									/>
+									</>
 								) }
 							</>
-						) }
-					</>
-				),
+						);
+					} catch (error) {
+						console.error('VK Dynamic If Block: Error in customField component', error);
+						return (
+							<BaseControl
+								__nextHasNoMarginBottom
+								className="dynamic-if-custom-field"
+							>
+								<p>{ __('Error loading custom field', 'vk-dynamic-if-block') }</p>
+							</BaseControl>
+						);
+					}
+				},
 				period: () => (
 					<>
 						<SelectControl
@@ -805,25 +864,30 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 								'ifLanguage'
 							),
 						userRole: () => {
-							const selectedRoles = values.userRole || [];
-							// selectedRolesが配列でない場合は配列に変換
-							const roles = Array.isArray(selectedRoles) ? selectedRoles : (selectedRoles ? [selectedRoles] : []);
-							if ( ! roles.length ) {
-								return __('No user roles selected', 'vk-dynamic-if-block');
+							try {
+								const selectedRoles = values.userRole || [];
+								// selectedRolesが配列でない場合は配列に変換
+								const roles = Array.isArray(selectedRoles) ? selectedRoles : (selectedRoles ? [selectedRoles] : []);
+								if ( ! roles.length ) {
+									return __('No user roles selected', 'vk-dynamic-if-block');
+								}
+								// userRolesが配列でない場合は空配列を使用
+								const availableRoles = Array.isArray(userRoles) ? userRoles : [];
+								const result = roles
+									.map(
+										( role ) => {
+											if (!role) return '';
+											const foundRole = availableRoles.find( ( r ) => r.value === role );
+											return foundRole?.label || role;
+										}
+									)
+									.filter(Boolean)
+									.join( ', ' );
+								return result || __('Unknown user roles', 'vk-dynamic-if-block');
+							} catch (error) {
+								console.error('VK Dynamic If Block: Error in userRole label generation', error);
+								return __('Error generating user role label', 'vk-dynamic-if-block');
 							}
-							// userRolesが配列でない場合は空配列を使用
-							const availableRoles = Array.isArray(userRoles) ? userRoles : [];
-							const result = roles
-								.map(
-									( role ) => {
-										if (!role) return '';
-										const foundRole = availableRoles.find( ( r ) => r.value === role );
-										return foundRole?.label || role;
-									}
-								)
-								.filter(Boolean)
-								.join( ', ' );
-							return result || __('Unknown user roles', 'vk-dynamic-if-block');
 						},
 						postAuthor: () =>
 							generateLabelFromValues(
