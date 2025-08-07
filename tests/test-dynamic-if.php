@@ -1116,6 +1116,86 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
         'expected'  => '',
         ),
         /******************************************
+        * Device Type 
+*/
+        array(
+        'name'      => 'Mobile devices only - mobile user agent',
+        'go_to'     => get_permalink($test_posts['parent_page_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'deviceType',
+                            'values' => array( 'deviceType' => 'mobile' ),
+                        ),
+        ),
+        ),
+        'user_agent' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1',
+        'content'   => 'Mobile devices only',
+        'expected'  => 'Mobile devices only',
+        ),
+        array(
+        'name'      => 'Mobile devices only - PC user agent',
+        'go_to'     => get_permalink($test_posts['parent_page_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'deviceType',
+                            'values' => array( 'deviceType' => 'mobile' ),
+                        ),
+        ),
+        ),
+        'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'content'   => 'Mobile devices only',
+        'expected'  => '',
+        ),
+        array(
+        'name'      => 'Mobile devices only - no user agent',
+        'go_to'     => get_permalink($test_posts['parent_page_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'deviceType',
+                            'values' => array( 'deviceType' => 'mobile' ),
+                        ),
+        ),
+        ),
+        'user_agent' => '',
+        'content'   => 'Mobile devices only',
+        'expected'  => '',
+        ),
+        array(
+        'name'      => 'Mobile devices only - exclusion (PC only)',
+        'go_to'     => get_permalink($test_posts['parent_page_id']),
+        'attribute' => array(
+                    'exclusion'  => true,
+                    'conditions' => array(
+                        array(
+                            'type'   => 'deviceType',
+                            'values' => array( 'deviceType' => 'mobile' ),
+                        ),
+        ),
+        ),
+        'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'content'   => 'PC only (exclusion)',
+        'expected'  => 'PC only (exclusion)',
+        ),
+        array(
+        'name'      => 'Mobile devices only - exclusion (mobile)',
+        'go_to'     => get_permalink($test_posts['parent_page_id']),
+        'attribute' => array(
+                    'exclusion'  => true,
+                    'conditions' => array(
+                        array(
+                            'type'   => 'deviceType',
+                            'values' => array( 'deviceType' => 'mobile' ),
+                        ),
+        ),
+        ),
+        'user_agent' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1',
+        'content'   => 'PC only (exclusion)',
+        'expected'  => '',
+        ),
+        /******************************************
          * Display Period 
 */
         // not specified
@@ -1876,6 +1956,11 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
 
             print PHP_EOL;
             $this->go_to($test['go_to']);
+
+            // ユーザーエージェントを設定
+            if (isset($test['user_agent'])) {
+                $_SERVER['HTTP_USER_AGENT'] = $test['user_agent'];
+            }
 
             if (! empty($test['user']) ) {
                 print 'user : ' . get_current_user_id() . PHP_EOL;
