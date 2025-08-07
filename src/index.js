@@ -5,7 +5,7 @@ import {
 	InnerBlocks,
 	InspectorControls,
 } from '@wordpress/block-editor';
-import { useEffect } from '@wordpress/element';
+import { useEffect, useMemo } from '@wordpress/element';
 import {
 	PanelBody,
 	SelectControl,
@@ -306,19 +306,20 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			};
 		} );
 
-		const userRoles = (() => {
+		const userRoles = useMemo(() => {
 			try {
 				const userRolesData = vkDynamicIfBlockLocalizeData?.userRoles || {};
-				return Object.entries(userRolesData).map( ( [ key, label ] ) => ( {
+				const result = Object.entries(userRolesData).map( ( [ key, label ] ) => ( {
 					value: key,
 					// eslint-disable-next-line @wordpress/i18n-no-variables
 					label: __( label, 'vk-dynamic-if-block' ),
 				} ) );
+				return result;
 			} catch (error) {
 				console.warn('VK Dynamic If Block: Error processing userRoles', error);
 				return [];
 			}
-		})();
+		}, [vkDynamicIfBlockLocalizeData]);
 
 		const userSelectOptions =
 			vkDynamicIfBlockLocalizeData?.userSelectOptions || [];
@@ -501,32 +502,47 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				userRole: () => {
 					// userRolesが配列でない場合は空配列を使用
 					const roles = Array.isArray(userRoles) ? userRoles : [];
-					// values.userRoleが配列でない場合は空配列を使用
-					const currentUserRoles = Array.isArray(values.userRole) ? values.userRole : [];
+					// values.userRoleが配列でない場合は配列に変換
+					const currentUserRoles = Array.isArray(values.userRole) ? values.userRole : (values.userRole ? [values.userRole] : []);
+					
+					// rolesが空の場合は何も表示しない
+					if (roles.length === 0) {
+						return (
+							<BaseControl
+								__nextHasNoMarginBottom
+								className="dynamic-if-user-role"
+							>
+								<p>{ __('No user roles available', 'vk-dynamic-if-block') }</p>
+							</BaseControl>
+						);
+					}
 					
 					return (
 						<BaseControl
 							__nextHasNoMarginBottom
 							className="dynamic-if-user-role"
 						>
-							{ roles.map( ( role, index ) => (
-								<CheckboxControl
-									__nextHasNoMarginBottom
-									key={ role?.value || index }
-									label={ role?.label || '' }
-									checked={ currentUserRoles.includes(
-										role.value
-									) }
-									onChange={ ( checked ) => {
-										const newRoles = checked
-											? [ ...currentUserRoles, role.value ]
-											: currentUserRoles.filter(
-													( r ) => r !== role.value
-											  );
-										updateValue( 'userRole', newRoles );
-									} }
-								/>
-							) ) }
+							{ roles.map( ( role, index ) => {
+								// roleが無効な場合はスキップ
+								if (!role || !role.value) {
+									return null;
+								}
+								
+								return (
+									<CheckboxControl
+										__nextHasNoMarginBottom
+										key={ role.value || index }
+										label={ role.label || '' }
+										checked={ currentUserRoles.includes(role.value) }
+										onChange={ ( checked ) => {
+											const newRoles = checked
+												? [ ...currentUserRoles, role.value ]
+												: currentUserRoles.filter( ( r ) => r !== role.value );
+											updateValue( 'userRole', newRoles );
+										} }
+									/>
+								);
+							} ) }
 						</BaseControl>
 					);
 				},
@@ -791,20 +807,23 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						userRole: () => {
 							const selectedRoles = values.userRole || [];
 							// selectedRolesが配列でない場合は配列に変換
-							const roles = Array.isArray(selectedRoles) ? selectedRoles : [selectedRoles];
+							const roles = Array.isArray(selectedRoles) ? selectedRoles : (selectedRoles ? [selectedRoles] : []);
 							if ( ! roles.length ) {
-								return null;
+								return __('No user roles selected', 'vk-dynamic-if-block');
 							}
 							// userRolesが配列でない場合は空配列を使用
 							const availableRoles = Array.isArray(userRoles) ? userRoles : [];
-							return roles
+							const result = roles
 								.map(
-									( role ) =>
-										availableRoles.find(
-											( r ) => r.value === role
-										)?.label || role
+									( role ) => {
+										if (!role) return '';
+										const foundRole = availableRoles.find( ( r ) => r.value === role );
+										return foundRole?.label || role;
+									}
 								)
+								.filter(Boolean)
 								.join( ', ' );
+							return result || __('Unknown user roles', 'vk-dynamic-if-block');
 						},
 						postAuthor: () =>
 							generateLabelFromValues(
