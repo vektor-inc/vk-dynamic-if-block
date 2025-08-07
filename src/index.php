@@ -74,7 +74,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 
 	// 古い属性が存在する場合は古い構造で処理（新しいconditionsやgroupsを無視）
 	if ($has_old_attributes) {
-		return vk_dynamic_if_block_render_with_old_attributes(
+		return vk_dynamic_if_block_render_old_attributes(
 			$attributes, 
 			$content
 		);
@@ -82,7 +82,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 
 	// conditionsが明示的に設定されている場合は新しい構造を優先
 	if (! empty($attributes['conditions'])) {
-		return vk_dynamic_if_block_render_with_conditions(
+		return vk_dynamic_if_block_render_conditions(
 			$attributes, 
 			$content
 		);
@@ -90,7 +90,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 
 	// groupsが設定されている場合はgroupsを使用
 	if (! empty($attributes['groups'])) {
-		return vk_dynamic_if_block_render_with_groups(
+		return vk_dynamic_if_block_render_groups(
 			$attributes, 
 			$content
 		);
@@ -108,7 +108,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
  *
  * @return string Rendered content.
  */
-function vk_dynamic_if_block_render_with_groups($attributes, $content)
+function vk_dynamic_if_block_render_groups($attributes, $content)
 {
 	$groups = $attributes['groups'];
 	$groupOperator = $attributes['groupOperator'] ?? 'and';
@@ -152,7 +152,7 @@ function vk_dynamic_if_block_render_with_groups($attributes, $content)
  *
  * @return string Rendered content.
  */
-function vk_dynamic_if_block_render_with_conditions($attributes, $content)
+function vk_dynamic_if_block_render_conditions($attributes, $content)
 {
 	if (empty($attributes['conditions'])) {
 		return $content;
@@ -199,7 +199,7 @@ function vk_dynamic_if_block_render_with_conditions($attributes, $content)
  *
  * @return string Rendered content.
  */
-function vk_dynamic_if_block_render_with_old_attributes($attributes, $content)
+function vk_dynamic_if_block_render_old_attributes($attributes, $content)
 {
 	$display = true;
 
