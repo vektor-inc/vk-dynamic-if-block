@@ -312,7 +312,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			value: key,
 			// eslint-disable-next-line @wordpress/i18n-no-variables
 			label: __( label, 'vk-dynamic-if-block' ),
-		} ) );
+		} ) ) || [];
 
 		const userSelectOptions =
 			vkDynamicIfBlockLocalizeData?.userSelectOptions || [];
@@ -492,32 +492,38 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						/>
 					);
 				},
-				userRole: () => (
-					<BaseControl
-						__nextHasNoMarginBottom
-						className="dynamic-if-user-role"
-					>
-						{ userRoles.map( ( role, index ) => (
-							<CheckboxControl
-								__nextHasNoMarginBottom
-								key={ role?.value || index }
-								label={ role?.label || '' }
-								checked={ ( values.userRole || [] ).includes(
-									role.value
-								) }
-								onChange={ ( checked ) => {
-									const currentRoles = values.userRole || [];
-									const newRoles = checked
-										? [ ...currentRoles, role.value ]
-										: currentRoles.filter(
-												( r ) => r !== role.value
-										  );
-									updateValue( 'userRole', newRoles );
-								} }
-							/>
-						) ) }
-					</BaseControl>
-				),
+				userRole: () => {
+					// userRolesが配列でない場合は空配列を使用
+					const roles = Array.isArray(userRoles) ? userRoles : [];
+					// values.userRoleが配列でない場合は空配列を使用
+					const currentUserRoles = Array.isArray(values.userRole) ? values.userRole : [];
+					
+					return (
+						<BaseControl
+							__nextHasNoMarginBottom
+							className="dynamic-if-user-role"
+						>
+							{ roles.map( ( role, index ) => (
+								<CheckboxControl
+									__nextHasNoMarginBottom
+									key={ role?.value || index }
+									label={ role?.label || '' }
+									checked={ currentUserRoles.includes(
+										role.value
+									) }
+									onChange={ ( checked ) => {
+										const newRoles = checked
+											? [ ...currentUserRoles, role.value ]
+											: currentUserRoles.filter(
+													( r ) => r !== role.value
+											  );
+										updateValue( 'userRole', newRoles );
+									} }
+								/>
+							) ) }
+						</BaseControl>
+					);
+				},
 				postAuthor: () => (
 					<SelectControl
 						label={ __( 'Post Author', 'vk-dynamic-if-block' ) }

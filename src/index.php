@@ -247,6 +247,10 @@ function vk_dynamic_if_block_render_with_old_attributes($attributes, $content)
 	// User Role Check
 	if (!empty($attributes['userRole'])) {
 		$user_roles = $attributes['userRole'];
+		// userRoleが配列でない場合は配列に変換
+		if (!is_array($user_roles)) {
+			$user_roles = array($user_roles);
+		}
 		$current_user = wp_get_current_user();
 		$display = $display && is_user_logged_in() && array_intersect($current_user->roles, $user_roles);
 	}
@@ -469,6 +473,10 @@ function vk_dynamic_if_block_check_language($values)
 function vk_dynamic_if_block_check_user_role($values)
 {
 	$user_roles = $values['userRole'] ?? [];
+	// userRoleが配列でない場合は配列に変換
+	if (!is_array($user_roles)) {
+		$user_roles = array($user_roles);
+	}
 	if (empty($user_roles)) {
 		return true;
 	}
