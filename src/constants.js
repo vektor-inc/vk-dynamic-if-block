@@ -10,6 +10,7 @@ export const CONDITION_TYPE_LABELS = {
 	customField: 'Custom Field',
 	period: 'Display Period',
 	loginUser: 'Login User Only',
+	deviceType: 'Device Type',
 };
 
 // ページタイプ定義
@@ -96,6 +97,12 @@ export const PAGE_HIERARCHY_OPTIONS = [
 		value: 'has_children',
 		label: __( 'Has child pages', 'vk-dynamic-if-block' ),
 	},
+];
+
+// デバイスタイプ定義
+export const DEVICE_TYPE_DEFINITIONS = [
+	{ value: 'none', label: __( 'No restriction', 'vk-dynamic-if-block' ) },
+	{ value: 'mobile', label: __( 'Mobile', 'vk-dynamic-if-block' ) },
 ];
 
 // 条件演算子
@@ -185,6 +192,12 @@ export const createMigrationRules = ( attributes ) => [
 		type: 'loginUser',
 		key: 'showOnlyLoginUser',
 		condition: ( val ) => val,
+	},
+	{
+		attr: 'deviceType',
+		type: 'deviceType',
+		key: 'deviceType',
+		condition: ( val ) => val && val !== 'none',
 	},
 ];
 

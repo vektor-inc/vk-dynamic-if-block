@@ -24,6 +24,7 @@ import {
 	PERIOD_SETTINGS,
 	PERIOD_METHODS,
 	PAGE_HIERARCHY_OPTIONS,
+	DEVICE_TYPE_DEFINITIONS,
 	CONDITION_OPERATORS,
 	BLOCK_CONFIG,
 	createMigrationRules,
@@ -112,6 +113,10 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 		showOnlyLoginUser: {
 			type: 'boolean',
 			default: false,
+		},
+		deviceType: {
+			type: 'string',
+			default: 'none',
 		},
 	},
 	supports: {
@@ -680,6 +685,15 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						}
 					/>
 				),
+				deviceType: () => (
+					<ToggleControl
+						label={ __( 'Displayed only on mobile devices.', 'vk-dynamic-if-block' ) }
+						checked={ values.deviceType === 'mobile' }
+						onChange={ ( checked ) =>
+							updateValue( 'deviceType', checked ? 'mobile' : 'none' )
+						}
+					/>
+				),
 			};
 
 			return renderers[ type ]?.() || null;
@@ -805,6 +819,10 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						loginUser: () =>
 							values.showOnlyLoginUser
 								? __( 'Login User Only', 'vk-dynamic-if-block' )
+								: null,
+						deviceType: () =>
+							values.deviceType === 'mobile'
+								? __( 'Mobile Only', 'vk-dynamic-if-block' )
 								: null,
 					};
 
