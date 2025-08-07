@@ -203,7 +203,10 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					);
 				}
 
-				// 新しい形式に移行する際に古い属性をクリア
+				// 新しいconditionsを設定し、古い属性をクリア
+				const attributesToUpdate = { conditions: newConditions };
+				
+				// 古い属性をクリア
 				const oldAttributesToClear = [
 					'ifPageType',
 					'ifPostType', 
@@ -220,21 +223,23 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					'showOnlyLoginUser'
 				];
 
-				const clearedAttributes = { ...attributes };
 				oldAttributesToClear.forEach( attr => {
-					delete clearedAttributes[ attr ];
+					attributesToUpdate[ attr ] = attr === 'userRole' ? [] : 
+						attr === 'postAuthor' ? 0 : 
+						attr === 'showOnlyLoginUser' ? false : 
+						attr === 'customFieldRule' ? 'valueExists' : 
+						attr === 'periodSpecificationMethod' ? 'direct' : 
+						'none';
 				});
 
-				setAttributes( { 
-					conditions: newConditions,
-					...clearedAttributes
-				} );
+				setAttributes( attributesToUpdate );
 			}
 		}, [ attributes, conditions, setAttributes ] );
 
 		// 新しい形式を使用している場合に古い属性をクリア
 		useEffect( () => {
-			if ( conditions && conditions.length > 0 && conditions[ 0 ].conditions.length > 0 ) {
+			if ( conditions && conditions.length > 0 && conditions[ 0 ] && conditions[ 0 ].conditions.length > 0 ) {
+				// 新しい形式が使用されている場合、古い属性をクリア
 				const oldAttributesToClear = [
 					'ifPageType',
 					'ifPostType', 
@@ -251,21 +256,31 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					'showOnlyLoginUser'
 				];
 
-				const hasOldAttributes = oldAttributesToClear.some( attr => 
-					attributes[ attr ] !== undefined && 
-					attributes[ attr ] !== '' && 
-					attributes[ attr ] !== 'none' && 
-					attributes[ attr ] !== 0 &&
-					!Array.isArray( attributes[ attr ] ) &&
-					( !Array.isArray( attributes[ attr ] ) || attributes[ attr ].length > 0 )
-				);
+				const hasOldAttributes = oldAttributesToClear.some( attr => {
+					const value = attributes[ attr ];
+					if ( attr === 'userRole' ) {
+						return Array.isArray( value ) && value.length > 0;
+					}
+					if ( attr === 'postAuthor' ) {
+						return value !== 0;
+					}
+					if ( attr === 'showOnlyLoginUser' ) {
+						return value === true;
+					}
+					return value && value !== 'none' && value !== '';
+				});
 
 				if ( hasOldAttributes ) {
-					const clearedAttributes = { ...attributes };
+					const attributesToUpdate = {};
 					oldAttributesToClear.forEach( attr => {
-						delete clearedAttributes[ attr ];
+						attributesToUpdate[ attr ] = attr === 'userRole' ? [] : 
+							attr === 'postAuthor' ? 0 : 
+							attr === 'showOnlyLoginUser' ? false : 
+							attr === 'customFieldRule' ? 'valueExists' : 
+							attr === 'periodSpecificationMethod' ? 'direct' : 
+							'none';
 					});
-					setAttributes( clearedAttributes );
+					setAttributes( attributesToUpdate );
 				}
 			}
 		}, [ conditions, attributes, setAttributes ] );
