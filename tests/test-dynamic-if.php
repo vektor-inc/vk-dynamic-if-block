@@ -1856,6 +1856,45 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
         'content'   => 'Single should show regardless of hierarchy',
         'expected'  => 'Single should show regardless of hierarchy',
         ),
+
+        /******************************************
+         * Regression: prioritize new structure over legacy and fallback
+         */
+        array(
+        'name'      => 'Prefer new structure over legacy when both are present',
+        'go_to'     => get_permalink($test_posts['event_post_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'postType',
+                            'values' => array( 'ifPostType' => 'event' ),
+                        ),
+                    ),
+                    // legacy attribute intentionally conflicting
+                    'ifPostType' => 'post',
+        ),
+        'content'   => 'Prefer new structure',
+        'expected'  => 'Prefer new structure',
+        ),
+        array(
+        'name'      => 'Fallback to legacy when new structure is absent',
+        'go_to'     => get_permalink($test_posts['event_post_id']),
+        'attribute' => array(
+                    // no conditions
+                    'ifPostType' => 'event',
+        ),
+        'content'   => 'Fallback legacy works',
+        'expected'  => 'Fallback legacy works',
+        ),
+        array(
+        'name'      => 'Render content when no conditions are provided',
+        'go_to'     => get_permalink($test_posts['event_post_id']),
+        'attribute' => array(
+                    // empty attributes
+        ),
+        'content'   => 'No conditions shows content',
+        'expected'  => 'No conditions shows content',
+        ),
         );
 
         foreach ( $tests as $test ) {

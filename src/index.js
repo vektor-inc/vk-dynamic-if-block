@@ -315,7 +315,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					setAttributes( attributesToUpdate );
 				}
 			}
-		}, [ hasMigrated, conditions ] ); // attributesを依存関係から削除
+		}, [ hasMigrated, conditions, attributes ] );
 
 		const conditionTypes = Object.entries( CONDITION_TYPE_LABELS ).map(
 			( [ value, label ] ) => ( {

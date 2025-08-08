@@ -39,7 +39,23 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 	);
 	$attributes         = array_merge( $attributes_default, $attributes );
 
-	// 古い属性のチェック
+	// conditionsが明示的に設定されている場合は新しい構造を優先
+	if (! empty($attributes['conditions'])) {
+		return vk_dynamic_if_block_render_conditions(
+			$attributes, 
+			$content
+		);
+	}
+
+	// groupsが設定されている場合はgroupsを使用
+	if (! empty($attributes['groups'])) {
+		return vk_dynamic_if_block_render_groups(
+			$attributes, 
+			$content
+		);
+	}
+
+	// 古い属性のチェック（新しい形式が設定されていない場合のみ）
 	$old_attributes = [
 		'customFieldName',
 		'ifPageType',
@@ -72,25 +88,9 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		}
 	}
 
-	// 古い属性が存在する場合は古い構造で処理（新しいconditionsやgroupsを無視）
+	// 古い属性が存在する場合は古い構造で処理
 	if ($has_old_attributes) {
 		return vk_dynamic_if_block_render_old_attributes(
-			$attributes, 
-			$content
-		);
-	}
-
-	// conditionsが明示的に設定されている場合は新しい構造を優先
-	if (! empty($attributes['conditions'])) {
-		return vk_dynamic_if_block_render_conditions(
-			$attributes, 
-			$content
-		);
-	}
-
-	// groupsが設定されている場合はgroupsを使用
-	if (! empty($attributes['groups'])) {
-		return vk_dynamic_if_block_render_groups(
 			$attributes, 
 			$content
 		);
@@ -417,6 +417,11 @@ function vk_dynamic_if_block_check_page_type($values)
 function vk_dynamic_if_block_check_post_type($values)
 {
 	$post_type = $values['ifPostType'] ?? '';
+	
+	// デバッグログ
+	error_log('VK DIF DEBUG: values = ' . print_r($values, true));
+	error_log('VK DIF DEBUG: ifPostType = "' . $post_type . '"');
+	
 	if (empty($post_type) || $post_type === 'none') {
 		return true;
 	}
@@ -440,9 +445,19 @@ function vk_dynamic_if_block_check_post_type($values)
 			}
 		}
 	}
+	
+	// デバッグログ
+	error_log('VK DIF DEBUG: get_post_type() = "' . get_post_type() . '"');
+	error_log('VK DIF DEBUG: get_query_var("post_type") = "' . get_query_var('post_type') . '"');
+	error_log('VK DIF DEBUG: is_post_type_archive() = ' . (is_post_type_archive() ? 'true' : 'false'));
 
+    // デバッグログ
+    error_log('VK DIF POST TYPE CHECK: current_type = "' . $current_type . '", post_type = "' . $post_type . '"');
+    error_log('VK DIF PAGE INFO: is_post_type_archive = ' . (is_post_type_archive() ? 'true' : 'false') . ', is_archive = ' . (is_archive() ? 'true' : 'false') . ', is_singular = ' . (is_singular() ? 'true' : 'false'));
+    
     // 投稿タイプが一致しない場合はfalse
     if ($current_type !== $post_type) {
+        error_log('VK DIF POST TYPE MISMATCH: ' . $current_type . ' !== ' . $post_type);
         return false;
     }
 
