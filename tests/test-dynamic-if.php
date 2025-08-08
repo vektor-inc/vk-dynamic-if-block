@@ -1124,8 +1124,8 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
         'attribute' => array(
                     'conditions' => array(
                         array(
-                            'type'   => 'showOnlyMobileDevice',
-                            'values' => array( 'showOnlyMobileDevice' => true ),
+                            'type'   => 'mobileDevice',
+                            'values' => array( 'mobileDevice' => true ),
                         ),
         ),
         ),
@@ -1139,8 +1139,8 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
         'attribute' => array(
                     'conditions' => array(
                         array(
-                            'type'   => 'showOnlyMobileDevice',
-                            'values' => array( 'showOnlyMobileDevice' => true ),
+                            'type'   => 'mobileDevice',
+                            'values' => array( 'mobileDevice' => true ),
                         ),
         ),
         ),

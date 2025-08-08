@@ -24,7 +24,6 @@ import {
 	PERIOD_SETTINGS,
 	PERIOD_METHODS,
 	PAGE_HIERARCHY_OPTIONS,
-	DEVICE_TYPE_DEFINITIONS,
 	CONDITION_OPERATORS,
 	BLOCK_CONFIG,
 	createMigrationRules,
@@ -111,10 +110,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			default: '',
 		},
 		showOnlyLoginUser: {
-			type: 'boolean',
-			default: false,
-		},
-		showOnlyMobileDevice: {
 			type: 'boolean',
 			default: false,
 		},
@@ -290,7 +285,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					'periodSpecificationMethod',
 					'periodDisplayValue',
 					'periodReferCustomField',
-					'showOnlyLoginUser'
+					'showOnlyLoginUser',
+					'showOnlyMobileDevice'
 				];
 
 				const hasOldAttributes = oldAttributesToClear.some( attr => {
@@ -922,6 +918,10 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							loginUser: () =>
 								values.showOnlyLoginUser
 									? __( 'Login User Only', 'vk-dynamic-if-block' )
+									: null,
+							showOnlyMobileDevice: () =>
+								values.showOnlyMobileDevice
+									? __( 'Mobile Device Only', 'vk-dynamic-if-block' )
 									: null,
 						};
 

@@ -35,7 +35,6 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		'periodDisplayValue'        => '',
 		'periodReferCustomField'    => '',
 		'showOnlyLoginUser'         => '',
-		'showOnlyMobileDevice'      => '',
 		'conditions'                => array(),
 	);
 	$attributes         = array_merge( $attributes_default, $attributes );
@@ -50,7 +49,6 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		'postAuthor',
 		'periodDisplaySetting',
 		'showOnlyLoginUser',
-		'showOnlyMobileDevice'
 	];
 
 	$has_old_attributes = false;

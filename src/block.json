@@ -96,10 +96,6 @@
 		"showOnlyLoginUser": {
 			"type": "boolean",
 			"default": false
-		},
-		"showOnlyMobileDevice": {
-			"type": "boolean",
-			"default": false
 		}
 	},
 	"supports": {
