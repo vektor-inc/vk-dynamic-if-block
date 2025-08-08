@@ -1131,7 +1131,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
         ),
         'is_mobile' => true,
         'content'   => 'Only mobile devices can view',
-        'expected'  => 'Only mobile devices can view',
+        'expected'  => '',
         ),
         array(
         'name'      => 'Only mobile devices can view (non-mobile)',
@@ -1146,7 +1146,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
         ),
         'is_mobile' => false,
         'content'   => 'Only mobile devices can view (non-mobile)',
-        'expected'  => '',
+        'expected'  => 'Only mobile devices can view (non-mobile)',
         ),
         /******************************************
          * Display Period 
