@@ -285,7 +285,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					'periodSpecificationMethod',
 					'periodDisplayValue',
 					'periodReferCustomField',
-					'showOnlyLoginUser'
+					'showOnlyLoginUser',
+					'showOnlyMobileDevice'
 				];
 
 				const hasOldAttributes = oldAttributesToClear.some( attr => {
@@ -770,6 +771,15 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						}
 					/>
 				),
+				showOnlyMobileDevice: () => (
+					<ToggleControl
+						label={ __( 'Displayed only on mobile devices.', 'vk-dynamic-if-block' ) }
+						checked={ values.showOnlyMobileDevice || false }
+						onChange={ ( checked ) =>
+							updateValue( 'showOnlyMobileDevice', checked )
+						}
+					/>
+				),
 			};
 
 			return renderers[ type ]?.() || null;
@@ -908,6 +918,10 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							loginUser: () =>
 								values.showOnlyLoginUser
 									? __( 'Login User Only', 'vk-dynamic-if-block' )
+									: null,
+							showOnlyMobileDevice: () =>
+								values.showOnlyMobileDevice
+									? __( 'Mobile Device Only', 'vk-dynamic-if-block' )
 									: null,
 						};
 
