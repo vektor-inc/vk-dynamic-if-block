@@ -1973,6 +1973,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
                 wp_set_current_user($test['is_login'] ? 1 : 0);
                 $actual = vk_dynamic_if_block_render($test['attribute'], $test['content']);
                 wp_set_current_user(0);
+            } elseif (isset($test['is_mobile'])) {
+                add_filter('wp_is_mobile', function() use ($test) {
+                    return $test['is_mobile'];
+                });
+                $actual = vk_dynamic_if_block_render($test['attribute'], $test['content']);
+                remove_all_filters('wp_is_mobile');
             } else {
                 $actual = vk_dynamic_if_block_render($test['attribute'], $test['content']);
             }

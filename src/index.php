@@ -35,6 +35,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		'periodDisplayValue'        => '',
 		'periodReferCustomField'    => '',
 		'showOnlyLoginUser'         => '',
+		'showOnlyMobileDevice'      => '',
 		'conditions'                => array(),
 	);
 	$attributes         = array_merge( $attributes_default, $attributes );
@@ -48,7 +49,8 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		'userRole',
 		'postAuthor',
 		'periodDisplaySetting',
-		'showOnlyLoginUser'
+		'showOnlyLoginUser',
+		'showOnlyMobileDevice'
 	];
 
 	$has_old_attributes = false;
@@ -710,11 +712,8 @@ function vk_dynamic_if_block_check_login_user($values)
  */
 function vk_dynamic_if_block_check_mobile_device($values)
 {
-    $is_mobile_only = $values['mobileDevice'] ?? false;
-    if (!$is_mobile_only) {
-        return true;
-    }
-    return wp_is_mobile();
+    return !($values['mobileDevice'] ?? false)
+        || wp_is_mobile();
 }
 
 /**
