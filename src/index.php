@@ -48,7 +48,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		'userRole',
 		'postAuthor',
 		'periodDisplaySetting',
-		'showOnlyLoginUser',
+		'showOnlyLoginUser'
 	];
 
 	$has_old_attributes = false;
