@@ -72,29 +72,28 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		}
 	}
 
-	// 古い属性が存在する場合は古い構造で処理（新しいconditionsやgroupsを無視）
-	if ($has_old_attributes) {
-		return vk_dynamic_if_block_render_old_attributes(
-			$attributes, 
-			$content
-		);
-	}
+    // conditions / groups が設定されている場合は新しい構造を最優先
+    if (! empty($attributes['conditions'])) {
+        return vk_dynamic_if_block_render_conditions(
+            $attributes, 
+            $content
+        );
+    }
 
-	// conditionsが明示的に設定されている場合は新しい構造を優先
-	if (! empty($attributes['conditions'])) {
-		return vk_dynamic_if_block_render_conditions(
-			$attributes, 
-			$content
-		);
-	}
+    if (! empty($attributes['groups'])) {
+        return vk_dynamic_if_block_render_groups(
+            $attributes, 
+            $content
+        );
+    }
 
-	// groupsが設定されている場合はgroupsを使用
-	if (! empty($attributes['groups'])) {
-		return vk_dynamic_if_block_render_groups(
-			$attributes, 
-			$content
-		);
-	}
+    // 上記が無い場合のみ旧属性で処理
+    if ($has_old_attributes) {
+        return vk_dynamic_if_block_render_old_attributes(
+            $attributes, 
+            $content
+        );
+    }
 
 	// 条件が設定されていない場合はコンテンツを表示
 	return $content;
@@ -422,7 +421,7 @@ function vk_dynamic_if_block_check_post_type($values)
 	}
 
 	// VkHelpersを使用してより確実に投稿タイプを取得
-	if (class_exists('VkHelpers')) {
+	if (class_exists(VkHelpers::class)) {
 		$post_type_info = VkHelpers::get_post_type_info();
 		$current_type = $post_type_info['slug'] 
 			?? get_post_type();
@@ -438,6 +437,11 @@ function vk_dynamic_if_block_check_post_type($values)
 			} elseif (is_front_page()) {
 				$current_type = 'page';
 			}
+		}
+
+		// get_query_var('post_type') が配列で返るケースを考慮して正規化
+		if (is_array($current_type)) {
+			$current_type = current($current_type);
 		}
 	}
 
