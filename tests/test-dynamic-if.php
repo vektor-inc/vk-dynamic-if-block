@@ -1119,7 +1119,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
         * Mobile Device 
 */
         array(
-        'name'      => 'Only mobile devices can view',
+        'name'      => 'Only mobile devices can view (mobile)',
         'go_to'     => get_permalink($test_posts['parent_page_id']),
         'attribute' => array(
                     'conditions' => array(
@@ -1130,8 +1130,8 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
         ),
         ),
         'is_mobile' => true,
-        'content'   => 'Only mobile devices can view',
-        'expected'  => 'Only mobile devices can view',
+        'content'   => 'Only mobile devices can view (mobile)',
+        'expected'  => 'Only mobile devices can view (mobile)',
         ),
         array(
         'name'      => 'Only mobile devices can view (non-mobile)',
@@ -1147,6 +1147,36 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
         'is_mobile' => false,
         'content'   => 'Only mobile devices can view (non-mobile)',
         'expected'  => '',
+        ),
+        array(
+        'name'      => 'Mobile device not specified (mobile)',
+        'go_to'     => get_permalink($test_posts['parent_page_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'mobileDevice',
+                            'values' => array( 'mobileDevice' => false ),
+                        ),
+        ),
+        ),
+        'is_mobile' => true,
+        'content'   => 'Mobile device not specified (mobile)',
+        'expected'  => 'Mobile device not specified (mobile)',
+        ),
+        array(
+        'name'      => 'Mobile device not specified (non-mobile)',
+        'go_to'     => get_permalink($test_posts['parent_page_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'mobileDevice',
+                            'values' => array( 'mobileDevice' => false ),
+                        ),
+        ),
+        ),
+        'is_mobile' => false,
+        'content'   => 'Mobile device not specified (non-mobile)',
+        'expected'  => 'Mobile device not specified (non-mobile)',
         ),
         /******************************************
          * Display Period 
