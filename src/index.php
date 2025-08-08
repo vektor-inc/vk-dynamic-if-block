@@ -39,7 +39,23 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 	);
 	$attributes         = array_merge( $attributes_default, $attributes );
 
-	// 古い属性のチェック
+	// conditionsが明示的に設定されている場合は新しい構造を優先
+	if (! empty($attributes['conditions'])) {
+		return vk_dynamic_if_block_render_conditions(
+			$attributes, 
+			$content
+		);
+	}
+
+	// groupsが設定されている場合はgroupsを使用
+	if (! empty($attributes['groups'])) {
+		return vk_dynamic_if_block_render_groups(
+			$attributes, 
+			$content
+		);
+	}
+
+	// 古い属性のチェック（新しい形式が設定されていない場合のみ）
 	$old_attributes = [
 		'customFieldName',
 		'ifPageType',
@@ -53,7 +69,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 
 	$has_old_attributes = false;
 	foreach ($old_attributes as $attr) {
-		// 属性が存在し、有効な値が設定されている場合のみ古い属性とみなす
+		// 属性が存在し、空でなく、'none'でもない場合のみ古い属性とみなす
 		if (isset($attributes[ $attr ])) {
 			$value = $attributes[ $attr ];
 			if (is_array($value)) {
@@ -62,15 +78,9 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 					$has_old_attributes = true;
 					break;
 				}
-			} elseif (is_string($value)) {
-				// 文字列の場合は空でなく、'none'でもないかチェック
-				if (!empty($value) && $value !== 'none' && $value !== '') {
-					$has_old_attributes = true;
-					break;
-				}
-			} elseif (is_numeric($value)) {
-				// 数値の場合は0でないかチェック
-				if ($value !== 0 && $value !== '0') {
+			} elseif (is_string($value) || is_numeric($value)) {
+				// 文字列や数値の場合は空でなく、'none'でもないかチェック
+				if (!empty($value) && $value !== 'none' && $value !== 0) {
 					$has_old_attributes = true;
 					break;
 				}
@@ -78,28 +88,13 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		}
 	}
 
-    // conditions / groups が設定されている場合は新しい構造を最優先
-    if (! empty($attributes['conditions'])) {
-        return vk_dynamic_if_block_render_conditions(
-            $attributes, 
-            $content
-        );
-    }
-
-    if (! empty($attributes['groups'])) {
-        return vk_dynamic_if_block_render_groups(
-            $attributes, 
-            $content
-        );
-    }
-
-    // 上記が無い場合のみ旧属性で処理
-    if ($has_old_attributes) {
-        return vk_dynamic_if_block_render_old_attributes(
-            $attributes, 
-            $content
-        );
-    }
+	// 古い属性が存在する場合は古い構造で処理
+	if ($has_old_attributes) {
+		return vk_dynamic_if_block_render_old_attributes(
+			$attributes, 
+			$content
+		);
+	}
 
 	// 条件が設定されていない場合はコンテンツを表示
 	return $content;
@@ -422,12 +417,17 @@ function vk_dynamic_if_block_check_page_type($values)
 function vk_dynamic_if_block_check_post_type($values)
 {
 	$post_type = $values['ifPostType'] ?? '';
+	
+	// デバッグログ
+	error_log('VK DIF DEBUG: values = ' . print_r($values, true));
+	error_log('VK DIF DEBUG: ifPostType = "' . $post_type . '"');
+	
 	if (empty($post_type) || $post_type === 'none') {
 		return true;
 	}
 
 	// VkHelpersを使用してより確実に投稿タイプを取得
-	if (class_exists(VkHelpers::class)) {
+	if (class_exists('VkHelpers')) {
 		$post_type_info = VkHelpers::get_post_type_info();
 		$current_type = $post_type_info['slug'] 
 			?? get_post_type();
@@ -444,15 +444,20 @@ function vk_dynamic_if_block_check_post_type($values)
 				$current_type = 'page';
 			}
 		}
-
-		// get_query_var('post_type') が配列で返るケースを考慮して正規化
-		if (is_array($current_type)) {
-			$current_type = current($current_type);
-		}
 	}
+	
+	// デバッグログ
+	error_log('VK DIF DEBUG: get_post_type() = "' . get_post_type() . '"');
+	error_log('VK DIF DEBUG: get_query_var("post_type") = "' . get_query_var('post_type') . '"');
+	error_log('VK DIF DEBUG: is_post_type_archive() = ' . (is_post_type_archive() ? 'true' : 'false'));
 
+    // デバッグログ
+    error_log('VK DIF POST TYPE CHECK: current_type = "' . $current_type . '", post_type = "' . $post_type . '"');
+    error_log('VK DIF PAGE INFO: is_post_type_archive = ' . (is_post_type_archive() ? 'true' : 'false') . ', is_archive = ' . (is_archive() ? 'true' : 'false') . ', is_singular = ' . (is_singular() ? 'true' : 'false'));
+    
     // 投稿タイプが一致しない場合はfalse
     if ($current_type !== $post_type) {
+        error_log('VK DIF POST TYPE MISMATCH: ' . $current_type . ' !== ' . $post_type);
         return false;
     }
 
