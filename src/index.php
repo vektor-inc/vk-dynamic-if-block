@@ -710,8 +710,11 @@ function vk_dynamic_if_block_check_login_user($values)
  */
 function vk_dynamic_if_block_check_mobile_device($values)
 {
-    return !($values['mobileDevice'] ?? false) 
-        || wp_is_mobile();
+    $is_mobile_only = $values['mobileDevice'] ?? false;
+    if (!$is_mobile_only) {
+        return true;
+    }
+    return wp_is_mobile();
 }
 
 /**
