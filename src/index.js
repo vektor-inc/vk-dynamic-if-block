@@ -114,9 +114,9 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			type: 'boolean',
 			default: false,
 		},
-		deviceType: {
-			type: 'string',
-			default: 'none',
+		showOnlyMobileDevice: {
+			type: 'boolean',
+			default: false,
 		},
 	},
 	supports: {
@@ -775,12 +775,12 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						}
 					/>
 				),
-				deviceType: () => (
+				showOnlyMobileDevice: () => (
 					<ToggleControl
 						label={ __( 'Displayed only on mobile devices.', 'vk-dynamic-if-block' ) }
-						checked={ values.deviceType === 'mobile' }
+						checked={ values.showOnlyMobileDevice || false }
 						onChange={ ( checked ) =>
-							updateValue( 'deviceType', checked ? 'mobile' : 'none' )
+							updateValue( 'showOnlyMobileDevice', checked )
 						}
 					/>
 				),

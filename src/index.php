@@ -34,9 +34,9 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		'periodSpecificationMethod' => 'direct',
 		'periodDisplayValue'        => '',
 		'periodReferCustomField'    => '',
-		'showOnlyLoginUser'             => '',
-		'deviceType'                 => 'none',
-		'conditions'                => array(), // 新しい形式
+		'showOnlyLoginUser'         => '',
+		'showOnlyMobileDevice'      => '',
+		'conditions'                => array(),
 	);
 	$attributes         = array_merge( $attributes_default, $attributes );
 
@@ -50,7 +50,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		'postAuthor',
 		'periodDisplaySetting',
 		'showOnlyLoginUser',
-		'deviceType'
+		'showOnlyMobileDevice'
 	];
 
 	$has_old_attributes = false;
@@ -317,18 +317,9 @@ function vk_dynamic_if_block_render_old_attributes($attributes, $content)
 		$display = $display && is_user_logged_in();
 	}
 
-	// Device Type Check
-	if (!empty($attributes['deviceType']) && $attributes['deviceType'] !== 'none') {
-		$device_type = $attributes['deviceType'];
-		
-		$device_result = false;
-		switch ($device_type) {
-			case 'mobile':
-				$device_result = wp_is_mobile();
-				break;
-		}
-		$display = $display && $device_result;
-		error_log('VK Dynamic If Block Debug - Device type check result: ' . ($device_result ? 'true' : 'false') . ' (type: ' . $device_type . ')');
+	// Mobile Device Check
+	if (!empty($attributes['showOnlyMobileDevice'])) {
+		$display = $display && wp_is_mobile();
 	}
 
 	// Exclusion Check
@@ -366,8 +357,8 @@ function vk_dynamic_if_block_evaluate_condition($condition)
 			return vk_dynamic_if_block_check_period($values);
 		case 'loginUser':
 			return vk_dynamic_if_block_check_login_user($values);
-		case 'deviceType':
-			return vk_dynamic_if_block_check_device_type($values);
+		case 'mobileDevice':
+			return vk_dynamic_if_block_check_mobile_device($values);
 		default:
 			return true;
 	}
@@ -719,21 +710,10 @@ function vk_dynamic_if_block_check_login_user($values)
  *
  * @return bool Evaluation result.
  */
-function vk_dynamic_if_block_check_device_type($values)
+function vk_dynamic_if_block_check_mobile_device($values)
 {
-    $device_type = $values['deviceType'] ?? '';
-    if (empty($device_type) || $device_type === 'none') {
-        return true;
-    }
-
-    // WordPressの標準関数を使用
-    switch ($device_type) {
-        case 'mobile':
-            // モバイルの場合は、wp_is_mobile()がtrueであることを確認
-            return wp_is_mobile();
-        default:
-            return true;
-    }
+	return !($values['showOnlyMobileDevice'] ?? false) 
+		|| wp_is_mobile();
 }
 
 /**
