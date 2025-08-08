@@ -53,7 +53,7 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 
 	$has_old_attributes = false;
 	foreach ($old_attributes as $attr) {
-		// 属性が存在し、空でなく、'none'でもない場合のみ古い属性とみなす
+		// 属性が存在し、有効な値が設定されている場合のみ古い属性とみなす
 		if (isset($attributes[ $attr ])) {
 			$value = $attributes[ $attr ];
 			if (is_array($value)) {
@@ -62,9 +62,15 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 					$has_old_attributes = true;
 					break;
 				}
-			} elseif (is_string($value) || is_numeric($value)) {
-				// 文字列や数値の場合は空でなく、'none'でもないかチェック
-				if (!empty($value) && $value !== 'none' && $value !== 0) {
+			} elseif (is_string($value)) {
+				// 文字列の場合は空でなく、'none'でもないかチェック
+				if (!empty($value) && $value !== 'none' && $value !== '') {
+					$has_old_attributes = true;
+					break;
+				}
+			} elseif (is_numeric($value)) {
+				// 数値の場合は0でないかチェック
+				if ($value !== 0 && $value !== '0') {
 					$has_old_attributes = true;
 					break;
 				}
