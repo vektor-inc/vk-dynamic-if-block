@@ -771,7 +771,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						}
 					/>
 				),
-				showOnlyMobileDevice: () => (
+				mobileDevice: () => (
 					<ToggleControl
 						label={ __( 'Displayed only on mobile devices.', 'vk-dynamic-if-block' ) }
 						checked={ values.showOnlyMobileDevice || false }
