@@ -1125,7 +1125,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
                     'conditions' => array(
                         array(
                             'type'   => 'mobileDevice',
-                            'values' => array( 'mobileDevice' => true ),
+                            'values' => array( 'showOnlyMobileDevice' => true ),
                         ),
         ),
         ),
@@ -1140,7 +1140,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
                     'conditions' => array(
                         array(
                             'type'   => 'mobileDevice',
-                            'values' => array( 'mobileDevice' => true ),
+                            'values' => array( 'showOnlyMobileDevice' => true ),
                         ),
         ),
         ),
@@ -1155,7 +1155,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
                     'conditions' => array(
                         array(
                             'type'   => 'mobileDevice',
-                            'values' => array( 'mobileDevice' => false ),
+                            'values' => array( 'showOnlyMobileDevice' => false ),
                         ),
         ),
         ),
@@ -1170,7 +1170,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
                     'conditions' => array(
                         array(
                             'type'   => 'mobileDevice',
-                            'values' => array( 'mobileDevice' => false ),
+                            'values' => array( 'showOnlyMobileDevice' => false ),
                         ),
         ),
         ),
