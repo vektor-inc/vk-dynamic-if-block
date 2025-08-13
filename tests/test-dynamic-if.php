@@ -2106,6 +2106,174 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
         'content'   => 'No taxonomy specified',
         'expected'  => 'No taxonomy specified',
         ),
+        // 複数ターム選択時の動作テスト（将来的な拡張を考慮）
+        array(
+        'name'      => 'Taxonomy condition - multiple terms selected (should show if any match)',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'taxonomy',
+                            'values' => array(
+                                'taxonomy' => 'test_cat',
+                                'termIds' => array($test_posts['test_cat_term_1_id'], $test_posts['test_cat_term_2_id'])
+                            ),
+                        ),
+        ),
+        ),
+        'content'   => 'Post with multiple terms selected',
+        'expected'  => 'Post with multiple terms selected',
+        ),
+        array(
+        'name'      => 'Taxonomy condition - multiple terms from different taxonomies (should not show)',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'taxonomy',
+                            'values' => array(
+                                'taxonomy' => 'test_cat',
+                                'termIds' => array($test_posts['test_cat_term_2_id'], $test_posts['test_cat2_term_1_id'])
+                            ),
+                        ),
+        ),
+        ),
+        'content'   => 'Post with multiple terms from different taxonomies',
+        'expected'  => '',
+        ),
+        // タームアーカイブページでの複数ターム選択テスト
+        array(
+        'name'      => 'Taxonomy condition - term archive with multiple terms selected',
+        'go_to'     => get_term_link($test_posts['test_cat_term_1_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'taxonomy',
+                            'values' => array(
+                                'taxonomy' => 'test_cat',
+                                'termIds' => array($test_posts['test_cat_term_1_id'], $test_posts['test_cat_term_2_id'])
+                            ),
+                        ),
+        ),
+        ),
+        'content'   => 'Term archive with multiple terms selected',
+        'expected'  => 'Term archive with multiple terms selected',
+        ),
+        // タームが削除された場合の動作テスト
+        array(
+        'name'      => 'Taxonomy condition - deleted term should still work (term exists)',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'taxonomy',
+                            'values' => array(
+                                'taxonomy' => 'test_cat',
+                                'termIds' => array($test_posts['test_cat_term_1_id'])
+                            ),
+                        ),
+        ),
+        ),
+        'content'   => 'Post with existing term (should work)',
+        'expected'  => 'Post with existing term (should work)',
+        ),
+        // タクソノミーが存在しない場合のエラーハンドリングテスト
+        array(
+        'name'      => 'Taxonomy condition - non-existent taxonomy should not break',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'taxonomy',
+                            'values' => array(
+                                'taxonomy' => 'non_existent_taxonomy',
+                                'termIds' => array(999)
+                            ),
+                        ),
+        ),
+        ),
+        'content'   => 'Post with non-existent taxonomy',
+        'expected'  => 'Post with non-existent taxonomy',
+        ),
+        // 複数条件でのタクソノミー条件テスト
+        array(
+        'name'      => 'Taxonomy condition - combined with page type condition',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'pageType',
+                            'values' => array( 'ifPageType' => 'is_single' ),
+                        ),
+                        array(
+                            'type'   => 'taxonomy',
+                            'values' => array(
+                                'taxonomy' => 'test_cat',
+                                'termIds' => array($test_posts['test_cat_term_1_id'])
+                            ),
+                        ),
+        ),
+        ),
+        'content'   => 'Single post with specific term',
+        'expected'  => 'Single post with specific term',
+        ),
+        array(
+        'name'      => 'Taxonomy condition - combined with page type condition (should not show)',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'pageType',
+                            'values' => array( 'ifPageType' => 'is_page' ),
+                        ),
+                        array(
+                            'type'   => 'taxonomy',
+                            'values' => array(
+                                'taxonomy' => 'test_cat',
+                                'termIds' => array($test_posts['test_cat_term_1_id'])
+                            ),
+                        ),
+        ),
+        ),
+        'content'   => 'Page with specific term (should not show)',
+        'expected'  => '',
+        ),
+        // 空のタームID配列のテスト
+        array(
+        'name'      => 'Taxonomy condition - empty termIds array',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'taxonomy',
+                            'values' => array(
+                                'taxonomy' => 'test_cat',
+                                'termIds' => array()
+                            ),
+                        ),
+        ),
+        ),
+        'content'   => 'Post with empty termIds',
+        'expected'  => 'Post with empty termIds',
+        ),
+        // 無効なタームIDのテスト
+        array(
+        'name'      => 'Taxonomy condition - invalid term ID',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'taxonomy',
+                            'values' => array(
+                                'taxonomy' => 'test_cat',
+                                'termIds' => array(99999)
+                            ),
+                        ),
+        ),
+        ),
+        'content'   => 'Post with invalid term ID',
+        'expected'  => '',
+        ),
         );
 
         foreach ( $tests as $test ) {
