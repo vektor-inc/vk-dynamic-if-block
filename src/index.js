@@ -390,31 +390,10 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 		}, [] );
 
 		const addCondition = () => {
-			// デフォルト値を設定
-			let defaultValues = {};
-			const conditionType = BLOCK_CONFIG.defaultConditionType;
-
-			if ( conditionType === 'pageType' ) {
-				defaultValues = { ifPageType: 'none' };
-			} else if ( conditionType === 'postType' ) {
-				defaultValues = { ifPostType: 'none' };
-			} else if ( conditionType === 'userRole' ) {
-				defaultValues = { userRole: [] };
-			} else if ( conditionType === 'language' ) {
-				defaultValues = { ifLanguage: '' };
-			} else if ( conditionType === 'postAuthor' ) {
-				defaultValues = { postAuthor: 0 };
-			} else if ( conditionType === 'taxonomy' ) {
-				defaultValues = {
-					taxonomy: 'none',
-					termIds: [],
-				};
-			}
-
 			const newCondition = {
 				id: generateId(),
-				type: conditionType,
-				values: defaultValues,
+				type: BLOCK_CONFIG.defaultConditionType,
+				values: {},
 			};
 
 			if ( conditions.length === 0 ) {
@@ -441,35 +420,13 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 		};
 
 		const addConditionGroup = () => {
-			// デフォルトの条件タイプを使用
-			const firstType = BLOCK_CONFIG.defaultConditionType;
-
-			// デフォルト値を設定
-			let defaultValues = {};
-			if ( firstType === 'pageType' ) {
-				defaultValues = { ifPageType: 'none' };
-			} else if ( firstType === 'postType' ) {
-				defaultValues = { ifPostType: 'none' };
-			} else if ( firstType === 'userRole' ) {
-				defaultValues = { userRole: [] };
-			} else if ( firstType === 'language' ) {
-				defaultValues = { ifLanguage: '' };
-			} else if ( firstType === 'postAuthor' ) {
-				defaultValues = { postAuthor: 0 };
-			} else if ( firstType === 'taxonomy' ) {
-				defaultValues = {
-					taxonomy: 'none',
-					termIds: [],
-				};
-			}
-
 			const newConditionGroup = {
 				id: generateId(),
 				conditions: [
 					{
 						id: generateId(),
-						type: firstType,
-						values: defaultValues,
+						type: BLOCK_CONFIG.defaultConditionType,
+						values: {},
 					},
 				],
 				operator: 'or',
