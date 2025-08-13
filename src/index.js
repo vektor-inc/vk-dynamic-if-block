@@ -279,7 +279,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			setAttributes( attributesToUpdate );
 			setHasMigrated( true );
 			// eslint-disable-next-line react-hooks/exhaustive-deps
-		}, [ hasMigrated ] ); // attributesとconditionsを依存関係から削除（無限ループ防止）
+		}, [ hasMigrated ] );
 
 		// 新しい形式を使用している場合に古い属性をクリア（移行後のみ実行）
 		useEffect( () => {
@@ -347,7 +347,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				}
 			}
 			// eslint-disable-next-line react-hooks/exhaustive-deps
-		}, [ hasMigrated, conditions ] ); // attributesを依存関係から削除（無限ループ防止）
+		}, [ hasMigrated, conditions ] );
 
 		const conditionTypes = Object.entries( CONDITION_TYPE_LABELS ).map(
 			( [ value, label ] ) => ( {
