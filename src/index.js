@@ -120,13 +120,13 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 	},
 	edit: function Edit( { attributes, setAttributes } ) {
 		const { conditions, conditionOperator, exclusion } = attributes;
-		
+
 		// 条件を更新する共通関数
 		const updateConditionAt = ( groupIndex, conditionIndex, updater ) => {
 			const newConditions = [ ...conditions ];
 			newConditions[ groupIndex ] = {
 				...newConditions[ groupIndex ],
-				conditions: [ ...newConditions[ groupIndex ].conditions ]
+				conditions: [ ...newConditions[ groupIndex ].conditions ],
 			};
 			newConditions[ groupIndex ].conditions[ conditionIndex ] = updater(
 				newConditions[ groupIndex ].conditions[ conditionIndex ]
@@ -137,25 +137,30 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 		// 空のIDを生成する（ブロック複製対策）
 		useEffect( () => {
 			if ( conditions && conditions.length > 0 ) {
-				const hasEmptyIds = conditions.some( group => 
-					!group.id || 
-					(group.conditions && group.conditions.some( condition => !condition.id ))
+				const hasEmptyIds = conditions.some(
+					( group ) =>
+						! group.id ||
+						( group.conditions &&
+							group.conditions.some(
+								( condition ) => ! condition.id
+							) )
 				);
-				
+
 				if ( hasEmptyIds ) {
-					const newConditions = conditions.map( group => ({
+					const newConditions = conditions.map( ( group ) => ( {
 						...group,
 						id: group.id || generateId(),
-						conditions: group.conditions ? group.conditions.map( condition => ({
-							...condition,
-							id: condition.id || generateId()
-						})) : []
-					}));
+						conditions: group.conditions
+							? group.conditions.map( ( condition ) => ( {
+									...condition,
+									id: condition.id || generateId(),
+							  } ) )
+							: [],
+					} ) );
 					setAttributes( { conditions: newConditions } );
 				}
 			}
 		}, [ conditions, setAttributes ] );
-
 
 		// 既存ブロックから新形式への移行処理
 		const [ hasMigrated, setHasMigrated ] = useState( false );
@@ -167,7 +172,12 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			}
 
 			// 新しい形式が既に存在する場合は移行不要
-			if ( conditions && conditions.length > 0 && conditions[ 0 ] && conditions[ 0 ].conditions.length > 0 ) {
+			if (
+				conditions &&
+				conditions.length > 0 &&
+				conditions[ 0 ] &&
+				conditions[ 0 ].conditions.length > 0
+			) {
 				setHasMigrated( true );
 				return;
 			}
@@ -175,7 +185,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			// 古い属性が存在するかチェック
 			const oldAttributes = [
 				'ifPageType',
-				'ifPostType', 
+				'ifPostType',
 				'ifLanguage',
 				'userRole',
 				'postAuthor',
@@ -186,10 +196,10 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				'periodSpecificationMethod',
 				'periodDisplayValue',
 				'periodReferCustomField',
-				'showOnlyLoginUser'
+				'showOnlyLoginUser',
 			];
 
-			const hasOldAttributes = oldAttributes.some( attr => {
+			const hasOldAttributes = oldAttributes.some( ( attr ) => {
 				const value = attributes[ attr ];
 				if ( attr === 'userRole' ) {
 					return Array.isArray( value ) && value.length > 0;
@@ -201,9 +211,9 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					return value === true;
 				}
 				return value && value !== 'none' && value !== '';
-			});
+			} );
 
-			if ( !hasOldAttributes ) {
+			if ( ! hasOldAttributes ) {
 				setHasMigrated( true );
 				return;
 			}
@@ -226,11 +236,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 									: value,
 						  };
 					newConditions.push(
-						createConditionGroup(
-							rule.type,
-							values,
-							groupIndex++
-						)
+						createConditionGroup( rule.type, values, groupIndex++ )
 					);
 				}
 			} );
@@ -249,32 +255,47 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 
 			// 新しいconditionsを設定し、古い属性をクリア
 			const attributesToUpdate = { conditions: newConditions };
-			
+
 			// 古い属性をクリア
-			oldAttributes.forEach( attr => {
-				attributesToUpdate[ attr ] = attr === 'userRole' ? [] : 
-					attr === 'postAuthor' ? 0 : 
-					attr === 'showOnlyLoginUser' ? false : 
-					attr === 'customFieldRule' ? 'valueExists' : 
-					attr === 'periodSpecificationMethod' ? 'direct' : 
-					'none';
-			});
+			oldAttributes.forEach( ( attr ) => {
+				let defaultValue;
+				if ( attr === 'userRole' ) {
+					defaultValue = [];
+				} else if ( attr === 'postAuthor' ) {
+					defaultValue = 0;
+				} else if ( attr === 'showOnlyLoginUser' ) {
+					defaultValue = false;
+				} else if ( attr === 'customFieldRule' ) {
+					defaultValue = 'valueExists';
+				} else if ( attr === 'periodSpecificationMethod' ) {
+					defaultValue = 'direct';
+				} else {
+					defaultValue = 'none';
+				}
+				attributesToUpdate[ attr ] = defaultValue;
+			} );
 
 			setAttributes( attributesToUpdate );
 			setHasMigrated( true );
-		}, [ hasMigrated ] ); // attributesとconditionsを依存関係から削除
+			// eslint-disable-next-line react-hooks/exhaustive-deps
+		}, [ hasMigrated ] );
 
 		// 新しい形式を使用している場合に古い属性をクリア（移行後のみ実行）
 		useEffect( () => {
-			if ( !hasMigrated ) {
+			if ( ! hasMigrated ) {
 				return;
 			}
 
-			if ( conditions && conditions.length > 0 && conditions[ 0 ] && conditions[ 0 ].conditions.length > 0 ) {
+			if (
+				conditions &&
+				conditions.length > 0 &&
+				conditions[ 0 ] &&
+				conditions[ 0 ].conditions.length > 0
+			) {
 				// 新しい形式が使用されている場合、古い属性をクリア
 				const oldAttributesToClear = [
 					'ifPageType',
-					'ifPostType', 
+					'ifPostType',
 					'ifLanguage',
 					'userRole',
 					'postAuthor',
@@ -285,37 +306,49 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					'periodSpecificationMethod',
 					'periodDisplayValue',
 					'periodReferCustomField',
-					'showOnlyLoginUser'
+					'showOnlyLoginUser',
 				];
 
-				const hasOldAttributes = oldAttributesToClear.some( attr => {
-					const value = attributes[ attr ];
-					if ( attr === 'userRole' ) {
-						return Array.isArray( value ) && value.length > 0;
+				const hasOldAttributes = oldAttributesToClear.some(
+					( attr ) => {
+						const value = attributes[ attr ];
+						if ( attr === 'userRole' ) {
+							return Array.isArray( value ) && value.length > 0;
+						}
+						if ( attr === 'postAuthor' ) {
+							return value !== 0;
+						}
+						if ( attr === 'showOnlyLoginUser' ) {
+							return value === true;
+						}
+						return value && value !== 'none' && value !== '';
 					}
-					if ( attr === 'postAuthor' ) {
-						return value !== 0;
-					}
-					if ( attr === 'showOnlyLoginUser' ) {
-						return value === true;
-					}
-					return value && value !== 'none' && value !== '';
-				});
+				);
 
 				if ( hasOldAttributes ) {
 					const attributesToUpdate = {};
-					oldAttributesToClear.forEach( attr => {
-						attributesToUpdate[ attr ] = attr === 'userRole' ? [] : 
-							attr === 'postAuthor' ? 0 : 
-							attr === 'showOnlyLoginUser' ? false : 
-							attr === 'customFieldRule' ? 'valueExists' : 
-							attr === 'periodSpecificationMethod' ? 'direct' : 
-							'none';
-					});
+					oldAttributesToClear.forEach( ( attr ) => {
+						let defaultValue;
+						if ( attr === 'userRole' ) {
+							defaultValue = [];
+						} else if ( attr === 'postAuthor' ) {
+							defaultValue = 0;
+						} else if ( attr === 'showOnlyLoginUser' ) {
+							defaultValue = false;
+						} else if ( attr === 'customFieldRule' ) {
+							defaultValue = 'valueExists';
+						} else if ( attr === 'periodSpecificationMethod' ) {
+							defaultValue = 'direct';
+						} else {
+							defaultValue = 'none';
+						}
+						attributesToUpdate[ attr ] = defaultValue;
+					} );
 					setAttributes( attributesToUpdate );
 				}
 			}
-		}, [ hasMigrated, conditions ] ); // attributesを依存関係から削除
+			// eslint-disable-next-line react-hooks/exhaustive-deps
+		}, [ hasMigrated, conditions ] );
 
 		const conditionTypes = Object.entries( CONDITION_TYPE_LABELS ).map(
 			( [ value, label ] ) => ( {
@@ -348,14 +381,14 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					label: __( label, 'vk-dynamic-if-block' ),
 				} ) );
 				return result;
-			} catch (error) {
-				console.error('VK Dynamic If Block: Error in userRoles useMemo', error);
+			} catch ( error ) {
 				return [];
 			}
-		}, [ vkDynamicIfBlockLocalizeData ] );
+		}, [] );
 
-		const userSelectOptions =
-			vkDynamicIfBlockLocalizeData?.userSelectOptions || [];
+		const userSelectOptions = useMemo( () => {
+			return vkDynamicIfBlockLocalizeData?.userSelectOptions || [];
+		}, [] );
 
 		const addCondition = () => {
 			const newCondition = {
@@ -366,17 +399,22 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 
 			if ( conditions.length === 0 ) {
 				setAttributes( {
-					conditions: [ {
-						id: generateId(),
-						conditions: [ newCondition ],
-						operator: BLOCK_CONFIG.defaultOperator,
-					} ]
+					conditions: [
+						{
+							id: generateId(),
+							conditions: [ newCondition ],
+							operator: BLOCK_CONFIG.defaultOperator,
+						},
+					],
 				} );
 			} else {
 				const newConditions = [ ...conditions ];
 				newConditions[ 0 ] = {
 					...newConditions[ 0 ],
-					conditions: [ ...newConditions[ 0 ].conditions, newCondition ]
+					conditions: [
+						...newConditions[ 0 ].conditions,
+						newCondition,
+					],
 				};
 				setAttributes( { conditions: newConditions } );
 			}
@@ -411,14 +449,14 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				],
 				operator: 'or',
 			};
-			
+
 			const newConditions = [ ...conditions, newConditionGroup ];
 			setAttributes( {
 				conditions: newConditions,
 			} );
 		};
 
-				const updateCondition = ( groupIndex, conditionIndex, updates ) => {
+		const updateCondition = ( groupIndex, conditionIndex, updates ) => {
 			if (
 				! Array.isArray( conditions ) ||
 				groupIndex < 0 ||
@@ -428,10 +466,10 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				return;
 			}
 
-			updateConditionAt( groupIndex, conditionIndex, condition => ({
+			updateConditionAt( groupIndex, conditionIndex, ( condition ) => ( {
 				...condition,
 				...updates,
-			}) );
+			} ) );
 		};
 
 		const updateConditionValue = (
@@ -448,13 +486,13 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				return;
 			}
 
-			updateConditionAt( groupIndex, conditionIndex, condition => ({
+			updateConditionAt( groupIndex, conditionIndex, ( condition ) => ( {
 				...condition,
 				values: {
 					...condition.values,
 					[ key ]: value,
 				},
-			}) );
+			} ) );
 		};
 
 		const renderConditionSettings = (
@@ -535,34 +573,53 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				userRole: () => {
 					try {
 						// valuesが無効な場合は何も表示しない
-						if (!values) {
+						if ( ! values ) {
 							return (
 								<BaseControl
 									__nextHasNoMarginBottom
 									className="dynamic-if-user-role"
 								>
-									<p>{ __('No values available', 'vk-dynamic-if-block') }</p>
+									<p>
+										{ __(
+											'No values available',
+											'vk-dynamic-if-block'
+										) }
+									</p>
 								</BaseControl>
 							);
 						}
-						
+
 						// userRolesが配列でない場合は空配列を使用
-						const roles = Array.isArray(userRoles) ? userRoles : [];
+						const roles = Array.isArray( userRoles )
+							? userRoles
+							: [];
 						// values.userRoleが配列でない場合は配列に変換
-						const currentUserRoles = Array.isArray(values.userRole) ? values.userRole : (values.userRole ? [values.userRole] : []);
-						
+						let currentUserRoles;
+						if ( Array.isArray( values.userRole ) ) {
+							currentUserRoles = values.userRole;
+						} else if ( values.userRole ) {
+							currentUserRoles = [ values.userRole ];
+						} else {
+							currentUserRoles = [];
+						}
+
 						// rolesが空の場合は何も表示しない
-						if (roles.length === 0) {
+						if ( roles.length === 0 ) {
 							return (
 								<BaseControl
 									__nextHasNoMarginBottom
 									className="dynamic-if-user-role"
 								>
-									<p>{ __('No user roles available', 'vk-dynamic-if-block') }</p>
+									<p>
+										{ __(
+											'No user roles available',
+											'vk-dynamic-if-block'
+										) }
+									</p>
 								</BaseControl>
 							);
 						}
-						
+
 						return (
 							<BaseControl
 								__nextHasNoMarginBottom
@@ -570,40 +627,66 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							>
 								{ roles.map( ( role, index ) => {
 									// roleが無効な場合はスキップ
-									if (!role || !role.value) {
-										return <div key={`empty-${index}`}></div>;
+									if ( ! role || ! role.value ) {
+										return (
+											<div
+												key={ `empty-${ index }` }
+											></div>
+										);
 									}
-									
+
 									// role.valueが無効な場合はスキップ
-									if (!role.value || typeof role.value !== 'string') {
-										return <div key={`invalid-${index}`}></div>;
+									if (
+										! role.value ||
+										typeof role.value !== 'string'
+									) {
+										return (
+											<div
+												key={ `invalid-${ index }` }
+											></div>
+										);
 									}
-									
+
 									return (
 										<CheckboxControl
 											__nextHasNoMarginBottom
 											key={ role.value || index }
 											label={ role.label || '' }
-											checked={ currentUserRoles.includes(role.value) }
+											checked={ currentUserRoles.includes(
+												role.value
+											) }
 											onChange={ ( checked ) => {
 												const newRoles = checked
-													? [ ...currentUserRoles, role.value ]
-													: currentUserRoles.filter( ( r ) => r !== role.value );
-												updateValue( 'userRole', newRoles );
+													? [
+															...currentUserRoles,
+															role.value,
+													  ]
+													: currentUserRoles.filter(
+															( r ) =>
+																r !== role.value
+													  );
+												updateValue(
+													'userRole',
+													newRoles
+												);
 											} }
 										/>
 									);
 								} ) }
 							</BaseControl>
 						);
-					} catch (error) {
-						console.error('VK Dynamic If Block: Error in userRole component', error);
+					} catch ( error ) {
 						return (
 							<BaseControl
 								__nextHasNoMarginBottom
 								className="dynamic-if-user-role"
 							>
-								<p>{ __('Error loading user roles', 'vk-dynamic-if-block') }</p>
+								<p>
+									{ __(
+										'Error loading user roles',
+										'vk-dynamic-if-block'
+									) }
+								</p>
 							</BaseControl>
 						);
 					}
@@ -806,7 +889,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 
 				const groupLabels = conditions
 					.map( ( group ) => {
-						const { conditions: groupConditions = [] } = group || {};
+						const { conditions: groupConditions = [] } =
+							group || {};
 						if ( ! groupConditions.length ) {
 							return null;
 						}
@@ -871,26 +955,51 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 								try {
 									const selectedRoles = values.userRole || [];
 									// selectedRolesが配列でない場合は配列に変換
-									const roles = Array.isArray(selectedRoles) ? selectedRoles : (selectedRoles ? [selectedRoles] : []);
+									let roles;
+									if ( Array.isArray( selectedRoles ) ) {
+										roles = selectedRoles;
+									} else if ( selectedRoles ) {
+										roles = [ selectedRoles ];
+									} else {
+										roles = [];
+									}
 									if ( ! roles.length ) {
-										return __('No user roles selected', 'vk-dynamic-if-block');
+										return __(
+											'No user roles selected',
+											'vk-dynamic-if-block'
+										);
 									}
 									// userRolesが配列でない場合は空配列を使用
-									const availableRoles = Array.isArray(userRoles) ? userRoles : [];
+									const availableRoles = Array.isArray(
+										userRoles
+									)
+										? userRoles
+										: [];
 									const result = roles
-										.map(
-											( role ) => {
-												if (!role) return '';
-												const foundRole = availableRoles.find( ( r ) => r.value === role );
-												return foundRole?.label || role;
+										.map( ( role ) => {
+											if ( ! role ) {
+												return '';
 											}
-										)
-										.filter(Boolean)
+											const foundRole =
+												availableRoles.find(
+													( r ) => r.value === role
+												);
+											return foundRole?.label || role;
+										} )
+										.filter( Boolean )
 										.join( ', ' );
-									return result || __('Unknown user roles', 'vk-dynamic-if-block');
-								} catch (error) {
-									console.error('VK Dynamic If Block: Error in userRole label generation', error);
-									return __('Error generating user role label', 'vk-dynamic-if-block');
+									return (
+										result ||
+										__(
+											'Unknown user roles',
+											'vk-dynamic-if-block'
+										)
+									);
+								} catch ( error ) {
+									return __(
+										'Error generating user role label',
+										'vk-dynamic-if-block'
+									);
 								}
 							},
 							postAuthor: () =>
@@ -907,7 +1016,10 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 									: null,
 							loginUser: () =>
 								values.showOnlyLoginUser
-									? __( 'Login User Only', 'vk-dynamic-if-block' )
+									? __(
+											'Login User Only',
+											'vk-dynamic-if-block'
+									  )
 									: null,
 						};
 
@@ -934,11 +1046,17 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				return exclusion
 					? `${ __( '!', 'vk-dynamic-if-block' ) } ${ labelsString }`
 					: labelsString;
-			} catch (error) {
-				console.error('VK Dynamic If Block: Error in generateLabels', error);
-				return __('Error generating labels', 'vk-dynamic-if-block');
+			} catch ( error ) {
+				return __( 'Error generating labels', 'vk-dynamic-if-block' );
 			}
-		}, [ conditions, conditionOperator, exclusion, ifPageTypes, vkDynamicIfBlockLocalizeData, userRoles, userSelectOptions ] );
+		}, [
+			conditions,
+			conditionOperator,
+			exclusion,
+			ifPageTypes,
+			userRoles,
+			userSelectOptions,
+		] );
 
 		return (
 			<div { ...useBlockProps( { className: BLOCK_CONFIG.className } ) }>
