@@ -537,28 +537,13 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				return;
 			}
 
-			// 現在の条件を深いコピーで取得
-			const newConditions = JSON.parse( JSON.stringify( conditions ) );
-			const currentCondition =
-				newConditions[ groupIndex ]?.conditions[ conditionIndex ];
-
-			if ( ! currentCondition ) {
-				return;
-			}
-
-			// 条件を更新
-			const updatedCondition = {
-				...currentCondition,
+			updateConditionAt( groupIndex, conditionIndex, ( condition ) => ( {
+				...condition,
 				values: {
-					...currentCondition.values,
+					...condition.values,
 					[ key ]: value,
 				},
-			};
-
-			newConditions[ groupIndex ].conditions[ conditionIndex ] =
-				updatedCondition;
-
-			setAttributes( { conditions: newConditions } );
+			} ) );
 		};
 
 		const renderConditionSettings = (
@@ -952,44 +937,18 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 								] }
 								onChange={ ( value ) => {
 									// タクソノミーが変更されたらタームIDも同時にクリア
-									if (
-										! Array.isArray( conditions ) ||
-										groupIndex < 0 ||
-										conditionIndex < 0
-									) {
-										return;
-									}
-
-									// 現在の条件を深いコピーで取得
-									const newConditions = JSON.parse(
-										JSON.stringify( conditions )
+									updateConditionAt(
+										groupIndex,
+										conditionIndex,
+										( currentCondition ) => ( {
+											...currentCondition,
+											values: {
+												...currentCondition.values,
+												taxonomy: value,
+												termIds: [],
+											},
+										} )
 									);
-									const currentCondition =
-										newConditions[ groupIndex ]?.conditions[
-											conditionIndex
-										];
-
-									if ( ! currentCondition ) {
-										return;
-									}
-
-									// 条件を更新（両方の値を同時に更新）
-									const updatedCondition = {
-										...currentCondition,
-										values: {
-											...currentCondition.values,
-											taxonomy: value,
-											termIds: [],
-										},
-									};
-
-									newConditions[ groupIndex ].conditions[
-										conditionIndex
-									] = updatedCondition;
-
-									setAttributes( {
-										conditions: newConditions,
-									} );
 								} }
 							/>
 							{ selectedTaxonomy &&
