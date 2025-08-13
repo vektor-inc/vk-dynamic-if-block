@@ -128,16 +128,6 @@ export const createMigrationRules = ( attributes ) => [
 		condition: ( val ) => val && val !== 'none',
 	},
 	{
-		attr: 'ifTaxonomy',
-		type: 'taxonomy',
-		key: null,
-		condition: ( val ) => val,
-		customValues: () => ( {
-			taxonomy: attributes.ifTaxonomy,
-			...( attributes.termIds ? { termIds: attributes.termIds } : {} ),
-		} ),
-	},
-	{
 		attr: 'ifLanguage',
 		type: 'language',
 		key: 'ifLanguage',
