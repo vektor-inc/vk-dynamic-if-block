@@ -2193,7 +2193,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
         ),
         ),
         'content'   => 'Post with non-existent taxonomy',
-        'expected'  => 'Post with non-existent taxonomy',
+        'expected'  => '',
         ),
         // 複数条件でのタクソノミー条件テスト
         array(
