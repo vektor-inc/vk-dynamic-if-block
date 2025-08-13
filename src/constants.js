@@ -4,6 +4,7 @@ import { __ } from '@wordpress/i18n';
 export const CONDITION_TYPE_LABELS = {
 	pageType: 'Page Type',
 	postType: 'Post Type',
+	taxonomy: 'Taxonomy',
 	language: 'Language',
 	userRole: 'User Role',
 	postAuthor: 'Post Author',
@@ -127,6 +128,16 @@ export const createMigrationRules = ( attributes ) => [
 		condition: ( val ) => val && val !== 'none',
 	},
 	{
+		attr: 'ifTaxonomy',
+		type: 'taxonomy',
+		key: null,
+		condition: ( val ) => val,
+		customValues: () => ( {
+			taxonomy: attributes.ifTaxonomy,
+			...( attributes.termIds ? { termIds: attributes.termIds } : {} ),
+		} ),
+	},
+	{
 		attr: 'ifLanguage',
 		type: 'language',
 		key: 'ifLanguage',
@@ -190,7 +201,12 @@ export const createMigrationRules = ( attributes ) => [
 
 // ユーティリティ関数
 export const generateId = () => {
-	return 'vkdif_' + Math.random().toString(36).substr(2, 15) + '_' + Date.now().toString(36);
+	return (
+		'vkdif_' +
+		Math.random().toString( 36 ).substr( 2, 15 ) +
+		'_' +
+		Date.now().toString( 36 )
+	);
 };
 
 export const createConditionGroup = ( type, values ) => ( {

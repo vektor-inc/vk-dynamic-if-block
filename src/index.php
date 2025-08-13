@@ -338,6 +338,8 @@ function vk_dynamic_if_block_evaluate_condition($condition)
 			return vk_dynamic_if_block_check_page_type($values);
 		case 'postType':
 			return vk_dynamic_if_block_check_post_type($values);
+		case 'taxonomy':
+			return vk_dynamic_if_block_check_taxonomy($values);
 		case 'language':
 			return vk_dynamic_if_block_check_language($values);
 		case 'userRole':
@@ -695,6 +697,120 @@ function vk_dynamic_if_block_check_login_user($values)
 }
 
 /**
+ * Check taxonomy condition.
+ *
+ * @param array $values Condition values.
+ *
+ * @return bool Evaluation result.
+ */
+function vk_dynamic_if_block_check_taxonomy($values)
+{
+	$taxonomy = $values['taxonomy'] ?? '';
+	$term_ids = $values['termIds'] ?? [];
+
+	// タクソノミーが設定されていない場合は常にtrue
+	if (empty($taxonomy) || $taxonomy === 'none') {
+		return true;
+	}
+
+	// タクソノミーが選択されているがタームが選択されていない場合（制限なし）
+	if (empty($term_ids)) {
+		// 現在のページがそのタクソノミーに関連しているかチェック
+		$current_terms = [];
+		
+		// タクソノミーアーカイブページの場合
+		if (is_tax($taxonomy)) {
+			$current_term = get_queried_object();
+			if ($current_term && isset($current_term->term_id) && $current_term->taxonomy === $taxonomy) {
+				$current_terms = [$current_term->term_id];
+			}
+		}
+		// カテゴリーアーカイブページの場合
+		elseif (is_category() && $taxonomy === 'category') {
+			$current_term = get_queried_object();
+			if ($current_term && isset($current_term->term_id)) {
+				$current_terms = [$current_term->term_id];
+			}
+		}
+		// タグアーカイブページの場合
+		elseif (is_tag() && $taxonomy === 'post_tag') {
+			$current_term = get_queried_object();
+			if ($current_term && isset($current_term->term_id)) {
+				$current_terms = [$current_term->term_id];
+			}
+		}
+		// その他のタクソノミーアーカイブページの場合
+		elseif (is_tax()) {
+			$current_term = get_queried_object();
+			if ($current_term && isset($current_term->term_id) && $current_term->taxonomy === $taxonomy) {
+				$current_terms = [$current_term->term_id];
+			}
+		}
+		// 投稿ページの場合（アーカイブページでない場合のみ）
+		elseif (is_single() || is_singular()) {
+			$post_id = get_the_ID();
+			if ($post_id) {
+				$current_terms = wp_get_post_terms($post_id, $taxonomy, ['fields' => 'ids']);
+				if (is_wp_error($current_terms)) {
+					$current_terms = [];
+				}
+			}
+		}
+
+		$result = !empty($current_terms);
+		
+		return $result;
+	}
+
+	// 現在のページのコンテキストを判定
+	$current_terms = [];
+	
+	// タクソノミーアーカイブページの場合（優先度を高くする）
+	if (is_tax($taxonomy)) {
+		$current_term = get_queried_object();
+		if ($current_term && isset($current_term->term_id) && $current_term->taxonomy === $taxonomy) {
+			$current_terms = [$current_term->term_id];
+		}
+	}
+	// カテゴリーアーカイブページの場合
+	elseif (is_category() && $taxonomy === 'category') {
+		$current_term = get_queried_object();
+		if ($current_term && isset($current_term->term_id)) {
+			$current_terms = [$current_term->term_id];
+		}
+	}
+	// タグアーカイブページの場合
+	elseif (is_tag() && $taxonomy === 'post_tag') {
+		$current_term = get_queried_object();
+		if ($current_term && isset($current_term->term_id)) {
+			$current_terms = [$current_term->term_id];
+		}
+	}
+	// その他のタクソノミーアーカイブページの場合
+	elseif (is_tax()) {
+		$current_term = get_queried_object();
+		if ($current_term && isset($current_term->term_id) && $current_term->taxonomy === $taxonomy) {
+			$current_terms = [$current_term->term_id];
+		}
+	}
+	// 投稿ページの場合（アーカイブページでない場合のみ）
+	elseif (is_single() || is_singular()) {
+		$post_id = get_the_ID();
+		if ($post_id) {
+			$current_terms = wp_get_post_terms($post_id, $taxonomy, ['fields' => 'ids']);
+			if (is_wp_error($current_terms)) {
+				$current_terms = [];
+			}
+		}
+	}
+
+	$intersection = array_intersect($current_terms, $term_ids);
+	$result = !empty($intersection);
+	
+	return $result;
+}
+
+/**
  * Check page hierarchy condition.
  *
  * @param array $values Condition values.
@@ -830,13 +946,76 @@ function vk_dynamic_if_block_set_localize_script()
 		}
 	}
 
+	// タクソノミーオプション（実際に使用されているもののみ）
+	$taxonomy_options = [];
+	
+	// 公開されている投稿タイプを取得
+	$public_post_types = get_post_types(['public' => true], 'names');
+	
+	// 各投稿タイプに関連付けられたタクソノミーを取得
+	$used_taxonomies = [];
+	foreach ($public_post_types as $post_type) {
+		$taxonomies = get_object_taxonomies($post_type, 'names');
+		$used_taxonomies = array_merge($used_taxonomies, $taxonomies);
+	}
+	
+	// 重複を除去
+	$used_taxonomies = array_unique($used_taxonomies);
+	
+	// 実際にタームが存在するタクソノミーのみフィルタリング
+	foreach ($used_taxonomies as $taxonomy_name) {
+		// post_formatは除外
+		if ($taxonomy_name === 'post_format') {
+			continue;
+		}
+		
+		// タームが存在するかチェック
+		$terms = get_terms([
+			'taxonomy' => $taxonomy_name,
+			'hide_empty' => false,
+			'number' => 1, // 1つだけ取得して存在確認
+		]);
+		
+		if (!is_wp_error($terms) && !empty($terms)) {
+			$taxonomy_obj = get_taxonomy($taxonomy_name);
+			if ($taxonomy_obj) {
+				$taxonomy_options[] = [
+					'label' => $taxonomy_obj->labels->singular_name,
+					'value' => $taxonomy_name
+				];
+			}
+		}
+	}
+
+	// タームオプション（タクソノミー別）
+	$term_options = [];
+	foreach ($taxonomy_options as $taxonomy_option) {
+		$taxonomy_name = $taxonomy_option['value'];
+		$terms = get_terms([
+			'taxonomy' => $taxonomy_name,
+			'hide_empty' => false,
+		]);
+		
+		if (!is_wp_error($terms)) {
+			$term_options[$taxonomy_name] = [];
+			foreach ($terms as $term) {
+				$term_options[$taxonomy_name][] = [
+					'label' => $term->name,
+					'value' => $term->term_id
+				];
+			}
+		}
+	}
+
 	wp_localize_script(
 		'vk-dynamic-if-block', 'vkDynamicIfBlockLocalizeData', [
 			'postTypeSelectOptions' => $post_type_options,
 			'languageSelectOptions' => $language_options,
 			'userRoles' => wp_roles()->get_names(),
 			'userSelectOptions' => $user_options,
-			'currentSiteLanguage' => get_locale()
+			'currentSiteLanguage' => get_locale(),
+			'taxonomySelectOptions' => $taxonomy_options,
+			'termSelectOptions' => $term_options
 		]
 	);
 }

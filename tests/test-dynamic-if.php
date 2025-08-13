@@ -186,6 +186,56 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
         $test_posts['event_term_id'] = $term_info['term_id'];
 
         /******************************************
+         * ターム条件テスト用のカスタム分類を追加 
+*/
+        register_taxonomy(
+            'test_cat',
+            'post',
+            array(
+            'label'        => 'Test Category',
+            'rewrite'      => array( 'slug' => 'test_cat' ),
+            'hierarchical' => true,
+            )
+        );
+
+        register_taxonomy(
+            'test_cat2',
+            'post',
+            array(
+            'label'        => 'Test Category 2',
+            'rewrite'      => array( 'slug' => 'test_cat2' ),
+            'hierarchical' => true,
+            )
+        );
+
+        /******************************************
+         * ターム条件テスト用のタームを登録 
+*/
+        $args                        = array(
+        'slug' => 'test_term_1',
+        );
+        $term_info                   = wp_insert_term('Test Term 1', 'test_cat', $args);
+        $test_posts['test_cat_term_1_id'] = $term_info['term_id'];
+
+        $args                        = array(
+        'slug' => 'test_term_2',
+        );
+        $term_info                   = wp_insert_term('Test Term 2', 'test_cat', $args);
+        $test_posts['test_cat_term_2_id'] = $term_info['term_id'];
+
+        $args                        = array(
+        'slug' => 'test_cat2_term_1',
+        );
+        $term_info                   = wp_insert_term('Test Cat2 Term 1', 'test_cat2', $args);
+        $test_posts['test_cat2_term_1_id'] = $term_info['term_id'];
+
+        $args                        = array(
+        'slug' => 'test_cat2_term_2',
+        );
+        $term_info                   = wp_insert_term('Test Cat2 Term 2', 'test_cat2', $args);
+        $test_posts['test_cat2_term_2_id'] = $term_info['term_id'];
+
+        /******************************************
          * テスト用投稿の登録 
 */
 
@@ -270,6 +320,10 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
 
         // 作成した Event Test Post にイベントカテゴリーを指定.
         wp_set_object_terms($test_posts['event_post_id'], 'event_category_name', 'event_cat');
+
+        // テスト用投稿にターム条件テスト用のタームを割り当て
+        wp_set_object_terms($test_posts['post_id'], 'test_term_1', 'test_cat');
+        wp_set_object_terms($test_posts['post_id'], 'test_cat2_term_1', 'test_cat2');
 
         return $test_posts;
     }
@@ -1855,6 +1909,202 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
         ),
         'content'   => 'Single should show regardless of hierarchy',
         'expected'  => 'Single should show regardless of hierarchy',
+        ),
+        		/******************************************
+        * Taxonomy Condition 
+*/
+        // 投稿ページでのターム条件テスト
+        		array(
+		'name'      => 'Taxonomy condition - post with specific term',
+		'go_to'     => get_permalink($test_posts['post_id']),
+		'attribute' => array(
+					'conditions' => array(
+						array(
+							'type'   => 'taxonomy',
+							'values' => array(
+								'taxonomy' => 'test_cat',
+								'termIds' => array($test_posts['test_cat_term_1_id'])
+							),
+						),
+		),
+		),
+		'content'   => 'Post with specific term',
+		'expected'  => 'Post with specific term',
+		),
+        array(
+        'name'      => 'Taxonomy condition - post with different term (should not show)',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'taxonomy',
+                            'values' => array(
+                                'taxonomy' => 'test_cat',
+                                'termIds' => array($test_posts['test_cat_term_2_id'])
+                            ),
+                        ),
+        ),
+        ),
+        'content'   => 'Post with different term',
+        'expected'  => '',
+        ),
+        array(
+        'name'      => 'Taxonomy condition - post with taxonomy but no term restriction',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'taxonomy',
+                            'values' => array(
+                                'taxonomy' => 'test_cat',
+                                'termIds' => array()
+                            ),
+                        ),
+        ),
+        ),
+        'content'   => 'Post with taxonomy but no term restriction',
+        'expected'  => 'Post with taxonomy but no term restriction',
+        ),
+        array(
+        'name'      => 'Taxonomy condition - post with different taxonomy (should not show)',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'taxonomy',
+                            'values' => array(
+                                'taxonomy' => 'test_cat2',
+                                'termIds' => array($test_posts['test_cat2_term_2_id'])
+                            ),
+                        ),
+        ),
+        ),
+        'content'   => 'Post with different taxonomy term',
+        'expected'  => '',
+        ),
+        // タームアーカイブページでのターム条件テスト
+        array(
+        'name'      => 'Taxonomy condition - term archive page with matching term',
+        'go_to'     => get_term_link($test_posts['test_cat_term_1_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'taxonomy',
+                            'values' => array(
+                                'taxonomy' => 'test_cat',
+                                'termIds' => array($test_posts['test_cat_term_1_id'])
+                            ),
+                        ),
+        ),
+        ),
+        'content'   => 'Term archive with matching term',
+        'expected'  => 'Term archive with matching term',
+        ),
+        array(
+        'name'      => 'Taxonomy condition - term archive page with different term (should not show)',
+        'go_to'     => get_term_link($test_posts['test_cat_term_1_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'taxonomy',
+                            'values' => array(
+                                'taxonomy' => 'test_cat',
+                                'termIds' => array($test_posts['test_cat_term_2_id'])
+                            ),
+                        ),
+        ),
+        ),
+        'content'   => 'Term archive with different term',
+        'expected'  => '',
+        ),
+        array(
+        'name'      => 'Taxonomy condition - term archive page with taxonomy but no term restriction',
+        'go_to'     => get_term_link($test_posts['test_cat_term_1_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'taxonomy',
+                            'values' => array(
+                                'taxonomy' => 'test_cat',
+                                'termIds' => array()
+                            ),
+                        ),
+        ),
+        ),
+        'content'   => 'Term archive with taxonomy but no term restriction',
+        'expected'  => 'Term archive with taxonomy but no term restriction',
+        ),
+        array(
+        'name'      => 'Taxonomy condition - term archive page with different taxonomy (should not show)',
+        'go_to'     => get_term_link($test_posts['test_cat_term_1_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'taxonomy',
+                            'values' => array(
+                                'taxonomy' => 'test_cat2',
+                                'termIds' => array($test_posts['test_cat2_term_1_id'])
+                            ),
+                        ),
+        ),
+        ),
+        'content'   => 'Term archive with different taxonomy',
+        'expected'  => '',
+        ),
+        // ターム条件の除外テスト
+        array(
+        'name'      => 'Taxonomy condition - exclusion with matching term',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'exclusion'  => true,
+                    'conditions' => array(
+                        array(
+                            'type'   => 'taxonomy',
+                            'values' => array(
+                                'taxonomy' => 'test_cat',
+                                'termIds' => array($test_posts['test_cat_term_1_id'])
+                            ),
+                        ),
+        ),
+        ),
+        'content'   => 'Term exclusion with matching term',
+        'expected'  => '',
+        ),
+        array(
+        'name'      => 'Taxonomy condition - exclusion with non-matching term',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'exclusion'  => true,
+                    'conditions' => array(
+                        array(
+                            'type'   => 'taxonomy',
+                            'values' => array(
+                                'taxonomy' => 'test_cat',
+                                'termIds' => array($test_posts['test_cat_term_2_id'])
+                            ),
+                        ),
+        ),
+        ),
+        'content'   => 'Term exclusion with non-matching term',
+        'expected'  => 'Term exclusion with non-matching term',
+        ),
+        // ターム条件が設定されていない場合のテスト
+        array(
+        'name'      => 'Taxonomy condition - no taxonomy specified',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'taxonomy',
+                            'values' => array(
+                                'taxonomy' => 'none',
+                                'termIds' => array()
+                            ),
+                        ),
+        ),
+        ),
+        'content'   => 'No taxonomy specified',
+        'expected'  => 'No taxonomy specified',
         ),
         );
 
