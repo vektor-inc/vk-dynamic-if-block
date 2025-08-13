@@ -2106,7 +2106,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
         'content'   => 'No taxonomy specified',
         'expected'  => 'No taxonomy specified',
         ),
-        // 複数ターム選択時の動作テスト（将来的な拡張を考慮）
+        // 複数ターム選択時の動作テスト
         array(
         'name'      => 'Taxonomy condition - multiple terms selected (should show if any match)',
         'go_to'     => get_permalink($test_posts['post_id']),
