@@ -11,6 +11,7 @@ export const CONDITION_TYPE_LABELS = {
 	customField: 'Custom Field',
 	period: 'Display Period',
 	loginUser: 'Login User Only',
+	mobileDevice: 'Mobile Device Only',
 };
 
 // ページタイプ定義
@@ -185,6 +186,12 @@ export const createMigrationRules = ( attributes ) => [
 		attr: 'showOnlyLoginUser',
 		type: 'loginUser',
 		key: 'showOnlyLoginUser',
+		condition: ( val ) => val,
+	},
+	{
+		attr: 'showOnlyMobileDevice',
+		type: 'mobileDevice',
+		key: 'showOnlyMobileDevice',
 		condition: ( val ) => val,
 	},
 ];

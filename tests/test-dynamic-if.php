@@ -1170,6 +1170,69 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
         'expected'  => '',
         ),
         /******************************************
+        * Mobile Device 
+*/
+        array(
+        'name'      => 'Only mobile devices can view (mobile)',
+        'go_to'     => get_permalink($test_posts['parent_page_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'mobileDevice',
+                            'values' => array( 'showOnlyMobileDevice' => true ),
+                        ),
+        ),
+        ),
+        'is_mobile' => true,
+        'content'   => 'Only mobile devices can view (mobile)',
+        'expected'  => 'Only mobile devices can view (mobile)',
+        ),
+        array(
+        'name'      => 'Only mobile devices can view (non-mobile)',
+        'go_to'     => get_permalink($test_posts['parent_page_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'mobileDevice',
+                            'values' => array( 'showOnlyMobileDevice' => true ),
+                        ),
+        ),
+        ),
+        'is_mobile' => false,
+        'content'   => 'Only mobile devices can view (non-mobile)',
+        'expected'  => '',
+        ),
+        array(
+        'name'      => 'Mobile device not specified (mobile)',
+        'go_to'     => get_permalink($test_posts['parent_page_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'mobileDevice',
+                            'values' => array( 'showOnlyMobileDevice' => false ),
+                        ),
+        ),
+        ),
+        'is_mobile' => true,
+        'content'   => 'Mobile device not specified (mobile)',
+        'expected'  => 'Mobile device not specified (mobile)',
+        ),
+        array(
+        'name'      => 'Mobile device not specified (non-mobile)',
+        'go_to'     => get_permalink($test_posts['parent_page_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'mobileDevice',
+                            'values' => array( 'showOnlyMobileDevice' => false ),
+                        ),
+        ),
+        ),
+        'is_mobile' => false,
+        'content'   => 'Mobile device not specified (non-mobile)',
+        'expected'  => 'Mobile device not specified (non-mobile)',
+        ),
+        /******************************************
          * Display Period 
 */
         // not specified
@@ -2295,6 +2358,11 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
             print PHP_EOL;
             $this->go_to($test['go_to']);
 
+            // ユーザーエージェントを設定
+            if (isset($test['user_agent'])) {
+                $_SERVER['HTTP_USER_AGENT'] = $test['user_agent'];
+            }
+
             if (! empty($test['user']) ) {
                 print 'user : ' . get_current_user_id() . PHP_EOL;
                 if ('not-log-in' === $test['user'] ) {
@@ -2323,6 +2391,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
                 wp_set_current_user($test['is_login'] ? 1 : 0);
                 $actual = vk_dynamic_if_block_render($test['attribute'], $test['content']);
                 wp_set_current_user(0);
+            } elseif (isset($test['is_mobile'])) {
+                add_filter('wp_is_mobile', function() use ($test) {
+                    return $test['is_mobile'];
+                });
+                $actual = vk_dynamic_if_block_render($test['attribute'], $test['content']);
+                remove_all_filters('wp_is_mobile');
             } else {
                 $actual = vk_dynamic_if_block_render($test['attribute'], $test['content']);
             }

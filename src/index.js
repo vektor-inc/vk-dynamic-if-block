@@ -308,6 +308,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					'periodDisplayValue',
 					'periodReferCustomField',
 					'showOnlyLoginUser',
+					'showOnlyMobileDevice'
 				];
 
 				const hasOldAttributes = oldAttributesToClear.some(
@@ -569,7 +570,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 
 					return (
 						<SelectControl
-							label={ __( 'Language', 'vk-dynamic-if-block' ) }
+							label={ _x( 'Language', 'Select a language', 'vk-dynamic-if-block' ) }
 							value={ values.ifLanguage || '' }
 							options={ sortedLanguages }
 							onChange={ ( value ) =>
@@ -938,6 +939,15 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						</>
 					);
 				},
+				mobileDevice: () => (
+					<ToggleControl
+						label={ __( 'Displayed only on mobile devices.', 'vk-dynamic-if-block' ) }
+						checked={ values.showOnlyMobileDevice || false }
+						onChange={ ( checked ) =>
+							updateValue( 'showOnlyMobileDevice', checked )
+						}
+					/>
+				),
 			};
 
 			return renderers[ type ]?.() || null;
@@ -1152,6 +1162,10 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 									);
 								}
 							},
+							showOnlyMobileDevice: () =>
+								values.showOnlyMobileDevice
+									? __( 'Mobile Device Only', 'vk-dynamic-if-block' )
+									: null,
 						};
 
 						const label =

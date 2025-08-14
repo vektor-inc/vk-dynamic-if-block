@@ -36,6 +36,8 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 == Changelog ==
 
 [ Add Function ] Added condition to display content based on specific taxonomy and terms.
+[ Add Function ] Added condition to display only to mobile devices.
+[ Other ] Fix translation
 
 = 1.2.0 =
 [ Other ] Prevent automatic migration of old block structure on frontend and migrate to new structure when saving in editor.
