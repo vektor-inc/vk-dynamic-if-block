@@ -128,9 +128,12 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				...newConditions[ groupIndex ],
 				conditions: [ ...newConditions[ groupIndex ].conditions ],
 			};
-			newConditions[ groupIndex ].conditions[ conditionIndex ] = updater(
-				newConditions[ groupIndex ].conditions[ conditionIndex ]
-			);
+
+			const oldCondition =
+				newConditions[ groupIndex ].conditions[ conditionIndex ];
+			const updatedCondition = updater( oldCondition );
+			newConditions[ groupIndex ].conditions[ conditionIndex ] =
+				updatedCondition;
 			setAttributes( { conditions: newConditions } );
 		};
 
@@ -258,7 +261,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 
 			// 古い属性をクリア
 			oldAttributes.forEach( ( attr ) => {
-				let defaultValue;
+				let defaultValue = 'none';
 				if ( attr === 'userRole' ) {
 					defaultValue = [];
 				} else if ( attr === 'postAuthor' ) {
@@ -269,8 +272,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					defaultValue = 'valueExists';
 				} else if ( attr === 'periodSpecificationMethod' ) {
 					defaultValue = 'direct';
-				} else {
-					defaultValue = 'none';
 				}
 				attributesToUpdate[ attr ] = defaultValue;
 			} );
@@ -329,7 +330,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				if ( hasOldAttributes ) {
 					const attributesToUpdate = {};
 					oldAttributesToClear.forEach( ( attr ) => {
-						let defaultValue;
+						let defaultValue = 'none';
 						if ( attr === 'userRole' ) {
 							defaultValue = [];
 						} else if ( attr === 'postAuthor' ) {
@@ -340,8 +341,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							defaultValue = 'valueExists';
 						} else if ( attr === 'periodSpecificationMethod' ) {
 							defaultValue = 'direct';
-						} else {
-							defaultValue = 'none';
 						}
 						attributesToUpdate[ attr ] = defaultValue;
 					} );
@@ -422,30 +421,13 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 		};
 
 		const addConditionGroup = () => {
-			// デフォルトの条件タイプを使用
-			const firstType = BLOCK_CONFIG.defaultConditionType;
-
-			// デフォルト値を設定
-			let defaultValues = {};
-			if ( firstType === 'pageType' ) {
-				defaultValues = { ifPageType: 'none' };
-			} else if ( firstType === 'postType' ) {
-				defaultValues = { ifPostType: 'none' };
-			} else if ( firstType === 'userRole' ) {
-				defaultValues = { userRole: [] };
-			} else if ( firstType === 'language' ) {
-				defaultValues = { ifLanguage: '' };
-			} else if ( firstType === 'postAuthor' ) {
-				defaultValues = { postAuthor: 0 };
-			}
-
 			const newConditionGroup = {
 				id: generateId(),
 				conditions: [
 					{
 						id: generateId(),
-						type: firstType,
-						values: defaultValues,
+						type: BLOCK_CONFIG.defaultConditionType,
+						values: {},
 					},
 				],
 				operator: 'or',
@@ -467,10 +449,36 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				return;
 			}
 
-			updateConditionAt( groupIndex, conditionIndex, ( condition ) => ( {
-				...condition,
-				...updates,
-			} ) );
+			updateConditionAt( groupIndex, conditionIndex, ( condition ) => {
+				// 条件タイプが変更された場合、適切なデフォルト値を設定
+				let newValues = condition.values;
+				if ( updates.type && updates.type !== condition.type ) {
+					if ( updates.type === 'pageType' ) {
+						newValues = { ifPageType: 'none' };
+					} else if ( updates.type === 'postType' ) {
+						newValues = { ifPostType: 'none' };
+					} else if ( updates.type === 'userRole' ) {
+						newValues = { userRole: [] };
+					} else if ( updates.type === 'language' ) {
+						newValues = { ifLanguage: '' };
+					} else if ( updates.type === 'postAuthor' ) {
+						newValues = { postAuthor: 0 };
+					} else if ( updates.type === 'taxonomy' ) {
+						newValues = {
+							taxonomy: 'none',
+							termIds: [],
+						};
+					} else {
+						newValues = {};
+					}
+				}
+
+				return {
+					...condition,
+					...updates,
+					values: newValues,
+				};
+			} );
 		};
 
 		const updateConditionValue = (
@@ -595,13 +603,11 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							? userRoles
 							: [];
 						// values.userRoleが配列でない場合は配列に変換
-						let currentUserRoles;
+						let currentUserRoles = [];
 						if ( Array.isArray( values.userRole ) ) {
 							currentUserRoles = values.userRole;
 						} else if ( values.userRole ) {
 							currentUserRoles = [ values.userRole ];
-						} else {
-							currentUserRoles = [];
 						}
 
 						// rolesが空の場合は何も表示しない
@@ -854,6 +860,85 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						}
 					/>
 				),
+				taxonomy: () => {
+					const taxonomies =
+						vkDynamicIfBlockLocalizeData?.taxonomySelectOptions ||
+						[];
+					const terms =
+						vkDynamicIfBlockLocalizeData?.termSelectOptions || {};
+					const selectedTaxonomy = values.taxonomy || 'none';
+					const availableTerms =
+						selectedTaxonomy && selectedTaxonomy !== 'none'
+							? terms[ selectedTaxonomy ] || []
+							: [];
+					const selectedTerms = Array.isArray( values.termIds )
+						? values.termIds
+						: [];
+
+					return (
+						<>
+							<SelectControl
+								label={ __(
+									'Taxonomy',
+									'vk-dynamic-if-block'
+								) }
+								value={ selectedTaxonomy }
+								options={ [
+									{
+										value: 'none',
+										label: __(
+											'No restriction',
+											'vk-dynamic-if-block'
+										),
+									},
+									...taxonomies,
+								] }
+								onChange={ ( value ) => {
+									// タクソノミーが変更されたらタームIDも同時にクリア
+									updateConditionAt(
+										groupIndex,
+										conditionIndex,
+										( currentCondition ) => ( {
+											...currentCondition,
+											values: {
+												...currentCondition.values,
+												taxonomy: value,
+												termIds: [],
+											},
+										} )
+									);
+								} }
+							/>
+							{ selectedTaxonomy &&
+								selectedTaxonomy !== 'none' && (
+									<SelectControl
+										label={ __(
+											'Select Term',
+											'vk-dynamic-if-block'
+										) }
+										value={ selectedTerms[ 0 ] || '' }
+										options={ [
+											{
+												value: '',
+												label: __(
+													'No restriction',
+													'vk-dynamic-if-block'
+												),
+											},
+											...availableTerms,
+										] }
+										onChange={ ( value ) => {
+											// タームが変更されたら完全にリセット
+											updateValue(
+												'termIds',
+												value ? [ value ] : []
+											);
+										} }
+									/>
+								) }
+						</>
+					);
+				},
 				mobileDevice: () => (
 					<ToggleControl
 						label={ __( 'Displayed only on mobile devices.', 'vk-dynamic-if-block' ) }
@@ -965,13 +1050,11 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 								try {
 									const selectedRoles = values.userRole || [];
 									// selectedRolesが配列でない場合は配列に変換
-									let roles;
+									let roles = [];
 									if ( Array.isArray( selectedRoles ) ) {
 										roles = selectedRoles;
 									} else if ( selectedRoles ) {
 										roles = [ selectedRoles ];
-									} else {
-										roles = [];
 									}
 									if ( ! roles.length ) {
 										return __(
@@ -980,11 +1063,10 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 										);
 									}
 									// userRolesが配列でない場合は空配列を使用
-									const availableRoles = Array.isArray(
-										userRoles
-									)
-										? userRoles
-										: [];
+									let availableRoles = [];
+									if ( Array.isArray( userRoles ) ) {
+										availableRoles = userRoles;
+									}
 									const result = roles
 										.map( ( role ) => {
 											if ( ! role ) {
@@ -1031,6 +1113,55 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 											'vk-dynamic-if-block'
 									  )
 									: null,
+							taxonomy: () => {
+								try {
+									const taxonomy = values.taxonomy;
+									const termIds = values.termIds || [];
+
+									if ( ! taxonomy || taxonomy === 'none' ) {
+										return null;
+									}
+
+									const taxonomies =
+										vkDynamicIfBlockLocalizeData?.taxonomySelectOptions ||
+										[];
+									const terms =
+										vkDynamicIfBlockLocalizeData?.termSelectOptions ||
+										{};
+									const taxonomyLabel =
+										taxonomies.find(
+											( t ) => t.value === taxonomy
+										)?.label || taxonomy;
+									const availableTerms =
+										terms[ taxonomy ] || [];
+
+									const selectedTermLabels = termIds
+										.map( ( termId ) => {
+											const term = availableTerms.find(
+												( t ) =>
+													t.value ===
+													parseInt( termId )
+											);
+											return term?.label || '';
+										} )
+										.filter( Boolean )
+										.join( ', ' );
+
+									if ( ! selectedTermLabels ) {
+										return `${ taxonomyLabel } (${ __(
+											'No terms selected',
+											'vk-dynamic-if-block'
+										) })`;
+									}
+
+									return `${ taxonomyLabel }: ${ selectedTermLabels }`;
+								} catch ( error ) {
+									return __(
+										'Error generating taxonomy label',
+										'vk-dynamic-if-block'
+									);
+								}
+							},
 							showOnlyMobileDevice: () =>
 								values.showOnlyMobileDevice
 									? __( 'Mobile Device Only', 'vk-dynamic-if-block' )

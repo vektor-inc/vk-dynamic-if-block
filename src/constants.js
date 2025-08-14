@@ -4,6 +4,7 @@ import { __ } from '@wordpress/i18n';
 export const CONDITION_TYPE_LABELS = {
 	pageType: 'Page Type',
 	postType: 'Post Type',
+	taxonomy: 'Taxonomy',
 	language: 'Language',
 	userRole: 'User Role',
 	postAuthor: 'Post Author',
