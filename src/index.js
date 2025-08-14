@@ -561,7 +561,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 
 					return (
 						<SelectControl
-							label={ __( 'Language', 'vk-dynamic-if-block' ) }
+							label={ _x( 'Language', 'Select a language', 'vk-dynamic-if-block' ) }
 							value={ values.ifLanguage || '' }
 							options={ sortedLanguages }
 							onChange={ ( value ) =>
