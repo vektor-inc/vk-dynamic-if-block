@@ -197,7 +197,12 @@ export const createMigrationRules = ( attributes ) => [
 
 // ユーティリティ関数
 export const generateId = () => {
-	return 'vkdif_' + Math.random().toString(36).substr(2, 15) + '_' + Date.now().toString(36);
+	return (
+		'vkdif_' +
+		Math.random().toString( 36 ).substr( 2, 15 ) +
+		'_' +
+		Date.now().toString( 36 )
+	);
 };
 
 export const createConditionGroup = ( type, values ) => ( {
