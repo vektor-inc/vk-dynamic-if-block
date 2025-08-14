@@ -34,8 +34,9 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		'periodSpecificationMethod' => 'direct',
 		'periodDisplayValue'        => '',
 		'periodReferCustomField'    => '',
-		'showOnlyLoginUser'             => '',
-		'conditions'                => array(), // 新しい形式
+		'showOnlyLoginUser'         => '',
+		'showOnlyMobileDevice'      => '',
+		'conditions'                => array(),
 	);
 	$attributes         = array_merge( $attributes_default, $attributes );
 
@@ -48,7 +49,8 @@ function vk_dynamic_if_block_render( $attributes, $content ) {
 		'userRole',
 		'postAuthor',
 		'periodDisplaySetting',
-		'showOnlyLoginUser'
+		'showOnlyLoginUser',
+		'showOnlyMobileDevice'
 	];
 
 	$has_old_attributes = false;
@@ -315,6 +317,11 @@ function vk_dynamic_if_block_render_old_attributes($attributes, $content)
 		$display = $display && is_user_logged_in();
 	}
 
+	// Mobile Device Check
+	if (!empty($attributes['showOnlyMobileDevice'])) {
+		$display = $display && wp_is_mobile();
+	}
+
 	// Exclusion Check
 	$final_result = ($attributes['exclusion'] ? !$display : $display);
 
@@ -350,6 +357,8 @@ function vk_dynamic_if_block_evaluate_condition($condition)
 			return vk_dynamic_if_block_check_period($values);
 		case 'loginUser':
 			return vk_dynamic_if_block_check_login_user($values);
+		case 'mobileDevice':
+			return vk_dynamic_if_block_check_mobile_device($values);
 		default:
 			return true;
 	}
@@ -692,6 +701,19 @@ function vk_dynamic_if_block_check_login_user($values)
 {
     return !($values['showOnlyLoginUser'] ?? false) 
         || is_user_logged_in();
+}
+
+/**
+ * Check device type condition.
+ *
+ * @param array $values Condition values.
+ *
+ * @return bool Evaluation result.
+ */
+function vk_dynamic_if_block_check_mobile_device($values)
+{
+    return !($values['showOnlyMobileDevice'] ?? false) 
+        || wp_is_mobile();
 }
 
 /**

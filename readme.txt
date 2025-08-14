@@ -35,6 +35,7 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+[ Add Function ] Added condition to display only to mobile devices.
 [ Other ] Fix translation
 
 = 1.2.0 =
