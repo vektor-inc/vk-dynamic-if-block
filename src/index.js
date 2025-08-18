@@ -373,8 +373,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					vkDynamicIfBlockLocalizeData?.userRoles || {}
 				).map( ( [ key, label ] ) => ( {
 					value: key,
-					// eslint-disable-next-line @wordpress/i18n-no-variables
-					label: __( label, 'vk-dynamic-if-block' ),
+					label,
 				} ) );
 				return result;
 			} catch ( error ) {
