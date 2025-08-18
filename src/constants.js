@@ -2,45 +2,101 @@ import { __ } from '@wordpress/i18n';
 
 // 条件タイプの定義
 export const CONDITION_TYPE_LABELS = {
-	pageType: 'Page Type',
-	postType: 'Post Type',
-	taxonomy: 'Taxonomy',
-	language: 'Language',
-	userRole: 'User Role',
-	postAuthor: 'Post Author',
-	customField: 'Custom Field',
-	period: 'Display Period',
-	loginUser: 'Login User Only',
-	mobileDevice: 'Mobile Device Only',
+	pageType: __( 'Page Type', 'vk-dynamic-if-block' ),
+	postType: __( 'Post Type', 'vk-dynamic-if-block' ),
+	taxonomy: __( 'Taxonomy', 'vk-dynamic-if-block' ),
+	language: __( 'Language', 'vk-dynamic-if-block' ),
+	userRole: __( 'User Role', 'vk-dynamic-if-block' ),
+	postAuthor: __( 'Post Author', 'vk-dynamic-if-block' ),
+	customField: __( 'Custom Field', 'vk-dynamic-if-block' ),
+	period: __( 'Display Period', 'vk-dynamic-if-block' ),
+	loginUser: __( 'Login User Only', 'vk-dynamic-if-block' ),
+	mobileDevice: __( 'Mobile Device Only', 'vk-dynamic-if-block' ),
 };
 
 // ページタイプ定義
 export const PAGE_TYPE_DEFINITIONS = [
-	{ value: 'none', label: 'No restriction' },
-	{ value: 'is_front_page', label: 'Front Page', func: 'is_front_page()' },
-	{ value: 'is_single', label: 'Single', func: 'is_single()' },
-	{ value: 'is_page', label: 'Page', func: 'is_page()' },
-	{ value: 'is_singular', label: 'Singular', func: 'is_singular()' },
+	{ value: 'none', label: __( 'No restriction', 'vk-dynamic-if-block' ) },
+	{
+		value: 'is_front_page',
+		label: __( 'Front Page', 'vk-dynamic-if-block' ),
+		func: 'is_front_page()',
+	},
+	{
+		value: 'is_single',
+		label: __( 'Single', 'vk-dynamic-if-block' ),
+		func: 'is_single()',
+	},
+	{
+		value: 'is_page',
+		label: __( 'Page', 'vk-dynamic-if-block' ),
+		func: 'is_page()',
+	},
+	{
+		value: 'is_singular',
+		label: __( 'Singular', 'vk-dynamic-if-block' ),
+		func: 'is_singular()',
+	},
 	{
 		value: 'is_home',
-		label: 'Post Top',
+		label: __( 'Post Top', 'vk-dynamic-if-block' ),
 		func: 'is_home() && ! is_front_page()',
 	},
 	{
 		value: 'is_post_type_archive',
-		label: 'Post Type Archive',
+		label: __( 'Post Type Archive', 'vk-dynamic-if-block' ),
 		func: 'is_post_type_archive() && !is_year() && !is_month() && !is_date()',
 	},
-	{ value: 'is_category', label: 'Category Archive', func: 'is_category()' },
-	{ value: 'is_tag', label: 'Tag Archive', func: 'is_tag()' },
-	{ value: 'is_tax', label: 'Taxonomy Archive', func: 'is_tax()' },
-	{ value: 'is_year', label: 'Yearly Archive', func: 'is_year()' },
-	{ value: 'is_month', label: 'Monthly Archive', func: 'is_month()' },
-	{ value: 'is_date', label: 'Daily Archive', func: 'is_date()' },
-	{ value: 'is_author', label: 'Author Archive', func: 'is_author()' },
-	{ value: 'is_archive', label: 'Archive', func: 'is_archive()' },
-	{ value: 'is_search', label: 'Search Result', func: 'is_search()' },
-	{ value: 'is_404', label: '404', func: 'is_404()' },
+	{
+		value: 'is_category',
+		label: __( 'Category Archive', 'vk-dynamic-if-block' ),
+		func: 'is_category()',
+	},
+	{
+		value: 'is_tag',
+		label: __( 'Tag Archive', 'vk-dynamic-if-block' ),
+		func: 'is_tag()',
+	},
+	{
+		value: 'is_tax',
+		label: __( 'Taxonomy Archive', 'vk-dynamic-if-block' ),
+		func: 'is_tax()',
+	},
+	{
+		value: 'is_year',
+		label: __( 'Yearly Archive', 'vk-dynamic-if-block' ),
+		func: 'is_year()',
+	},
+	{
+		value: 'is_month',
+		label: __( 'Monthly Archive', 'vk-dynamic-if-block' ),
+		func: 'is_month()',
+	},
+	{
+		value: 'is_date',
+		label: __( 'Daily Archive', 'vk-dynamic-if-block' ),
+		func: 'is_date()',
+	},
+	{
+		value: 'is_author',
+		label: __( 'Author Archive', 'vk-dynamic-if-block' ),
+		func: 'is_author()',
+	},
+	{
+		value: 'is_archive',
+		label: __( 'Archive', 'vk-dynamic-if-block' ),
+		func: 'is_archive()',
+	},
+	{
+		value: 'is_search',
+		label: __( 'Search Result', 'vk-dynamic-if-block' ),
+		func: 'is_search()',
+	},
+	{
+		value: 'is_404',
+		label: __( '404', 'vk-dynamic-if-block' ),
+		func: 'is_404()',
+	},
 ];
 
 // カスタムフィールドルール
@@ -102,8 +158,8 @@ export const PAGE_HIERARCHY_OPTIONS = [
 
 // 条件演算子
 export const CONDITION_OPERATORS = [
-	{ label: 'AND', value: 'and' },
-	{ label: 'OR', value: 'or' },
+	{ label: __( 'AND', 'vk-dynamic-if-block' ), value: 'and' },
+	{ label: __( 'OR', 'vk-dynamic-if-block' ), value: 'or' },
 ];
 
 // ブロック設定
