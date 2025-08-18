@@ -39,6 +39,7 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 [ Add Function ] Added condition to display content based on specific taxonomy and terms.
 [ Add Function ] Added condition to display only to mobile devices.
 [ Other ] Fix translation
+[ Bug fix ] Fix translation not working for condition labels and page type definitions (条件ラベルとページタイプ定義の翻訳が効かない問題を修正)
 
 = 1.2.0 =
 [ Other ] Prevent automatic migration of old block structure on frontend and migrate to new structure when saving in editor.
