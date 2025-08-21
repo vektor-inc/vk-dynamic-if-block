@@ -35,6 +35,8 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+[ Bug fix ] Fix translation not working for some labels.
+
 = 1.3.0 =
 [ Add Function ] Added condition to display content based on specific taxonomy and terms.
 [ Add Function ] Added condition to display only to mobile devices.
