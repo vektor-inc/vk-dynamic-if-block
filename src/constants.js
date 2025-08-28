@@ -1,17 +1,17 @@
-import { __ } from '@wordpress/i18n';
+import { __, _x } from '@wordpress/i18n';
 
 // 条件タイプの定義
 export const CONDITION_TYPE_LABELS = {
-	pageType: __( 'Page Type', 'vk-dynamic-if-block' ),
-	postType: __( 'Post Type', 'vk-dynamic-if-block' ),
-	taxonomy: __( 'Taxonomy', 'vk-dynamic-if-block' ),
-	language: __( 'Language', 'vk-dynamic-if-block' ),
-	userRole: __( 'User Role', 'vk-dynamic-if-block' ),
-	postAuthor: __( 'Post Author', 'vk-dynamic-if-block' ),
-	customField: __( 'Custom Field', 'vk-dynamic-if-block' ),
-	period: __( 'Display Period', 'vk-dynamic-if-block' ),
-	loginUser: __( 'Login User Only', 'vk-dynamic-if-block' ),
-	mobileDevice: __( 'Mobile Device Only', 'vk-dynamic-if-block' ),
+	pageType: _x( 'Page Type', 'Condition Type Label', 'vk-dynamic-if-block' ),
+	postType: _x( 'Post Type', 'Condition Type Label', 'vk-dynamic-if-block' ),
+	taxonomy: _x( 'Taxonomy', 'Condition Type Label', 'vk-dynamic-if-block' ),
+	language: _x( 'Language', 'Condition Type Label', 'vk-dynamic-if-block' ),
+	userRole: _x( 'User Role', 'Condition Type Label', 'vk-dynamic-if-block' ),
+	postAuthor: _x( 'Post Author', 'Condition Type Label', 'vk-dynamic-if-block' ),
+	customField: _x( 'Custom Field', 'Condition Type Label', 'vk-dynamic-if-block' ),
+	period: _x( 'Display Period', 'Condition Type Label', 'vk-dynamic-if-block' ),
+	loginUser: _x( 'Login User Only', 'Condition Type Label', 'vk-dynamic-if-block' ),
+	mobileDevice: _x( 'Mobile Device Only', 'Condition Type Label', 'vk-dynamic-if-block' ),
 };
 
 // ページタイプ定義

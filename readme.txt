@@ -35,7 +35,8 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
-[ Bug fix ] Fix LAnguage condition error
+[ Bug fix ] Fix an issue where the condition label is not translated.
+[ Bug fix ] Fix Language condition error
 
 = 1.3.1 =
 [ Bug fix ] Fix translation not working for some labels.
