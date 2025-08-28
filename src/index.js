@@ -565,7 +565,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 
 					return (
 						<SelectControl
-							label={ _x(
+							label={ __(
 								'Language',
 								'Select a language',
 								'vk-dynamic-if-block'
