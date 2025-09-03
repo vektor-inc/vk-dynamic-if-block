@@ -15,7 +15,7 @@
 	right: 0;
 	font-size: 9px;
 	text-align: left;
-	color:#333;
+	color: #333;
 	background-color: #e5e5e5;
 	z-index: 10000;
 }
@@ -200,7 +200,7 @@
 		top: -10px;
 		left: 10px;
 		background-color: #007cba;
-		color: white;
+		color: #fff;
 		padding: 2px 8px;
 		border-radius: 3px;
 		font-size: 11px;
@@ -215,7 +215,9 @@
 }
 
 // エディター内での表示
+
 .wp-block-vk-blocks-dynamic-if-else {
+
 	.vk-dynamic-if-else-block__label {
 		background-color: #007cba;
 	}

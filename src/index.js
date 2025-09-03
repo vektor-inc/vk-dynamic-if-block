@@ -367,15 +367,9 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				const value = attributes[ rule.attr ];
 				if ( rule.condition( value ) ) {
 					// 無効な値のチェック
-					let isValidValue = true;
-
-					if (
-						rule.attr === 'ifPostType' &&
-						value === 'vk-patterns'
-					) {
-						// 存在しない投稿タイプは無効とする
-						isValidValue = false;
-					}
+					// 投稿タイプの存在チェックは動的に行うべきだが、
+					// 移行処理中は基本的に値を保持する
+					const isValidValue = true;
 
 					if ( isValidValue ) {
 						const values = rule.customValues
