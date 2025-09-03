@@ -1,0 +1,294 @@
+# Copyright (C) 2025 Vektor,Inc.
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: VK Dynamic If Block 1.2.1\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/vk-dynamic-if-block\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2025-08-08T01:48:50+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.10.0\n"
+"X-Domain: vk-dynamic-if-block\n"
+
+#. Plugin Name of the plugin
+#: vk-dynamic-if-block.php
+msgid "VK Dynamic If Block"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: vk-dynamic-if-block.php
+msgid "https://github.com/vektor-inc/vk-dynamic-if-block"
+msgstr ""
+
+#. Description of the plugin
+#: vk-dynamic-if-block.php
+msgid "A dynamic block displays its Inner Blocks based on specified conditions, such as whether the current page is the front page or a single post, the post type, or the value of a Custom Field."
+msgstr ""
+
+#. Author of the plugin
+#: vk-dynamic-if-block.php
+msgid "Vektor,Inc."
+msgstr ""
+
+#. Author URI of the plugin
+#: vk-dynamic-if-block.php
+msgid "https://vektor-inc.co.jp/en/"
+msgstr ""
+
+#: build/index.php:775
+#: src/index.php:775
+#: build/index.js:1
+#: src/constants.js:58
+#: src/constants.js:90
+msgid "No restriction"
+msgstr ""
+
+#: build/index.php:787
+#: build/index.php:813
+#: src/index.php:787
+#: src/index.php:813
+msgid "Unspecified"
+msgstr ""
+
+#: build/index.js:1
+#: src/constants.js:5
+#: src/index.js:485
+msgid "Page Type"
+msgstr ""
+
+#: build/index.js:1
+#: src/constants.js:6
+#: src/index.js:499
+msgid "Post Type"
+msgstr ""
+
+#: build/index.js:1
+#: src/constants.js:7
+#: src/index.js:526
+msgid "Language"
+msgstr ""
+
+#: build/index.js:1
+#: src/constants.js:8
+msgid "User Role"
+msgstr ""
+
+#: build/index.js:1
+#: src/constants.js:9
+#: src/index.js:613
+msgid "Post Author"
+msgstr ""
+
+#: build/index.js:1
+#: src/constants.js:10
+msgid "Custom Field"
+msgstr ""
+
+#: build/index.js:1
+#: src/constants.js:11
+msgid "Display Period"
+msgstr ""
+
+#: build/index.js:1
+#: src/constants.js:12
+#: src/index.js:910
+msgid "Login User Only"
+msgstr ""
+
+#: build/index.js:1
+#: src/constants.js:48
+msgid "Value Exist ( !empty() )"
+msgstr ""
+
+#: build/index.js:1
+#: src/constants.js:52
+msgid "Value Equals ( === )"
+msgstr ""
+
+#: build/index.js:1
+#: src/constants.js:61
+msgid "Set to display deadline"
+msgstr ""
+
+#: build/index.js:1
+#: src/constants.js:65
+msgid "Set to display startline"
+msgstr ""
+
+#: build/index.js:1
+#: src/constants.js:69
+msgid "Number of days from the date of publication"
+msgstr ""
+
+#: build/index.js:1
+#: src/constants.js:80
+msgid "Direct input in this block"
+msgstr ""
+
+#: build/index.js:1
+#: src/constants.js:84
+msgid "Refer to value of custom field"
+msgstr ""
+
+#: build/index.js:1
+#: src/constants.js:93
+msgid "Has parent page"
+msgstr ""
+
+#: build/index.js:1
+#: src/constants.js:97
+msgid "Has child pages"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:40
+msgid "Dynamic If"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:472
+msgid "Page Hierarchy"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:544
+msgid "No values available"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:561
+msgid "No user roles available"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:606
+msgid "Error loading user roles"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:624
+msgid "Custom Field Name"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:636
+msgid "Custom Field Rule"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:648
+msgid "Custom Field Value"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:668
+msgid "Display Period Setting"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:682
+msgid "Period specification method"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:701
+msgid "Value for the specified period"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:732
+msgid "Referenced custom field name"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:749
+msgid "Enter the name of the custom field you wish to reference."
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:763
+msgid "Displayed only for logged-in users."
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:800
+#: src/index.js:922
+#: src/index.js:935
+msgid "!"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:800
+#: src/index.js:804
+#: src/index.js:922
+#: src/index.js:926
+#: src/index.js:1115
+msgid "No conditions set"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:876
+msgid "No user roles selected"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:890
+msgid "Unknown user roles"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:893
+msgid "Error generating user role label"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:939
+msgid "Error generating labels"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:947
+msgid "Display Conditions"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:960
+msgid "No conditions set. Add a condition to control display."
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:969
+#: src/index.js:1077
+msgid "Add Condition"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:976
+#: src/index.js:1099
+msgid "Exclusion designation"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:1009
+msgid "Condition Type"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:1061
+msgid "Remove Condition"
+msgstr ""
+
+#: build/index.js:1
+#: src/index.js:1085
+msgid "Condition Operator"
+msgstr ""
+
+#: build/block.json
+#: src/block.json
+msgctxt "block title"
+msgid "Dynamic If"
+msgstr ""

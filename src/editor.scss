@@ -108,12 +108,6 @@
 	&.is-primary {
 		background-color: #007cba;
 		border-color: #007cba;
-		color: #fff;
-
-		&:hover {
-			background-color: #005a87;
-			border-color: #005a87;
-		}
 	}
 
 	&.is-secondary {
@@ -164,3 +158,33 @@
 		}
 	}
 }
+
+// Else Block Management
+.vkdif__else-block-management {
+	margin-top: 2rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid #ddd;
+
+	h4 {
+		margin: 0 0 1rem 0;
+		font-size: 14px;
+		font-weight: 600;
+		color: #1e1e1e;
+	}
+
+	.vkdif__else-block-info {
+		margin: 0 0 1rem 0;
+		font-size: 13px;
+		color: #646970;
+		line-height: 1.4;
+	}
+}
+
+// Else indicator in block label
+.vk-dynamic-if-block__else-indicator {
+	color: #007cba;
+	font-weight: 600;
+}
+
+// Else Block Styles
+@import './else-block';

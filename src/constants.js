@@ -170,6 +170,13 @@ export const BLOCK_CONFIG = {
 	defaultOperator: 'and',
 };
 
+// 条件グループのデフォルト構造
+export const DEFAULT_CONDITION_GROUP = {
+	id: '',
+	conditions: [],
+	operator: 'and',
+};
+
 // 移行ルール定義
 export const createMigrationRules = ( attributes ) => [
 	{
