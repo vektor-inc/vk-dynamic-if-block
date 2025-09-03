@@ -217,6 +217,13 @@ function vk_dynamic_if_block_render_conditions($attributes, $content)
 	// 結果をキャッシュに保存（1分間有効）
 	wp_cache_set($cache_key, $final_result, 'vk_dynamic_if_block', 60);
 
+	// デバッグ用（本番環境では削除）
+	if (defined('WP_DEBUG') && WP_DEBUG) {
+		error_log('VK Dynamic If Block - Condition evaluation result: ' . ($final_result ? 'true' : 'false'));
+		error_log('VK Dynamic If Block - Original content length: ' . strlen($content));
+		error_log('VK Dynamic If Block - Content contains else block: ' . (strpos($content, 'vk-dynamic-if-else-block') !== false ? 'yes' : 'no'));
+	}
+
 	// elseブロックの処理
 	if ($final_result) {
 		// 条件に合致する場合：elseブロックを除いたコンテンツを表示
@@ -239,6 +246,7 @@ function vk_dynamic_if_block_render_conditions($attributes, $content)
 			error_log('VK Dynamic If Block - Condition not matched, showing else block content only');
 			error_log('Original content length: ' . strlen($content));
 			error_log('Result content length: ' . strlen($result_content));
+			error_log('Else block content: ' . substr($result_content, 0, 200) . '...');
 		}
 		
 		return $result_content;
@@ -1146,7 +1154,8 @@ function vk_dynamic_if_block_extract_content_without_else($content) {
 		'<div class="vk-dynamic-if-else-block',
 		'<div class="wp-block-vk-blocks-dynamic-if-else',
 		'<!-- wp:vk-blocks/dynamic-if-else',
-		'<div class="vk-dynamic-if-else-block__label'
+		'<div class="vk-dynamic-if-else-block__label',
+		'vk-dynamic-if-else-block'
 	];
 	
 	$else_pos = false;
@@ -1189,7 +1198,8 @@ function vk_dynamic_if_block_extract_else_content($content) {
 		'<div class="vk-dynamic-if-else-block',
 		'<div class="wp-block-vk-blocks-dynamic-if-else',
 		'<!-- wp:vk-blocks/dynamic-if-else',
-		'<div class="vk-dynamic-if-else-block__label'
+		'<div class="vk-dynamic-if-else-block__label',
+		'vk-dynamic-if-else-block'
 	];
 	
 	$else_pos = false;
@@ -1206,72 +1216,78 @@ function vk_dynamic_if_block_extract_else_content($content) {
 		return '';
 	}
 	
-	// elseブロックの内容部分の開始位置を探す（ラベル部分をスキップ）
+	// elseブロックの開始位置から、ラベル部分を除いたコンテンツ部分を検索
 	$content_start_patterns = [
-		'<div class="vk-dynamic-if-else-block__content',
-		'<div class="vk-dynamic-if-else-block__content>',
-		'<div class="vk-dynamic-if-else-block__content '
+		'<div class="vk-dynamic-if-else-block__content">',
+		'<div class="vk-dynamic-if-else-block__content"',
+		'<div class="wp-block-vk-blocks-dynamic-if-else__content">',
+		'<div class="wp-block-vk-blocks-dynamic-if-else__content"'
 	];
 	
 	$content_start_pos = false;
 	foreach ($content_start_patterns as $pattern) {
 		$pos = strpos($content, $pattern, $else_pos);
 		if ($pos !== false) {
-			// 開始タグの終了位置を探す
-			$tag_end = strpos($content, '>', $pos);
-			if ($tag_end !== false) {
-				$content_start_pos = $tag_end + 1;
-				break;
-			}
-		}
-	}
-	
-	// 内容部分の開始位置が見つからない場合は、elseブロックの開始位置を使用
-	if ($content_start_pos === false) {
-		$content_start_pos = $else_pos;
-	}
-	
-	// elseブロックの終了タグを検索（より柔軟な検索）
-	$parent_end_patterns = [
-		'</div><!-- /wp:vk-blocks/dynamic-if -->',
-		'<!-- /wp:vk-blocks/dynamic-if -->',
-		'</div>'
-	];
-	
-	$parent_end_pos = false;
-	foreach ($parent_end_patterns as $pattern) {
-		$pos = strpos($content, $pattern, $content_start_pos);
-		if ($pos !== false) {
-			$parent_end_pos = $pos;
+			$content_start_pos = $pos;
 			break;
 		}
 	}
 	
-	if ($parent_end_pos === false) {
-		// 親ブロックの終了タグが見つからない場合は、elseブロックの内容開始位置から最後まで
-		$result = substr($content, $content_start_pos);
+	if ($content_start_pos === false) {
+		// コンテンツ開始タグが見つからない場合は、elseブロックの開始位置から最後まで
+		$result = substr($content, $else_pos);
 	} else {
-		// elseブロックの内容開始位置から親ブロックの終了位置までを切り出し
-		$result = substr($content, $content_start_pos, $parent_end_pos - $content_start_pos);
-	}
-	
-	// ラベル部分が含まれている場合は除去
-	$label_patterns = [
-		'<div class="vk-dynamic-if-else-block__label',
-		'<div class="vk-dynamic-if-else-block__label>',
-		'<div class="vk-dynamic-if-else-block__label '
-	];
-	
-	foreach ($label_patterns as $pattern) {
-		$label_start = strpos($result, $pattern);
-		if ($label_start !== false) {
-			// ラベルの終了タグを探す
-			$label_end = strpos($result, '</div>', $label_start);
-			if ($label_end !== false) {
-				// ラベル部分を除去
-				$result = substr($result, 0, $label_start) . substr($result, $label_end + 6);
+		// コンテンツ開始タグの終了位置を検索
+		$content_start_end = strpos($content, '>', $content_start_pos);
+		if ($content_start_end === false) {
+			$content_start_end = $content_start_pos;
+		} else {
+			$content_start_end++; // '>'の次の位置
+		}
+		
+		// elseブロックの終了タグを検索
+		$else_end_patterns = [
+			'</div><!-- /wp:vk-blocks/dynamic-if-else -->',
+			'<!-- /wp:vk-blocks/dynamic-if-else -->',
+			'</div>'
+		];
+		
+		$else_end_pos = false;
+		foreach ($else_end_patterns as $pattern) {
+			$pos = strpos($content, $pattern, $content_start_end);
+			if ($pos !== false) {
+				$else_end_pos = $pos;
 				break;
 			}
+		}
+		
+		if ($else_end_pos === false) {
+			// elseブロックの終了タグが見つからない場合は、親ブロックの終了位置まで
+			$parent_end_patterns = [
+				'</div><!-- /wp:vk-blocks/dynamic-if -->',
+				'<!-- /wp:vk-blocks/dynamic-if -->',
+				'</div>'
+			];
+			
+			$parent_end_pos = false;
+			foreach ($parent_end_patterns as $pattern) {
+				$pos = strpos($content, $pattern, $content_start_end);
+				if ($pos !== false) {
+					$parent_end_pos = $pos;
+					break;
+				}
+			}
+			
+			if ($parent_end_pos === false) {
+				// 親ブロックの終了タグも見つからない場合は、コンテンツ開始位置から最後まで
+				$result = substr($content, $content_start_end);
+			} else {
+				// コンテンツ開始位置から親ブロックの終了位置までを切り出し
+				$result = substr($content, $content_start_end, $parent_end_pos - $content_start_end);
+			}
+		} else {
+			// コンテンツ開始位置からelseブロックの終了位置までを切り出し
+			$result = substr($content, $content_start_end, $else_end_pos - $content_start_end);
 		}
 	}
 	
@@ -1281,9 +1297,8 @@ function vk_dynamic_if_block_extract_else_content($content) {
 		error_log('Original content length: ' . strlen($content));
 		error_log('Result content length: ' . strlen($result));
 		error_log('Else block found at position: ' . $else_pos);
-		error_log('Content start position: ' . $content_start_pos);
-		if ($parent_end_pos !== false) {
-			error_log('Parent end found at position: ' . $parent_end_pos);
+		if (isset($content_start_pos) && $content_start_pos !== false) {
+			error_log('Content start found at position: ' . $content_start_pos);
 		}
 	}
 	

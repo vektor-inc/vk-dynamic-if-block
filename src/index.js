@@ -120,24 +120,117 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 		innerBlocks: true,
 	},
 	edit: function Edit( { attributes, setAttributes } ) {
-		// 既存ブロックの移行処理を最初に実行
-		const [ hasMigrated, setHasMigrated ] = useState( false );
-		
-		// 初期状態で安全なデフォルト値を設定
-		const getInitialConditions = () => {
-			// 既存のconditionsが有効な場合は、それを使用
-			if ( attributes.conditions && Array.isArray( attributes.conditions ) && attributes.conditions.length > 0 &&
-				 attributes.conditions[ 0 ] && attributes.conditions[ 0 ].conditions && 
-				 Array.isArray( attributes.conditions[ 0 ].conditions ) && attributes.conditions[ 0 ].conditions.length > 0 ) {
-				return attributes.conditions;
+		const { conditions, conditionOperator, exclusion } = attributes;
+
+		// 条件を更新する共通関数
+		const updateConditionAt = ( groupIndex, conditionIndex, updater ) => {
+			const newConditions = [ ...conditions ];
+			newConditions[ groupIndex ] = {
+				...newConditions[ groupIndex ],
+				conditions: [ ...newConditions[ groupIndex ].conditions ],
+			};
+
+			const oldCondition =
+				newConditions[ groupIndex ].conditions[ conditionIndex ];
+			const updatedCondition = updater( oldCondition );
+			newConditions[ groupIndex ].conditions[ conditionIndex ] =
+				updatedCondition;
+			setAttributes( { conditions: newConditions } );
+		};
+
+		// 空のIDを生成する（ブロック複製対策）
+		useEffect( () => {
+			if ( conditions && conditions.length > 0 ) {
+				const hasEmptyIds = conditions.some(
+					( group ) =>
+						! group.id ||
+						( group.conditions &&
+							group.conditions.some(
+								( condition ) => ! condition.id
+							) )
+				);
+
+				if ( hasEmptyIds ) {
+					const newConditions = conditions.map( ( group ) => ( {
+						...group,
+						id: group.id || generateId(),
+						conditions: group.conditions
+							? group.conditions.map( ( condition ) => ( {
+									...condition,
+									id: condition.id || generateId(),
+							  } ) )
+							: [],
+					} ) );
+					setAttributes( { conditions: newConditions } );
+				}
 			}
-			
+		}, [ conditions, setAttributes ] );
+
+		// 既存ブロックから新形式への移行処理
+		const [ hasMigrated, setHasMigrated ] = useState( false );
+		const [ isMigrating, setIsMigrating ] = useState( false );
+
+		useEffect( () => {
+			// 既に移行済みの場合はスキップ
+			if ( hasMigrated ) {
+				return;
+			}
+
+			// 移行中フラグを設定
+			setIsMigrating( true );
+
+			// 新しい形式が既に存在する場合は移行不要
+			if (
+				conditions &&
+				conditions.length > 0 &&
+				conditions[ 0 ] &&
+				conditions[ 0 ].conditions &&
+				Array.isArray( conditions[ 0 ].conditions ) &&
+				conditions[ 0 ].conditions.length > 0
+			) {
+				setHasMigrated( true );
+				setIsMigrating( false );
+				return;
+			}
+
+			// 既存のconditionsが古い形式（直接条件オブジェクトの配列）の場合の処理
+			if (
+				conditions &&
+				conditions.length > 0 &&
+				conditions[ 0 ] &&
+				conditions[ 0 ].type &&
+				! conditions[ 0 ].conditions
+			) {
+				// 古い形式のconditionsを新しい形式に変換
+				const newConditions = [ {
+					id: generateId(),
+					conditions: conditions.map( ( condition ) => ( {
+						...condition,
+						id: condition.id || generateId(),
+					} ) ),
+					operator: 'and',
+				} ];
+				setAttributes( { conditions: newConditions } );
+				setHasMigrated( true );
+				setIsMigrating( false );
+				return;
+			}
+
 			// 古い属性が存在するかチェック
 			const oldAttributes = [
-				'ifPageType', 'ifPostType', 'ifLanguage', 'userRole', 'postAuthor',
-				'customFieldName', 'customFieldRule', 'customFieldValue',
-				'periodDisplaySetting', 'periodSpecificationMethod', 'periodDisplayValue',
-				'periodReferCustomField', 'showOnlyLoginUser'
+				'ifPageType',
+				'ifPostType',
+				'ifLanguage',
+				'userRole',
+				'postAuthor',
+				'customFieldName',
+				'customFieldRule',
+				'customFieldValue',
+				'periodDisplaySetting',
+				'periodSpecificationMethod',
+				'periodDisplayValue',
+				'periodReferCustomField',
+				'showOnlyLoginUser',
 			];
 
 			const hasOldAttributes = oldAttributes.some( ( attr ) => {
@@ -154,226 +247,139 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				return value && value !== 'none' && value !== '';
 			} );
 
-			// 古い属性がある場合は、移行処理が必要
-			if ( hasOldAttributes ) {
-				return null; // 移行処理が必要
-			}
-
-			// デフォルトのconditionsを返す
-			return [
-				{
-					id: generateId(),
-					conditions: [
-						{
-							id: generateId(),
-							type: BLOCK_CONFIG.defaultConditionType,
-							values: {},
-						},
-					],
-					operator: BLOCK_CONFIG.defaultOperator,
-				},
-			];
-		};
-		
-		const [ localConditions, setLocalConditions ] = useState( getInitialConditions );
-
-		// 安全なconditionsの取得
-		const conditions = localConditions || [];
-		const { conditionOperator, exclusion } = attributes;
-
-		// 移行処理を一時的に無効化
-		/*
-		useEffect( () => {
-			// 移行処理が必要な場合のみ実行
-			if ( localConditions === null ) {
-				// 移行対象の条件を定義
-				const migrationRules = createMigrationRules( attributes );
-
-				// 各条件を移行
-				const newConditions = [];
-				migrationRules.forEach( ( rule ) => {
-					const value = attributes[ rule.attr ];
-					if ( rule.condition( value ) ) {
-						const values = rule.customValues
-							? rule.customValues()
-							: {
-									[ rule.key ]: Array.isArray( value )
-										? value[ 0 ] || ''
-										: value,
-							  };
-						newConditions.push(
-							createConditionGroup( rule.type, values )
-						);
-					}
-				} );
-
-				// 条件が1つもない場合は、デフォルトのCondition 1を作成
-				if ( newConditions.length === 0 ) {
-					// デフォルトでは何も制限しない（常に表示）
-					newConditions.push(
-						createConditionGroup(
-							'pageType',
-							{ ifPageType: 'none' }
-						)
-					);
-				}
-
-				// 新しいconditionsを設定し、古い属性をクリア
-				const attributesToUpdate = { conditions: newConditions };
-
-				// 古い属性をクリア
-				const oldAttributes = [
-					'ifPageType', 'ifPostType', 'ifLanguage', 'userRole', 'postAuthor',
-					'customFieldName', 'customFieldRule', 'customFieldValue',
-					'periodDisplaySetting', 'periodSpecificationMethod', 'periodDisplayValue',
-					'periodReferCustomField', 'showOnlyLoginUser', 'showOnlyMobileDevice'
-				];
-				oldAttributes.forEach( ( attr ) => {
-					let defaultValue = 'none';
-					if ( attr === 'userRole' ) {
-						defaultValue = [];
-					} else if ( attr === 'postAuthor' ) {
-						defaultValue = 0;
-					} else if ( attr === 'showOnlyLoginUser' ) {
-						defaultValue = false;
-					} else if ( attr === 'customFieldRule' ) {
-						defaultValue = 'valueExists';
-					} else if ( attr === 'periodSpecificationMethod' ) {
-						defaultValue = 'direct';
-					}
-					attributesToUpdate[ attr ] = defaultValue;
-				} );
-
-				setAttributes( attributesToUpdate );
-				setLocalConditions( newConditions );
+			if ( ! hasOldAttributes ) {
 				setHasMigrated( true );
-			} else {
-				// 移行処理が不要な場合は、localConditionsが設定されているので、それを使用
-				setHasMigrated( true );
-			}
-			// eslint-disable-next-line react-hooks/exhaustive-deps
-		}, [ hasMigrated, localConditions ] );
-
-		// 移行処理が完了していない場合は、ローディング状態を表示
-		if ( ! hasMigrated ) {
-			return (
-				<div { ...useBlockProps( { className: BLOCK_CONFIG.className } ) }>
-					<div className="vk-dynamic-if-block__label">
-						<span>{ __( 'Loading...', 'vk-dynamic-if-block' ) }</span>
-					</div>
-					<div style={ { padding: '1rem', textAlign: 'center' } }>
-						{ __( 'Migrating existing block...', 'vk-dynamic-if-block' ) }
-					</div>
-				</div>
-			);
-		}
-
-		// 新しい形式を使用している場合に古い属性をクリア（移行後のみ実行）
-		useEffect( () => {
-			if ( ! hasMigrated || ! localConditions ) {
 				return;
 			}
 
-			// 新しい形式が使用されている場合、古い属性をクリア
-			const oldAttributesToClear = [
-				'ifPageType', 'ifPostType', 'ifLanguage', 'userRole', 'postAuthor',
-				'customFieldName', 'customFieldRule', 'customFieldValue',
-				'periodDisplaySetting', 'periodSpecificationMethod', 'periodDisplayValue',
-				'periodReferCustomField', 'showOnlyLoginUser', 'showOnlyMobileDevice'
-			];
+			const newConditions = [];
+			let groupIndex = 1;
 
-			const hasOldAttributes = oldAttributesToClear.some(
-				( attr ) => {
-					const value = attributes[ attr ];
-					if ( attr === 'userRole' ) {
-						return Array.isArray( value ) && value.length > 0;
-					}
-					if ( attr === 'postAuthor' ) {
-						return value !== 0;
-					}
-					if ( attr === 'showOnlyLoginUser' ) {
-						return value === true;
-					}
-					return value && value !== 'none' && value !== '';
+			// 移行対象の条件を定義
+			const migrationRules = createMigrationRules( attributes );
+
+			// 各条件を移行
+			migrationRules.forEach( ( rule ) => {
+				const value = attributes[ rule.attr ];
+				if ( rule.condition( value ) ) {
+					const values = rule.customValues
+						? rule.customValues()
+						: {
+								[ rule.key ]: Array.isArray( value )
+									? value[ 0 ] || ''
+									: value,
+						  };
+					newConditions.push(
+						createConditionGroup( rule.type, values )
+					);
 				}
-			);
+			} );
 
-			if ( hasOldAttributes ) {
-				const attributesToUpdate = {};
-				oldAttributesToClear.forEach( ( attr ) => {
-					let defaultValue = 'none';
-					if ( attr === 'userRole' ) {
-						defaultValue = [];
-					} else if ( attr === 'postAuthor' ) {
-						defaultValue = 0;
-					} else if ( attr === 'customFieldRule' ) {
-						defaultValue = 'valueExists';
-					} else if ( attr === 'periodSpecificationMethod' ) {
-						defaultValue = 'direct';
-					}
-					attributesToUpdate[ attr ] = defaultValue;
-				} );
-				setAttributes( attributesToUpdate );
+			// 条件が1つもない場合は、デフォルトのCondition 1を作成
+			if ( newConditions.length === 0 ) {
+				// デフォルトでは何も制限しない（常に表示）
+				newConditions.push(
+					createConditionGroup(
+						'pageType',
+						{ ifPageType: 'none' }
+					)
+				);
 			}
+
+			// 新しいconditionsを設定し、古い属性をクリア
+			const attributesToUpdate = { conditions: newConditions };
+
+			// 古い属性をクリア
+			oldAttributes.forEach( ( attr ) => {
+				let defaultValue = 'none';
+				if ( attr === 'userRole' ) {
+					defaultValue = [];
+				} else if ( attr === 'postAuthor' ) {
+					defaultValue = 0;
+				} else if ( attr === 'showOnlyLoginUser' ) {
+					defaultValue = false;
+				} else if ( attr === 'customFieldRule' ) {
+					defaultValue = 'valueExists';
+				} else if ( attr === 'periodSpecificationMethod' ) {
+					defaultValue = 'direct';
+				}
+				attributesToUpdate[ attr ] = defaultValue;
+			} );
+
+			setAttributes( attributesToUpdate );
+			setHasMigrated( true );
+			setIsMigrating( false );
 			// eslint-disable-next-line react-hooks/exhaustive-deps
-		}, [ hasMigrated, localConditions ] );
-		*/
+		}, [ hasMigrated ] );
 
-		// 条件を更新する共通関数
-		const updateConditionAt = ( groupIndex, conditionIndex, updater ) => {
-			const newConditions = [ ...conditions ];
-			newConditions[ groupIndex ] = {
-				...newConditions[ groupIndex ],
-				conditions: [ ...newConditions[ groupIndex ].conditions ],
-			};
-
-			const oldCondition =
-				newConditions[ groupIndex ].conditions[ conditionIndex ];
-			const updatedCondition = updater( oldCondition );
-			newConditions[ groupIndex ].conditions[ conditionIndex ] =
-				updatedCondition;
-			setAttributes( { conditions: newConditions } );
-			setLocalConditions( newConditions );
-		};
-
-		// 空のIDを生成する（ブロック複製対策）を一時的に無効化
-		/*
+		// 新しい形式を使用している場合に古い属性をクリア（移行後のみ実行）
 		useEffect( () => {
-			if ( localConditions && Array.isArray( localConditions ) && localConditions.length > 0 ) {
-				const hasEmptyIds = localConditions.some(
-					( group ) =>
-						! group.id ||
-						( group.conditions &&
-							Array.isArray( group.conditions ) &&
-							group.conditions.some(
-								( condition ) => ! condition.id
-							) )
+			if ( ! hasMigrated ) {
+				return;
+			}
+
+			if (
+				conditions &&
+				conditions.length > 0 &&
+				conditions[ 0 ] &&
+				conditions[ 0 ].conditions.length > 0
+			) {
+				// 新しい形式が使用されている場合、古い属性をクリア
+				const oldAttributesToClear = [
+					'ifPageType',
+					'ifPostType',
+					'ifLanguage',
+					'userRole',
+					'postAuthor',
+					'customFieldName',
+					'customFieldRule',
+					'customFieldValue',
+					'periodDisplaySetting',
+					'periodSpecificationMethod',
+					'periodDisplayValue',
+					'periodReferCustomField',
+					'showOnlyLoginUser',
+					'showOnlyMobileDevice',
+				];
+
+				const hasOldAttributes = oldAttributesToClear.some(
+					( attr ) => {
+						const value = attributes[ attr ];
+						if ( attr === 'userRole' ) {
+							return Array.isArray( value ) && value.length > 0;
+						}
+						if ( attr === 'postAuthor' ) {
+							return value !== 0;
+						}
+						if ( attr === 'showOnlyLoginUser' ) {
+							return value === true;
+						}
+						return value && value !== 'none' && value !== '';
+					}
 				);
 
-				if ( hasEmptyIds ) {
-					const newConditions = localConditions.map( ( group ) => ( {
-						...group,
-						id: group.id || generateId(),
-						conditions: group.conditions && Array.isArray( group.conditions )
-							? group.conditions.map( ( condition ) => ( {
-									...condition,
-									id: condition.id || generateId(),
-							  } ) )
-							: [],
-					} ) );
-					setAttributes( { conditions: newConditions } );
-					setLocalConditions( newConditions );
+				if ( hasOldAttributes ) {
+					const attributesToUpdate = {};
+					oldAttributesToClear.forEach( ( attr ) => {
+						let defaultValue = 'none';
+						if ( attr === 'userRole' ) {
+							defaultValue = [];
+						} else if ( attr === 'postAuthor' ) {
+							defaultValue = 0;
+						} else if ( attr === 'showOnlyLoginUser' ) {
+							defaultValue = false;
+						} else if ( attr === 'customFieldRule' ) {
+							defaultValue = 'valueExists';
+						} else if ( attr === 'periodSpecificationMethod' ) {
+							defaultValue = 'direct';
+						}
+						attributesToUpdate[ attr ] = defaultValue;
+					} );
+					setAttributes( attributesToUpdate );
 				}
 			}
-		}, [ localConditions, setAttributes ] );
-
-		// attributesが更新された場合にlocalConditionsも同期
-		useEffect( () => {
-			if ( attributes.conditions && Array.isArray( attributes.conditions ) ) {
-				setLocalConditions( attributes.conditions );
-			}
-		}, [ attributes.conditions ] );
-		*/
+			// eslint-disable-next-line react-hooks/exhaustive-deps
+		}, [ hasMigrated, conditions ] );
 
 		const conditionTypes = Object.entries( CONDITION_TYPE_LABELS ).map(
 			( [ value, label ] ) => ( {
@@ -418,15 +424,15 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			};
 
 			if ( conditions.length === 0 ) {
-				const newConditions = [
-					{
-						id: generateId(),
-						conditions: [ newCondition ],
-						operator: BLOCK_CONFIG.defaultOperator,
-					},
-				];
-				setAttributes( { conditions: newConditions } );
-				setLocalConditions( newConditions );
+				setAttributes( {
+					conditions: [
+						{
+							id: generateId(),
+							conditions: [ newCondition ],
+							operator: BLOCK_CONFIG.defaultOperator,
+						},
+					],
+				} );
 			} else {
 				const newConditions = [ ...conditions ];
 				newConditions[ 0 ] = {
@@ -437,7 +443,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					],
 				};
 				setAttributes( { conditions: newConditions } );
-				setLocalConditions( newConditions );
 			}
 		};
 
@@ -455,8 +460,9 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			};
 
 			const newConditions = [ ...conditions, newConditionGroup ];
-			setAttributes( { conditions: newConditions } );
-			setLocalConditions( newConditions );
+			setAttributes( {
+				conditions: newConditions,
+			} );
 		};
 
 		const updateCondition = ( groupIndex, conditionIndex, updates ) => {
@@ -1010,6 +1016,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				}
 
 				const groupLabels = conditions
+					.filter( ( group ) => group && group.conditions && Array.isArray( group.conditions ) )
 					.map( ( group ) => {
 						const { conditions: groupConditions = [] } =
 							group || {};
@@ -1243,7 +1250,16 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						) }
 						className={ 'vkdif' }
 					>
-						{ conditions.length === 0 ? (
+						{ isMigrating ? (
+							<div>
+								<p>
+									{ __(
+										'Migrating block structure...',
+										'vk-dynamic-if-block'
+									) }
+								</p>
+							</div>
+						) : conditions && Array.isArray( conditions ) && conditions.length === 0 ? (
 							<div>
 								<BaseControl
 									__nextHasNoMarginBottom
@@ -1278,13 +1294,13 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							</div>
 						) : (
 							<>
-								{ conditions.map( ( group, groupIndex ) => (
+								{ conditions && Array.isArray( conditions ) && conditions.map( ( group, groupIndex ) => (
 									<div
 										key={ group.id }
 										className="vkdif__group"
 									>
 										<div className="vkdif__group-conditions">
-											{ group.conditions.map(
+											{ group.conditions && Array.isArray( group.conditions ) && group.conditions.map(
 												(
 													condition,
 													conditionIndex
@@ -1349,7 +1365,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 												setAttributes( {
 													conditions: newConditions,
 												} );
-												setLocalConditions( newConditions );
 											} }
 										>
 											{ __(
@@ -1374,7 +1389,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 										) }
 									</Button>
 								</BaseControl>
-								{ conditions.length > 1 && (
+								{ conditions && Array.isArray( conditions ) && conditions.length > 1 && (
 									<SelectControl
 										label={ __(
 											'Condition Operator',
