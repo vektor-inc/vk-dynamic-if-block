@@ -847,30 +847,26 @@ function vk_dynamic_if_block_check_taxonomy($values)
             if ($current_term && isset($current_term->term_id) && $current_term->taxonomy === $taxonomy) {
                 $current_terms = [$current_term->term_id];
             }
-        }
-        // カテゴリーアーカイブページの場合
-        elseif (is_category() && $taxonomy === 'category') {
+        } elseif (is_category() && $taxonomy === 'category') {
+            // カテゴリーアーカイブページの場合
             $current_term = get_queried_object();
             if ($current_term && isset($current_term->term_id)) {
                 $current_terms = [$current_term->term_id];
             }
-        }
-        // タグアーカイブページの場合
-        elseif (is_tag() && $taxonomy === 'post_tag') {
+        } elseif (is_tag() && $taxonomy === 'post_tag') {
+            // タグアーカイブページの場合
             $current_term = get_queried_object();
             if ($current_term && isset($current_term->term_id)) {
                 $current_terms = [$current_term->term_id];
             }
-        }
-        // その他のタクソノミーアーカイブページの場合
-        elseif (is_tax()) {
+        } elseif (is_tax()) {
+            // その他のタクソノミーアーカイブページの場合
             $current_term = get_queried_object();
             if ($current_term && isset($current_term->term_id) && $current_term->taxonomy === $taxonomy) {
                 $current_terms = [$current_term->term_id];
             }
-        }
-        // 投稿ページの場合（アーカイブページでない場合のみ）
-        elseif (is_single() || is_singular()) {
+        } elseif (is_single() || is_singular()) {
+            // 投稿ページの場合（アーカイブページでない場合のみ）
             $post_id = get_the_ID();
             if ($post_id) {
                 $current_terms = wp_get_post_terms($post_id, $taxonomy, ['fields' => 'ids']);
@@ -894,30 +890,26 @@ function vk_dynamic_if_block_check_taxonomy($values)
         if ($current_term && isset($current_term->term_id) && $current_term->taxonomy === $taxonomy) {
             $current_terms = [$current_term->term_id];
         }
-    }
-    // カテゴリーアーカイブページの場合
-    elseif (is_category() && $taxonomy === 'category') {
+    } elseif (is_category() && $taxonomy === 'category') {
+        // カテゴリーアーカイブページの場合
         $current_term = get_queried_object();
         if ($current_term && isset($current_term->term_id)) {
             $current_terms = [$current_term->term_id];
         }
-    }
-    // タグアーカイブページの場合
-    elseif (is_tag() && $taxonomy === 'post_tag') {
+    } elseif (is_tag() && $taxonomy === 'post_tag') {
+        // タグアーカイブページの場合
         $current_term = get_queried_object();
         if ($current_term && isset($current_term->term_id)) {
             $current_terms = [$current_term->term_id];
         }
-    }
-    // その他のタクソノミーアーカイブページの場合
-    elseif (is_tax()) {
+    } elseif (is_tax()) {
+        // その他のタクソノミーアーカイブページの場合
         $current_term = get_queried_object();
         if ($current_term && isset($current_term->term_id) && $current_term->taxonomy === $taxonomy) {
             $current_terms = [$current_term->term_id];
         }
-    }
-    // 投稿ページの場合（アーカイブページでない場合のみ）
-    elseif (is_single() || is_singular()) {
+    } elseif (is_single() || is_singular()) {
+        // 投稿ページの場合（アーカイブページでない場合のみ）
         $post_id = get_the_ID();
         if ($post_id) {
             $current_terms = wp_get_post_terms($post_id, $taxonomy, ['fields' => 'ids']);
