@@ -2337,6 +2337,208 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
         'content'   => 'Post with invalid term ID',
         'expected'  => '',
         ),
+        /******************************************
+        * Else Block Tests
+        */
+        // elseブロックがない場合のテスト
+        array(
+        'name'      => 'No else block - condition met',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'pageType',
+                            'values' => array( 'ifPageType' => 'is_single' ),
+                        ),
+        ),
+        ),
+        'content'   => 'Single post content',
+        'expected'  => 'Single post content',
+        ),
+        array(
+        'name'      => 'No else block - condition not met',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'pageType',
+                            'values' => array( 'ifPageType' => 'is_page' ),
+                        ),
+        ),
+        ),
+        'content'   => 'Single post content',
+        'expected'  => '',
+        ),
+        // elseブロックがある場合のテスト
+        array(
+        'name'      => 'With else block - condition met (show main content)',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'pageType',
+                            'values' => array( 'ifPageType' => 'is_single' ),
+                        ),
+        ),
+        ),
+        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__label"><span>Else</span></div><div class="vk-dynamic-if-else-block__content">Else block content</div></div>',
+        'expected'  => 'Single post content',
+        ),
+        array(
+        'name'      => 'With else block - condition not met (show else content)',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'pageType',
+                            'values' => array( 'ifPageType' => 'is_page' ),
+                        ),
+        ),
+        ),
+        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__label"><span>Else</span></div><div class="vk-dynamic-if-else-block__content">Else block content</div></div>',
+        'expected'  => 'Else block content',
+        ),
+        // 複数のelseブロックがある場合のテスト
+        array(
+        'name'      => 'Multiple else blocks - condition met (show main content)',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'pageType',
+                            'values' => array( 'ifPageType' => 'is_single' ),
+                        ),
+        ),
+        ),
+        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__label"><span>Else</span></div><div class="vk-dynamic-if-else-block__content">First else block</div></div><div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__label"><span>Else</span></div><div class="vk-dynamic-if-else-block__content">Second else block</div></div>',
+        'expected'  => 'Single post content',
+        ),
+        array(
+        'name'      => 'Multiple else blocks - condition not met (show first else content)',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'pageType',
+                            'values' => array( 'ifPageType' => 'is_page' ),
+                        ),
+        ),
+        ),
+        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__label"><span>Else</span></div><div class="vk-dynamic-if-else-block__content">First else block</div></div><div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__label"><span>Else</span></div><div class="vk-dynamic-if-else-block__content">Second else block</div></div>',
+        'expected'  => 'First else block',
+        ),
+        // 除外設定がある場合のelseブロックテスト
+        array(
+        'name'      => 'Exclusion with else block - condition met (show else content)',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'exclusion'  => true,
+                    'conditions' => array(
+                        array(
+                            'type'   => 'pageType',
+                            'values' => array( 'ifPageType' => 'is_single' ),
+                        ),
+        ),
+        ),
+        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__label"><span>Else</span></div><div class="vk-dynamic-if-else-block__content">Else block content</div></div>',
+        'expected'  => 'Else block content',
+        ),
+        array(
+        'name'      => 'Exclusion with else block - condition not met (show main content)',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'exclusion'  => true,
+                    'conditions' => array(
+                        array(
+                            'type'   => 'pageType',
+                            'values' => array( 'ifPageType' => 'is_page' ),
+                        ),
+        ),
+        ),
+        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__label"><span>Else</span></div><div class="vk-dynamic-if-else-block__content">Else block content</div></div>',
+        'expected'  => 'Single post content',
+        ),
+        // 複数条件でのelseブロックテスト
+        array(
+        'name'      => 'Multiple conditions with else block - all conditions met (show main content)',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'pageType',
+                            'values' => array( 'ifPageType' => 'is_single' ),
+                        ),
+                        array(
+                            'type'   => 'postType',
+                            'values' => array( 'ifPostType' => 'post' ),
+                        ),
+        ),
+        ),
+        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__label"><span>Else</span></div><div class="vk-dynamic-if-else-block__content">Else block content</div></div>',
+        'expected'  => 'Single post content',
+        ),
+        array(
+        'name'      => 'Multiple conditions with else block - one condition not met (show else content)',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'pageType',
+                            'values' => array( 'ifPageType' => 'is_single' ),
+                        ),
+                        array(
+                            'type'   => 'postType',
+                            'values' => array( 'ifPostType' => 'page' ),
+                        ),
+        ),
+        ),
+        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__label"><span>Else</span></div><div class="vk-dynamic-if-else-block__content">Else block content</div></div>',
+        'expected'  => 'Else block content',
+        ),
+        // 異なるHTMLパターンでのelseブロックテスト
+        array(
+        'name'      => 'Different HTML pattern - wp-block class',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'pageType',
+                            'values' => array( 'ifPageType' => 'is_page' ),
+                        ),
+        ),
+        ),
+        'content'   => 'Single post content<div class="wp-block-vk-blocks-dynamic-if-else"><div class="wp-block-vk-blocks-dynamic-if-else__label"><span>Else</span></div><div class="wp-block-vk-blocks-dynamic-if-else__content">Else block content</div></div>',
+        'expected'  => 'Else block content',
+        ),
+        array(
+        'name'      => 'Different HTML pattern - comment blocks',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'pageType',
+                            'values' => array( 'ifPageType' => 'is_page' ),
+                        ),
+        ),
+        ),
+        'content'   => 'Single post content<!-- wp:vk-blocks/dynamic-if-else --><div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__label"><span>Else</span></div><div class="vk-dynamic-if-else-block__content">Else block content</div></div><!-- /wp:vk-blocks/dynamic-if-else -->',
+        'expected'  => 'Else block content',
+        ),
+        // elseブロックの内容が空の場合のテスト
+        array(
+        'name'      => 'Empty else block content',
+        'go_to'     => get_permalink($test_posts['post_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'pageType',
+                            'values' => array( 'ifPageType' => 'is_page' ),
+                        ),
+        ),
+        ),
+        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__label"><span>Else</span></div><div class="vk-dynamic-if-else-block__content"></div></div>',
+        'expected'  => '',
+        ),
         );
 
         foreach ( $tests as $test ) {

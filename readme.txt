@@ -35,6 +35,8 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+[ Add Function ] Add Else block functionality to display alternative content when conditions are not met.
+
 = 1.3.2 =
 [ Bug fix ] Fix an issue where the condition label is not translated.
 [ Bug fix ] Fix Language condition error
