@@ -4,7 +4,6 @@ import {
 	useBlockProps,
 	InnerBlocks,
 	InspectorControls,
-	useSelect,
 } from '@wordpress/block-editor';
 import { useEffect, useMemo, useState } from '@wordpress/element';
 import {
@@ -1618,7 +1617,12 @@ registerBlockType( 'vk-blocks/dynamic-if-else', {
 				} ) }
 			>
 				<div className="vk-dynamic-if-else-block__label">
-					<span>{ __( 'When conditions are not met', 'vk-dynamic-if-block' ) }</span>
+					<span>
+						{ __(
+							'When conditions are not met',
+							'vk-dynamic-if-block'
+						) }
+					</span>
 				</div>
 				<div className="vk-dynamic-if-else-block__content">
 					<InnerBlocks
