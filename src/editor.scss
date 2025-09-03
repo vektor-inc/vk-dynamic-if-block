@@ -186,29 +186,28 @@ $text-light: #666;
 }
 
 .vk-dynamic-if-else-block {
-	border: 2px dashed $primary-color;
-	border-radius: 4px;
-	padding: 1rem;
-	margin: 1rem 0;
-	background-color: #f0f8ff;
+	border: 1px solid $primary-color;
+	border-radius: 3px;
+	padding: 0.75rem;
+	margin: 0.75rem 0;
 	position: relative;
 
 	&__label {
 		position: absolute;
-		top: -10px;
-		left: 10px;
+		top: -8px;
+		left: 8px;
 		background-color: $primary-color;
 		color: #fff;
-		padding: 2px 8px;
-		border-radius: 3px;
-		font-size: 11px;
-		font-weight: 600;
+		padding: 1px 6px;
+		border-radius: 2px;
+		font-size: 10px;
+		font-weight: 500;
 		text-transform: uppercase;
-		letter-spacing: 0.5px;
+		letter-spacing: 0.3px;
 	}
 
 	&__content {
-		margin-top: 0.5rem;
+		margin-top: 0.25rem;
 	}
 }
 
