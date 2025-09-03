@@ -7,31 +7,11 @@ export const CONDITION_TYPE_LABELS = {
 	taxonomy: _x( 'Taxonomy', 'Condition Type Label', 'vk-dynamic-if-block' ),
 	language: _x( 'Language', 'Condition Type Label', 'vk-dynamic-if-block' ),
 	userRole: _x( 'User Role', 'Condition Type Label', 'vk-dynamic-if-block' ),
-	postAuthor: _x(
-		'Post Author',
-		'Condition Type Label',
-		'vk-dynamic-if-block'
-	),
-	customField: _x(
-		'Custom Field',
-		'Condition Type Label',
-		'vk-dynamic-if-block'
-	),
-	period: _x(
-		'Display Period',
-		'Condition Type Label',
-		'vk-dynamic-if-block'
-	),
-	loginUser: _x(
-		'Login User Only',
-		'Condition Type Label',
-		'vk-dynamic-if-block'
-	),
-	mobileDevice: _x(
-		'Mobile Device Only',
-		'Condition Type Label',
-		'vk-dynamic-if-block'
-	),
+	postAuthor: _x( 'Post Author', 'Condition Type Label', 'vk-dynamic-if-block' ),
+	customField: _x( 'Custom Field', 'Condition Type Label', 'vk-dynamic-if-block' ),
+	period: _x( 'Display Period', 'Condition Type Label', 'vk-dynamic-if-block' ),
+	loginUser: _x( 'Login User Only', 'Condition Type Label', 'vk-dynamic-if-block' ),
+	mobileDevice: _x( 'Mobile Device Only', 'Condition Type Label', 'vk-dynamic-if-block' ),
 };
 
 // ページタイプ定義
@@ -188,13 +168,6 @@ export const BLOCK_CONFIG = {
 	defaultTemplate: [ [ 'core/paragraph', {} ] ],
 	defaultConditionType: 'pageType',
 	defaultOperator: 'and',
-};
-
-// 条件グループのデフォルト構造
-export const DEFAULT_CONDITION_GROUP = {
-	id: '',
-	conditions: [],
-	operator: 'and',
 };
 
 // 移行ルール定義

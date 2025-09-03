@@ -1580,53 +1580,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							);
 						} )() }
 					</PanelBody>
-
-					{ /* Else Block Management */ }
-					<PanelBody
-						title={ __(
-							'Else Block Management',
-							'vk-dynamic-if-block'
-						) }
-						className={ 'vkdif' }
-					>
-						<div className="vkdif__else-block-management">
-							<h4>
-								{ __( 'Else Block', 'vk-dynamic-if-block' ) }
-							</h4>
-							<div className="vkdif__else-block-info">
-								{ __(
-									'Add an "Else" block inside this Dynamic If block to display content when conditions are not met. The Else block will only be visible when the main conditions fail.',
-									'vk-dynamic-if-block'
-								) }
-							</div>
-							<p>
-								{ __(
-									'To add an Else block:',
-									'vk-dynamic-if-block'
-								) }
-							</p>
-							<ol>
-								<li>
-									{ __(
-										'Click the "+" button below the content area',
-										'vk-dynamic-if-block'
-									) }
-								</li>
-								<li>
-									{ __(
-										'Search for "Dynamic If - Else"',
-										'vk-dynamic-if-block'
-									) }
-								</li>
-								<li>
-									{ __(
-										'Add it to your content',
-										'vk-dynamic-if-block'
-									) }
-								</li>
-							</ol>
-						</div>
-					</PanelBody>
 				</InspectorControls>
 				<div className="vk-dynamic-if-block__label">
 					<span>
@@ -1634,7 +1587,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							__( 'No conditions set', 'vk-dynamic-if-block' ) }
 					</span>
 				</div>
-
 				<InnerBlocks template={ BLOCK_CONFIG.defaultTemplate } />
 			</div>
 		);
