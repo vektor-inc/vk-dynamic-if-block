@@ -1258,6 +1258,17 @@ function vk_dynamic_if_block_extract_else_content($content)
             }
         }
 
+        // コメントブロックの場合は、コメントタグの終了位置を優先
+        $comment_end_pos = strpos($content, '<!-- /wp:vk-blocks/dynamic-if-else -->', $content_start_end);
+        if ($comment_end_pos !== false) {
+            $else_end_pos = $comment_end_pos;
+            // コメントブロックの場合は、コンテンツ部分のみを抽出（HTMLタグは含めない）
+            $result = substr($content, $content_start_end, $comment_end_pos - $content_start_end);
+            // HTMLタグを除去
+            $result = strip_tags($result);
+            return $result;
+        }
+
         if ($else_end_pos === false) {
             // elseブロックの終了タグが見つからない場合は、親ブロックの終了位置まで
             $parent_end_patterns = [
