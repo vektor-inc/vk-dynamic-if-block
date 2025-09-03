@@ -26,7 +26,6 @@ import {
 	PAGE_HIERARCHY_OPTIONS,
 	CONDITION_OPERATORS,
 	BLOCK_CONFIG,
-	DEFAULT_CONDITION_GROUP,
 	createMigrationRules,
 	generateId,
 	createConditionGroup,
@@ -209,70 +208,96 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						if ( ! condition || ! condition.type ) {
 							return false;
 						}
-						
+
 						// 各条件タイプに応じて有効性をチェック
 						switch ( condition.type ) {
 							case 'pageType':
-								return condition.values && 
-									condition.values.ifPageType && 
-									condition.values.ifPageType !== 'none';
+								return (
+									condition.values &&
+									condition.values.ifPageType &&
+									condition.values.ifPageType !== 'none'
+								);
 							case 'postType':
-								return condition.values && 
-									condition.values.ifPostType && 
-									condition.values.ifPostType !== 'none';
+								return (
+									condition.values &&
+									condition.values.ifPostType &&
+									condition.values.ifPostType !== 'none'
+								);
 							case 'language':
-								return condition.values && 
-									condition.values.ifLanguage && 
-									condition.values.ifLanguage !== 'none';
+								return (
+									condition.values &&
+									condition.values.ifLanguage &&
+									condition.values.ifLanguage !== 'none'
+								);
 							case 'userRole':
-								return condition.values && 
-									condition.values.userRole && 
-									Array.isArray( condition.values.userRole ) && 
-									condition.values.userRole.length > 0;
+								return (
+									condition.values &&
+									condition.values.userRole &&
+									Array.isArray(
+										condition.values.userRole
+									) &&
+									condition.values.userRole.length > 0
+								);
 							case 'postAuthor':
-								return condition.values && 
-									condition.values.postAuthor && 
-									condition.values.postAuthor !== 0;
+								return (
+									condition.values &&
+									condition.values.postAuthor &&
+									condition.values.postAuthor !== 0
+								);
 							case 'customField':
-								return condition.values && 
-									condition.values.customFieldName && 
-									condition.values.customFieldName !== 'none';
+								return (
+									condition.values &&
+									condition.values.customFieldName &&
+									condition.values.customFieldName !== 'none'
+								);
 							case 'period':
-								return condition.values && 
-									condition.values.periodDisplaySetting && 
-									condition.values.periodDisplaySetting !== 'none';
+								return (
+									condition.values &&
+									condition.values.periodDisplaySetting &&
+									condition.values.periodDisplaySetting !==
+										'none'
+								);
 							case 'loginUser':
-								return condition.values && 
-									condition.values.showOnlyLoginUser === true;
+								return (
+									condition.values &&
+									condition.values.showOnlyLoginUser === true
+								);
 							case 'mobileDevice':
-								return condition.values && 
-									condition.values.showOnlyMobileDevice === true;
+								return (
+									condition.values &&
+									condition.values.showOnlyMobileDevice ===
+										true
+								);
 							default:
 								return true; // 不明なタイプは保持
 						}
 					} )
 					.map( ( condition ) => ( {
 						id: generateId(),
-						conditions: [ {
-							...condition,
-							id: condition.id || generateId(),
-						} ],
+						conditions: [
+							{
+								...condition,
+								id: condition.id || generateId(),
+							},
+						],
 						operator: 'and',
 					} ) );
-				
+
 				// 有効な条件がない場合は、デフォルトの条件グループを作成
 				if ( newConditions.length === 0 ) {
 					newConditions.push( {
 						id: generateId(),
-						conditions: [ {
-							id: generateId(),
-							type: 'pageType',
-							values: { ifPageType: 'none' },
-						} ],
+						conditions: [
+							{
+								id: generateId(),
+								type: 'pageType',
+								values: { ifPageType: 'none' },
+							},
+						],
 						operator: 'and',
 					} );
 				}
-				
+
 				setAttributes( { conditions: newConditions } );
 				setHasMigrated( true );
 				setIsMigrating( false );
@@ -305,7 +330,10 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				if ( attr === 'postAuthor' ) {
 					return value !== 0;
 				}
-				if ( attr === 'showOnlyLoginUser' || attr === 'showOnlyMobileDevice' ) {
+				if (
+					attr === 'showOnlyLoginUser' ||
+					attr === 'showOnlyMobileDevice'
+				) {
 					return value === true;
 				}
 				// カスタムフィールド関連の属性は、実際に有効な値が設定されている場合のみ移行対象とする
@@ -330,7 +358,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			}
 
 			const newConditions = [];
-			let groupIndex = 1;
 
 			// 移行対象の条件を定義
 			const migrationRules = createMigrationRules( attributes );
@@ -341,12 +368,15 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				if ( rule.condition( value ) ) {
 					// 無効な値のチェック
 					let isValidValue = true;
-					
-					if ( rule.attr === 'ifPostType' && value === 'vk-patterns' ) {
+
+					if (
+						rule.attr === 'ifPostType' &&
+						value === 'vk-patterns'
+					) {
 						// 存在しない投稿タイプは無効とする
 						isValidValue = false;
 					}
-					
+
 					if ( isValidValue ) {
 						const values = rule.customValues
 							? rule.customValues()
@@ -366,10 +396,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			if ( newConditions.length === 0 ) {
 				// デフォルトでは何も制限しない（常に表示）
 				newConditions.push(
-					createConditionGroup(
-						'pageType',
-						{ ifPageType: 'none' }
-					)
+					createConditionGroup( 'pageType', { ifPageType: 'none' } )
 				);
 			}
 
@@ -1120,7 +1147,12 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				}
 
 				const groupLabels = conditions
-					.filter( ( group ) => group && group.conditions && Array.isArray( group.conditions ) )
+					.filter(
+						( group ) =>
+							group &&
+							group.conditions &&
+							Array.isArray( group.conditions )
+					)
 					.map( ( group ) => {
 						const { conditions: groupConditions = [] } =
 							group || {};
@@ -1354,181 +1386,219 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						) }
 						className={ 'vkdif' }
 					>
-						{ isMigrating ? (
-							<div>
-								<p>
-									{ __(
-										'Migrating block structure...',
-										'vk-dynamic-if-block'
-									) }
-								</p>
-							</div>
-						) : conditions && Array.isArray( conditions ) && conditions.length === 0 ? (
-							<div>
-								<BaseControl
-									__nextHasNoMarginBottom
-									className="dynamic-if-add-condition"
-								>
-									<p>
-										{ __(
-											'No conditions set. Add a condition to control display.',
-											'vk-dynamic-if-block'
-										) }
-									</p>
-									<Button
-										variant="primary"
-										onClick={ addCondition }
-									>
-										{ __(
-											'Add Condition',
-											'vk-dynamic-if-block'
-										) }
-									</Button>
-								</BaseControl>
-								<ToggleControl
-									label={ __(
-										'Exclusion designation',
-										'vk-dynamic-if-block'
-									) }
-									checked={ exclusion }
-									onChange={ ( checked ) =>
-										setAttributes( { exclusion: checked } )
-									}
-								/>
-							</div>
-						) : (
-							<>
-								{ conditions && Array.isArray( conditions ) && conditions.map( ( group, groupIndex ) => (
-									<div
-										key={ group.id }
-										className="vkdif__group"
-									>
-										<div className="vkdif__group-conditions">
-											{ group.conditions && Array.isArray( group.conditions ) && group.conditions.map(
-												(
-													condition,
-													conditionIndex
-												) => {
-													// 全ての条件タイプを選択可能
-													const availableConditionTypes =
-														conditionTypes;
-													return (
-														<div
-															key={ condition.id }
-															className="vkdif__condition"
-														>
-															<div className="vkdif__condition-header">
-																<SelectControl
-																	label={ __(
-																		'Condition Type',
-																		'vk-dynamic-if-block'
-																	) }
-																	value={
-																		condition.type
-																	}
-																	options={
-																		availableConditionTypes
-																	}
-																	onChange={ (
-																		value
-																	) =>
-																		updateCondition(
-																			groupIndex,
-																			conditionIndex,
-																			{
-																				type: value,
-																				values: {},
-																			}
-																		)
-																	}
-																/>
-															</div>
-															<div className="vkdif__condition-settings">
-																{ renderConditionSettings(
-																	condition,
-																	groupIndex,
-																	conditionIndex
-																) }
-															</div>
-														</div>
-													);
-												}
+						{ ( () => {
+							if ( isMigrating ) {
+								return (
+									<div>
+										<p>
+											{ __(
+												'Migrating block structure…',
+												'vk-dynamic-if-block'
 											) }
-										</div>
+										</p>
+									</div>
+								);
+							}
+
+							if (
+								conditions &&
+								Array.isArray( conditions ) &&
+								conditions.length === 0
+							) {
+								return (
+									<div>
+										<BaseControl
+											__nextHasNoMarginBottom
+											className="dynamic-if-add-condition"
+										>
+											<p>
+												{ __(
+													'No conditions set. Add a condition to control display.',
+													'vk-dynamic-if-block'
+												) }
+											</p>
+											<Button
+												variant="primary"
+												onClick={ addCondition }
+											>
+												{ __(
+													'Add Condition',
+													'vk-dynamic-if-block'
+												) }
+											</Button>
+										</BaseControl>
+										<ToggleControl
+											label={ __(
+												'Exclusion designation',
+												'vk-dynamic-if-block'
+											) }
+											checked={ exclusion }
+											onChange={ ( checked ) =>
+												setAttributes( {
+													exclusion: checked,
+												} )
+											}
+										/>
+									</div>
+								);
+							}
+
+							return (
+								<>
+									{ conditions &&
+										Array.isArray( conditions ) &&
+										conditions.map(
+											( group, groupIndex ) => (
+												<div
+													key={ group.id }
+													className="vkdif__group"
+												>
+													<div className="vkdif__group-conditions">
+														{ group.conditions &&
+															Array.isArray(
+																group.conditions
+															) &&
+															group.conditions.map(
+																(
+																	condition,
+																	conditionIndex
+																) => {
+																	// 全ての条件タイプを選択可能
+																	const availableConditionTypes =
+																		conditionTypes;
+																	return (
+																		<div
+																			key={
+																				condition.id
+																			}
+																			className="vkdif__condition"
+																		>
+																			<div className="vkdif__condition-header">
+																				<SelectControl
+																					label={ __(
+																						'Condition Type',
+																						'vk-dynamic-if-block'
+																					) }
+																					value={
+																						condition.type
+																					}
+																					options={
+																						availableConditionTypes
+																					}
+																					onChange={ (
+																						value
+																					) =>
+																						updateCondition(
+																							groupIndex,
+																							conditionIndex,
+																							{
+																								type: value,
+																								values: {},
+																							}
+																						)
+																					}
+																				/>
+																			</div>
+																			<div className="vkdif__condition-settings">
+																				{ renderConditionSettings(
+																					condition,
+																					groupIndex,
+																					conditionIndex
+																				) }
+																			</div>
+																		</div>
+																	);
+																}
+															) }
+													</div>
+													<Button
+														variant="secondary"
+														isDestructive
+														onClick={ () => {
+															const newConditions =
+																[
+																	...conditions,
+																];
+															newConditions.splice(
+																groupIndex,
+																1
+															);
+															setAttributes( {
+																conditions:
+																	newConditions,
+															} );
+														} }
+													>
+														{ __(
+															'Remove Condition',
+															'vk-dynamic-if-block'
+														) }
+													</Button>
+												</div>
+											)
+										) }
+									<BaseControl
+										__nextHasNoMarginBottom
+										className="dynamic-if-add-condition"
+									>
 										<Button
 											variant="secondary"
-											isDestructive
-											onClick={ () => {
-												const newConditions = [
-													...conditions,
-												];
-												newConditions.splice(
-													groupIndex,
-													1
-												);
-												setAttributes( {
-													conditions: newConditions,
-												} );
-											} }
+											onClick={ addConditionGroup }
+											className="vkdif__add-condition"
 										>
 											{ __(
-												'Remove Condition',
+												'Add Condition',
 												'vk-dynamic-if-block'
 											) }
 										</Button>
-									</div>
-								) ) }
-								<BaseControl
-									__nextHasNoMarginBottom
-									className="dynamic-if-add-condition"
-								>
-									<Button
-										variant="secondary"
-										onClick={ addConditionGroup }
-										className="vkdif__add-condition"
-									>
-										{ __(
-											'Add Condition',
-											'vk-dynamic-if-block'
+									</BaseControl>
+									{ conditions &&
+										Array.isArray( conditions ) &&
+										conditions.length > 1 && (
+											<SelectControl
+												label={ __(
+													'Condition Operator',
+													'vk-dynamic-if-block'
+												) }
+												value={ conditionOperator }
+												options={ CONDITION_OPERATORS }
+												onChange={ ( value ) =>
+													setAttributes( {
+														conditionOperator:
+															value,
+													} )
+												}
+											/>
 										) }
-									</Button>
-								</BaseControl>
-								{ conditions && Array.isArray( conditions ) && conditions.length > 1 && (
-									<SelectControl
+									<ToggleControl
 										label={ __(
-											'Condition Operator',
+											'Exclusion designation',
 											'vk-dynamic-if-block'
 										) }
-										value={ conditionOperator }
-										options={ CONDITION_OPERATORS }
-										onChange={ ( value ) =>
+										checked={ exclusion }
+										onChange={ ( checked ) =>
 											setAttributes( {
-												conditionOperator: value,
+												exclusion: checked,
 											} )
 										}
 									/>
-								) }
-								<ToggleControl
-									label={ __(
-										'Exclusion designation',
-										'vk-dynamic-if-block'
-									) }
-									checked={ exclusion }
-									onChange={ ( checked ) =>
-										setAttributes( { exclusion: checked } )
-									}
-								/>
-							</>
-						) }
+								</>
+							);
+						} )() }
 					</PanelBody>
-					
-					{/* Else Block Management */}
+
+					{ /* Else Block Management */ }
 					<PanelBody
-						title={ __( 'Else Block Management', 'vk-dynamic-if-block' ) }
+						title={ __(
+							'Else Block Management',
+							'vk-dynamic-if-block'
+						) }
 						className={ 'vkdif' }
 					>
 						<div className="vkdif__else-block-management">
-							<h4>{ __( 'Else Block', 'vk-dynamic-if-block' ) }</h4>
+							<h4>
+								{ __( 'Else Block', 'vk-dynamic-if-block' ) }
+							</h4>
 							<div className="vkdif__else-block-info">
 								{ __(
 									'Add an "Else" block inside this Dynamic If block to display content when conditions are not met. The Else block will only be visible when the main conditions fail.',
@@ -1595,7 +1665,11 @@ registerBlockType( 'vk-blocks/dynamic-if-else', {
 	},
 	edit: function Edit() {
 		return (
-			<div { ...useBlockProps( { className: 'vk-dynamic-if-else-block' } ) }>
+			<div
+				{ ...useBlockProps( {
+					className: 'vk-dynamic-if-else-block',
+				} ) }
+			>
 				<div className="vk-dynamic-if-else-block__label">
 					<span>{ __( 'Else', 'vk-dynamic-if-block' ) }</span>
 				</div>
