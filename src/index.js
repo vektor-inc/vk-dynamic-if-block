@@ -202,14 +202,77 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				! conditions[ 0 ].conditions
 			) {
 				// 古い形式のconditionsを新しい形式に変換
-				const newConditions = [ {
-					id: generateId(),
-					conditions: conditions.map( ( condition ) => ( {
-						...condition,
-						id: condition.id || generateId(),
-					} ) ),
-					operator: 'and',
-				} ];
+				// 有効な条件のみを個別のグループとして作成
+				const newConditions = conditions
+					.filter( ( condition ) => {
+						// 無効な条件をフィルタリング
+						if ( ! condition || ! condition.type ) {
+							return false;
+						}
+						
+						// 各条件タイプに応じて有効性をチェック
+						switch ( condition.type ) {
+							case 'pageType':
+								return condition.values && 
+									condition.values.ifPageType && 
+									condition.values.ifPageType !== 'none';
+							case 'postType':
+								return condition.values && 
+									condition.values.ifPostType && 
+									condition.values.ifPostType !== 'none';
+							case 'language':
+								return condition.values && 
+									condition.values.ifLanguage && 
+									condition.values.ifLanguage !== 'none';
+							case 'userRole':
+								return condition.values && 
+									condition.values.userRole && 
+									Array.isArray( condition.values.userRole ) && 
+									condition.values.userRole.length > 0;
+							case 'postAuthor':
+								return condition.values && 
+									condition.values.postAuthor && 
+									condition.values.postAuthor !== 0;
+							case 'customField':
+								return condition.values && 
+									condition.values.customFieldName && 
+									condition.values.customFieldName !== 'none';
+							case 'period':
+								return condition.values && 
+									condition.values.periodDisplaySetting && 
+									condition.values.periodDisplaySetting !== 'none';
+							case 'loginUser':
+								return condition.values && 
+									condition.values.showOnlyLoginUser === true;
+							case 'mobileDevice':
+								return condition.values && 
+									condition.values.showOnlyMobileDevice === true;
+							default:
+								return true; // 不明なタイプは保持
+						}
+					} )
+					.map( ( condition ) => ( {
+						id: generateId(),
+						conditions: [ {
+							...condition,
+							id: condition.id || generateId(),
+						} ],
+						operator: 'and',
+					} ) );
+				
+				// 有効な条件がない場合は、デフォルトの条件グループを作成
+				if ( newConditions.length === 0 ) {
+					newConditions.push( {
+						id: generateId(),
+						conditions: [ {
+							id: generateId(),
+							type: 'pageType',
+							values: { ifPageType: 'none' },
+						} ],
+						operator: 'and',
+					} );
+				}
+				
 				setAttributes( { conditions: newConditions } );
 				setHasMigrated( true );
 				setIsMigrating( false );
@@ -231,6 +294,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				'periodDisplayValue',
 				'periodReferCustomField',
 				'showOnlyLoginUser',
+				'showOnlyMobileDevice',
 			];
 
 			const hasOldAttributes = oldAttributes.some( ( attr ) => {
@@ -241,8 +305,21 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				if ( attr === 'postAuthor' ) {
 					return value !== 0;
 				}
-				if ( attr === 'showOnlyLoginUser' ) {
+				if ( attr === 'showOnlyLoginUser' || attr === 'showOnlyMobileDevice' ) {
 					return value === true;
+				}
+				// カスタムフィールド関連の属性は、実際に有効な値が設定されている場合のみ移行対象とする
+				if ( attr === 'customFieldName' ) {
+					return value && value !== '' && value !== 'none';
+				}
+				if ( attr === 'customFieldValue' ) {
+					return value && value !== '' && value !== 'none';
+				}
+				if ( attr === 'periodDisplayValue' ) {
+					return value && value !== '' && value !== 'none';
+				}
+				if ( attr === 'periodReferCustomField' ) {
+					return value && value !== '' && value !== 'none';
 				}
 				return value && value !== 'none' && value !== '';
 			} );
@@ -262,16 +339,26 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			migrationRules.forEach( ( rule ) => {
 				const value = attributes[ rule.attr ];
 				if ( rule.condition( value ) ) {
-					const values = rule.customValues
-						? rule.customValues()
-						: {
-								[ rule.key ]: Array.isArray( value )
-									? value[ 0 ] || ''
-									: value,
-						  };
-					newConditions.push(
-						createConditionGroup( rule.type, values )
-					);
+					// 無効な値のチェック
+					let isValidValue = true;
+					
+					if ( rule.attr === 'ifPostType' && value === 'vk-patterns' ) {
+						// 存在しない投稿タイプは無効とする
+						isValidValue = false;
+					}
+					
+					if ( isValidValue ) {
+						const values = rule.customValues
+							? rule.customValues()
+							: {
+									[ rule.key ]: Array.isArray( value )
+										? value[ 0 ] || ''
+										: value,
+							  };
+						newConditions.push(
+							createConditionGroup( rule.type, values )
+						);
+					}
 				}
 			} );
 
@@ -302,6 +389,23 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					defaultValue = 'valueExists';
 				} else if ( attr === 'periodSpecificationMethod' ) {
 					defaultValue = 'direct';
+				}
+				attributesToUpdate[ attr ] = defaultValue;
+			} );
+
+			// その他の古い属性もクリア
+			const additionalOldAttributes = [
+				'customFieldName',
+				'customFieldValue',
+				'periodDisplayValue',
+				'periodReferCustomField',
+				'showOnlyMobileDevice',
+			];
+
+			additionalOldAttributes.forEach( ( attr ) => {
+				let defaultValue = 'none';
+				if ( attr === 'showOnlyMobileDevice' ) {
+					defaultValue = false;
 				}
 				attributesToUpdate[ attr ] = defaultValue;
 			} );
