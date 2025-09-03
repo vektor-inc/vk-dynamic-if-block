@@ -33,4 +33,4 @@ build
 vendor
 dist
 .wp-env.override.json
-.phpunit.result.cache*.backup
+.phpunit.result.cache
