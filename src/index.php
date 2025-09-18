@@ -168,15 +168,15 @@ function vk_dynamic_if_block_render_conditions($attributes, $content)
     }
 
     // 条件評価の結果をキャッシュするためのキーを生成
-    $cache_key = 'vk_dynamic_if_block_' . md5(serialize($attributes) . get_the_ID() . get_queried_object_id());
+    $cache_key = 'vk_dynamic_if_block_' . md5(serialize($attributes) . serialize($content) . get_the_ID() . get_queried_object_id());
 
     // キャッシュから結果を取得
     $cached_result = wp_cache_get($cache_key, 'vk_dynamic_if_block');
     if ($cached_result !== false) {
         // キャッシュされた結果を使用
-        if ($cached_result) {
+        if ($cached_result === 'true') {
             return vk_dynamic_if_block_extract_content_without_else($content);
-        } else {
+        } elseif ($cached_result === 'false') {
             return vk_dynamic_if_block_extract_else_content($content);
         }
     }
@@ -217,39 +217,20 @@ function vk_dynamic_if_block_render_conditions($attributes, $content)
     $final_result = ($attributes['exclusion'] ? !$display : $display);
 
     // 結果をキャッシュに保存（1分間有効）
-    wp_cache_set($cache_key, $final_result, 'vk_dynamic_if_block', 60);
+    wp_cache_set($cache_key, $final_result ? 'true' : 'false', 'vk_dynamic_if_block', 60);
 
-    // デバッグ用（本番環境では削除）
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log('VK Dynamic If Block - Condition evaluation result: ' . ($final_result ? 'true' : 'false'));
-        error_log('VK Dynamic If Block - Original content length: ' . strlen($content));
-        error_log('VK Dynamic If Block - Content contains else block: ' . (strpos($content, 'vk-dynamic-if-else-block') !== false ? 'yes' : 'no'));
-    }
 
     // elseブロックの処理
     if ($final_result) {
         // 条件に合致する場合：elseブロックを除いたコンテンツを表示
         $result_content = vk_dynamic_if_block_extract_content_without_else($content);
 
-        // デバッグ用（本番環境では削除）
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('VK Dynamic If Block - Condition matched, showing content without else block');
-            error_log('Original content length: ' . strlen($content));
-            error_log('Result content length: ' . strlen($result_content));
-        }
 
         return $result_content;
     } else {
         // 条件に合致しない場合：elseブロックの内容のみを表示
         $result_content = vk_dynamic_if_block_extract_else_content($content);
 
-        // デバッグ用（本番環境では削除）
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('VK Dynamic If Block - Condition not matched, showing else block content only');
-            error_log('Original content length: ' . strlen($content));
-            error_log('Result content length: ' . strlen($result_content));
-            error_log('Else block content: ' . substr($result_content, 0, 200) . '...');
-        }
 
         return $result_content;
     }
@@ -266,15 +247,15 @@ function vk_dynamic_if_block_render_conditions($attributes, $content)
 function vk_dynamic_if_block_render_old_attributes($attributes, $content)
 {
     // 条件評価の結果をキャッシュするためのキーを生成
-    $cache_key = 'vk_dynamic_if_block_old_' . md5(serialize($attributes) . get_the_ID() . get_queried_object_id());
+    $cache_key = 'vk_dynamic_if_block_old_' . md5(serialize($attributes) . serialize($content) . get_the_ID() . get_queried_object_id());
 
     // キャッシュから結果を取得
     $cached_result = wp_cache_get($cache_key, 'vk_dynamic_if_block');
     if ($cached_result !== false) {
         // キャッシュされた結果を使用
-        if ($cached_result) {
+        if ($cached_result === 'true') {
             return vk_dynamic_if_block_extract_content_without_else($content);
-        } else {
+        } elseif ($cached_result === 'false') {
             return vk_dynamic_if_block_extract_else_content($content);
         }
     }
@@ -401,29 +382,20 @@ function vk_dynamic_if_block_render_old_attributes($attributes, $content)
     // Exclusion Check
     $final_result = ($attributes['exclusion'] ? !$display : $display);
 
+    // 結果をキャッシュに保存（1分間有効）
+    wp_cache_set($cache_key, $final_result ? 'true' : 'false', 'vk_dynamic_if_block', 60);
+
     // elseブロックの処理
     if ($final_result) {
         // 条件に合致する場合：elseブロックを除いたコンテンツを表示
         $result_content = vk_dynamic_if_block_extract_content_without_else($content);
 
-        // デバッグ用（本番環境では削除）
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('VK Dynamic If Block - Condition matched, showing content without else block');
-            error_log('Original content length: ' . strlen($content));
-            error_log('Result content length: ' . strlen($result_content));
-        }
 
         return $result_content;
     } else {
         // 条件に合致しない場合：elseブロックの内容のみを表示
         $result_content = vk_dynamic_if_block_extract_else_content($content);
 
-        // デバッグ用（本番環境では削除）
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('VK Dynamic If Block - Condition not matched, showing else block content only');
-            error_log('Original content length: ' . strlen($content));
-            error_log('Result content length: ' . strlen($result_content));
-        }
 
         return $result_content;
     }
@@ -1171,13 +1143,6 @@ function vk_dynamic_if_block_extract_content_without_else($content)
     // elseブロックの開始位置までを切り出し
     $result = substr($content, 0, $else_pos);
 
-    // デバッグ用（本番環境では削除）
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log('VK Dynamic If Block - Extracting content without else block');
-        error_log('Original content length: ' . strlen($content));
-        error_log('Result content length: ' . strlen($result));
-        error_log('Else block found at position: ' . $else_pos);
-    }
 
     return $result;
 }
@@ -1262,10 +1227,8 @@ function vk_dynamic_if_block_extract_else_content($content)
         $comment_end_pos = strpos($content, '<!-- /wp:vk-blocks/dynamic-if-else -->', $content_start_end);
         if ($comment_end_pos !== false) {
             $else_end_pos = $comment_end_pos;
-            // コメントブロックの場合は、コンテンツ部分のみを抽出（HTMLタグは含めない）
+            // コメントブロックの場合は、コンテンツ部分のみを抽出
             $result = substr($content, $content_start_end, $comment_end_pos - $content_start_end);
-            // HTMLタグを除去
-            $result = strip_tags($result);
             return $result;
         }
 
@@ -1299,16 +1262,6 @@ function vk_dynamic_if_block_extract_else_content($content)
         }
     }
 
-    // デバッグ用（本番環境では削除）
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log('VK Dynamic If Block - Extracting else block content');
-        error_log('Original content length: ' . strlen($content));
-        error_log('Result content length: ' . strlen($result));
-        error_log('Else block found at position: ' . $else_pos);
-        if (isset($content_start_pos) && $content_start_pos !== false) {
-            error_log('Content start found at position: ' . $content_start_pos);
-        }
-    }
 
     return $result;
 }
