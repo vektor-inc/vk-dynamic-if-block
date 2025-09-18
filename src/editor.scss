@@ -194,6 +194,7 @@ $text-light: #666;
 
 	&__label {
 		position: absolute;
+		z-index: 999;
 		top: -8px;
 		left: 8px;
 		background-color: $primary-color;
