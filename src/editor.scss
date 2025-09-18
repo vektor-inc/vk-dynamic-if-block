@@ -1,3 +1,37 @@
+// 共通変数
+$primary-color: #007cba;
+$danger-color: #d63638;
+$border-color: #ddd;
+$light-bg: #fafafa;
+$text-color: #333;
+$text-light: #666;
+
+// 共通ミックスイン
+@mixin scrollable-list {
+	position: relative;
+	height: 200px;
+	max-height: 100%;
+	min-height: 100px;
+	overflow-y: auto;
+	border: 1px solid #e0e0e0;
+	padding: 10px;
+	border-radius: 2px;
+	background-color: $light-bg;
+	resize: vertical;
+}
+
+@mixin base-control {
+	width: 100%;
+	margin-bottom: 0;
+}
+
+@mixin button-base {
+	align-self: flex-start;
+	height: 30px;
+	padding: 0 12px;
+}
+
+// メインブロック
 .wp-block-vk-blocks-dynamic-if {
 	border: 1px dotted #ccc;
 	padding: 1rem 4px 4px 4px;
@@ -8,6 +42,7 @@
 	}
 }
 
+// ブロックラベル
 .vk-dynamic-if-block__label {
 	position: absolute;
 	padding: 1px 5px;
@@ -15,152 +50,169 @@
 	right: 0;
 	font-size: 9px;
 	text-align: left;
-	color:#333;
+	color: $text-color;
 	background-color: #e5e5e5;
 	z-index: 10000;
 }
 
-// 複数選択用のチェックボックススタイル
-.dynamic-if-page-type .components-checkbox-control,
-.dynamic-if-post-type .components-checkbox-control,
-.dynamic-if-language .components-checkbox-control,
-.dynamic-if-post-author .components-checkbox-control,
-.dynamic-if-user-role .components-checkbox-control {
-	margin-bottom: 15px;
-}
-
-// チェックボックスリストが長くなった場合にスクロールさせる
+// チェックボックスコントロール
 .dynamic-if-page-type,
 .dynamic-if-post-type,
 .dynamic-if-language,
-.dynamic-if-user-role,
-.dynamic-if-post-author {
-	position: relative;
-	height: 200px;
-	max-height: 100%;
-	min-height: 100px;
-	overflow-y: auto;
-	border: 1px solid #e0e0e0;
-	padding: 10px;
-	border-radius: 2px;
-	background-color: #fafafa;
-	resize: vertical;
-}
+.dynamic-if-post-author,
+.dynamic-if-user-role {
 
-.vkdif .vkdif__refer-cf-name {
-	margin-bottom: 0;
+	@include scrollable-list;
 
-	.components-base-control__help {
-		margin-bottom: 0;
-	}
-}
-
-.vkdif__group {
-	position: relative;
-	padding: 1.5rem 1rem;
-	margin-bottom: 1.5rem;
-	border: 1px solid #ddd;
-	border-radius: 4px;
-	background-color: #fff;
-
-	&:last-child {
-		margin-bottom: 1.5rem;
-	}
-}
-
-.vkdif__group-conditions {
-
-	.vkdif__condition {
-		margin-bottom: 0;
-		padding-bottom: 1rem;
-	}
-}
-
-.vkdif__condition-header {
-	margin-bottom: 1rem;
-
-	.components-base-control {
-		width: 100%;
-		margin-bottom: 0;
-	}
-
-	.components-button {
-		align-self: flex-start;
-		height: 30px;
-		padding: 0 12px;
-	}
-}
-
-.vkdif__condition-settings {
-
-	.components-base-control {
+	.components-checkbox-control {
 		margin-bottom: 15px;
+	}
 
-		&:last-child {
+}
+
+// ユーティリティ要素
+.vkdif {
+
+	&__refer-cf-name {
+		margin-bottom: 0;
+
+		.components-base-control__help {
 			margin-bottom: 0;
 		}
 	}
-}
 
-// 条件追加ボタンのスタイル
-.vkdif .components-button {
+	&__group {
+		position: relative;
+		padding: 1.5rem 1rem;
+		margin-bottom: 1.5rem;
+		border: 1px solid $border-color;
+		border-radius: 4px;
+		background-color: #fff;
 
-	&.is-primary {
-		background-color: #007cba;
-		border-color: #007cba;
-		color: #fff;
-
-		&:hover {
-			background-color: #005a87;
-			border-color: #005a87;
+		&:last-child {
+			margin-bottom: 1.5rem;
 		}
 	}
 
-	&.is-secondary {
+	&__condition {
 
-		&.is-destructive {
-			color: #d63638;
-			border-color: #d63638;
+		&-header {
+			margin-bottom: 1rem;
+
+			.components-base-control {
+
+				@include base-control;
+			}
+
+			.components-button {
+
+				@include button-base;
+			}
+		}
+
+		&-settings .components-base-control {
+			margin-bottom: 15px;
+
+			&:last-child {
+				margin-bottom: 0;
+			}
+		}
+	}
+
+	&__group-conditions .vkdif__condition {
+		margin-bottom: 0;
+		padding-bottom: 1rem;
+	}
+
+	// ボタンスタイル
+	.components-button {
+
+		&.is-primary {
+			background-color: $primary-color;
+			border-color: $primary-color;
+		}
+
+		&.is-secondary.is-destructive {
+			color: $danger-color;
+			border-color: $danger-color;
 
 			&:hover {
-				background-color: #d63638;
+				background-color: $danger-color;
 				color: #fff;
+			}
+		}
+	}
+
+	// 条件なしメッセージ
+	&__no-conditions {
+		text-align: center;
+		padding: 20px;
+		color: $text-light;
+
+		p {
+			margin-bottom: 15px;
+		}
+	}
+
+	// アラート
+	&__alert {
+		padding: 1rem;
+		margin: 0.5rem auto;
+		border-radius: 3px;
+
+		p {
+			margin: 0;
+		}
+
+		@each $class-name, $color-bg, $color, $color-border in (
+			(success, #dff0d8, #3c763d, #d6e9c6),
+			(info, #d9edf7, #31708f, #bce8f1),
+			(warning, #fcf8e3, #8a6d3b, #faebcc),
+			(danger, #f2dede, #a94442, #ebccd1)
+		) {
+			&-#{$class-name} {
+				background-color: $color-bg;
+				color: $color;
+				border-color: $color-border;
 			}
 		}
 	}
 }
 
-// 条件がない場合のメッセージ
-.vkdif__no-conditions {
-	text-align: center;
-	padding: 20px;
-	color: #666;
+// Elseブロック関連
+.vk-dynamic-if-block__else-indicator {
+	color: $primary-color;
+	font-weight: 600;
+}
 
-	p {
-		margin-bottom: 15px;
+.vk-dynamic-if-else-block {
+	border: 1px solid $primary-color;
+	border-radius: 3px;
+	padding: 0.75rem;
+	margin: 0.75rem 0;
+	position: relative;
+
+	&__label {
+		position: absolute;
+		z-index: 999;
+		top: -8px;
+		left: 8px;
+		background-color: $primary-color;
+		color: #fff;
+		padding: 1px 6px;
+		border-radius: 2px;
+		font-size: 10px;
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: 0.3px;
+	}
+
+	&__content {
+		margin-top: 0.25rem;
 	}
 }
 
-// alert
-.vkdif__alert {
-	padding: 1rem;
-	margin: 0.5rem auto;
-	border-radius: 3px;
-
-	p {
-		margin: 0;
-	}
-
-	@each $class-name, $color-bg, $color, $color-border in (
-		(success, #dff0d8, #3c763d, #d6e9c6),
-		(info, #d9edf7, #31708f, #bce8f1),
-		(warning, #fcf8e3, #8a6d3b, #faebcc),
-		(danger, #f2dede, #a94442, #ebccd1)
-	) {
-		&-#{$class-name} {
-			background-color: $color-bg;
-			color: $color;
-			border-color: $color-border;
-		}
-	}
+// エディター固有スタイル
+.wp-block-vk-blocks-dynamic-if-else .vk-dynamic-if-else-block__label {
+	background-color: $primary-color;
 }
