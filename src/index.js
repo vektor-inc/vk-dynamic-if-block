@@ -1576,6 +1576,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 											} )
 										}
 									/>
+									<div class="alert alert-info">{__( 'By placing a Dynamic If -Else block inside a Dynamic If block, you can specify the elements to display if the conditions are not met.', 'vk-dynamic-if-block' )}</div>
 								</>
 							);
 						} )() }
