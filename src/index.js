@@ -619,6 +619,13 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							taxonomy: 'none',
 							termIds: [],
 						};
+					} else if ( updates.type === 'period' ) {
+						newValues = {
+							periodDisplaySetting: 'none',
+							periodSpecificationMethod: 'direct',
+							periodDisplayValue: '',
+							periodReferCustomField: '',
+						};
 					} else {
 						newValues = {};
 					}
@@ -940,8 +947,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 											)
 										}
 									/>
-									{ values.periodSpecificationMethod ===
-										'direct' && (
+									{ ( values.periodSpecificationMethod === 'direct' || 
+										! values.periodSpecificationMethod ) && (
 										<TextControl
 											label={ __(
 												'Value for the specified period',
