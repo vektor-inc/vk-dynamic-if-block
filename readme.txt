@@ -35,6 +35,8 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+[ Bug fix ] Fix an issue where the date input field is not displayed when selecting "Direct input in this block" for display period conditions.
+
 = 1.4.0 =
 [ Add Function ] Add Else block functionality to display alternative content when conditions are not met.
 
