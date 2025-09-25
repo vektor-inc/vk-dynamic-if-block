@@ -35,6 +35,8 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+[ Bug fix ] Fix an issue where else block content is cut off in the middle for complex HTML structures.
+
 = 1.4.1 =
 [ Bug fix ] Fix an issue where the date input field is not displayed when "Direct input in this block" is initially selected for display period conditions.
 
