@@ -1209,8 +1209,7 @@ function vk_dynamic_if_block_extract_else_content($content)
         // elseブロックの終了タグを検索
         $else_end_patterns = [
             '</div><!-- /wp:vk-blocks/dynamic-if-else -->',
-            '<!-- /wp:vk-blocks/dynamic-if-else -->',
-            '</div>'
+            '<!-- /wp:vk-blocks/dynamic-if-else -->'
         ];
 
         $else_end_pos = false;
@@ -1219,6 +1218,23 @@ function vk_dynamic_if_block_extract_else_content($content)
             if ($pos !== false) {
                 $else_end_pos = $pos;
                 break;
+            }
+        }
+
+        // 単純な</div>タグの検索は避け、より具体的なパターンを検索
+        if ($else_end_pos === false) {
+            // elseブロックのクラス名を含む終了タグを検索
+            $else_class_patterns = [
+                '</div><!-- /wp:vk-blocks/dynamic-if-else -->',
+                '<!-- /wp:vk-blocks/dynamic-if-else -->'
+            ];
+            
+            foreach ($else_class_patterns as $pattern) {
+                $pos = strpos($content, $pattern, $content_start_end);
+                if ($pos !== false) {
+                    $else_end_pos = $pos;
+                    break;
+                }
             }
         }
 
@@ -1238,8 +1254,7 @@ function vk_dynamic_if_block_extract_else_content($content)
             // elseブロックの終了タグが見つからない場合は、親ブロックの終了位置まで
             $parent_end_patterns = [
                 '</div><!-- /wp:vk-blocks/dynamic-if -->',
-                '<!-- /wp:vk-blocks/dynamic-if -->',
-                '</div>'
+                '<!-- /wp:vk-blocks/dynamic-if -->'
             ];
 
             $parent_end_pos = false;
