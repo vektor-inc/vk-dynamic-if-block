@@ -2381,7 +2381,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
                         ),
         ),
         ),
-        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__label"><span>Else</span></div><div class="vk-dynamic-if-else-block__content">Else block content</div></div>',
+        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__content">Else block content</div></div>',
         'expected'  => 'Single post content',
         ),
         array(
@@ -2395,7 +2395,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
                         ),
         ),
         ),
-        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__label"><span>Else</span></div><div class="vk-dynamic-if-else-block__content">Else block content</div></div>',
+        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__content">Else block content</div></div>',
         'expected'  => 'Else block content',
         ),
         // 複数のelseブロックがある場合のテスト
@@ -2410,7 +2410,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
                         ),
         ),
         ),
-        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__label"><span>Else</span></div><div class="vk-dynamic-if-else-block__content">First else block</div></div><div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__label"><span>Else</span></div><div class="vk-dynamic-if-else-block__content">Second else block</div></div>',
+        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__content">First else block</div></div><div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__content">Second else block</div></div>',
         'expected'  => 'Single post content',
         ),
         array(
@@ -2424,7 +2424,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
                         ),
         ),
         ),
-        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__label"><span>Else</span></div><div class="vk-dynamic-if-else-block__content">First else block</div></div><div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__label"><span>Else</span></div><div class="vk-dynamic-if-else-block__content">Second else block</div></div>',
+        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__content">First else block</div></div><div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__content">Second else block</div></div>',
         'expected'  => 'First else block',
         ),
         // 除外設定がある場合のelseブロックテスト
@@ -2440,7 +2440,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
                         ),
         ),
         ),
-        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__label"><span>Else</span></div><div class="vk-dynamic-if-else-block__content">Else block content</div></div>',
+        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__content">Else block content</div></div>',
         'expected'  => 'Else block content',
         ),
         array(
@@ -2455,7 +2455,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
                         ),
         ),
         ),
-        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__label"><span>Else</span></div><div class="vk-dynamic-if-else-block__content">Else block content</div></div>',
+        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__content">Else block content</div></div>',
         'expected'  => 'Single post content',
         ),
         // 複数条件でのelseブロックテスト
@@ -2474,7 +2474,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
                         ),
         ),
         ),
-        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__label"><span>Else</span></div><div class="vk-dynamic-if-else-block__content">Else block content</div></div>',
+        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__content">Else block content</div></div>',
         'expected'  => 'Single post content',
         ),
         array(
@@ -2492,7 +2492,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
                         ),
         ),
         ),
-        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__label"><span>Else</span></div><div class="vk-dynamic-if-else-block__content">Else block content</div></div>',
+        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__content">Else block content</div></div>',
         'expected'  => 'Else block content',
         ),
         // 異なるHTMLパターンでのelseブロックテスト
@@ -2507,7 +2507,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
                         ),
         ),
         ),
-        'content'   => 'Single post content<div class="wp-block-vk-blocks-dynamic-if-else"><div class="wp-block-vk-blocks-dynamic-if-else__label"><span>Else</span></div><div class="wp-block-vk-blocks-dynamic-if-else__content">Else block content</div></div>',
+        'content'   => 'Single post content<div class="wp-block-vk-blocks-dynamic-if-else"><div class="wp-block-vk-blocks-dynamic-if-else__content">Else block content</div></div>',
         'expected'  => 'Else block content',
         ),
         array(
@@ -2521,7 +2521,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
                         ),
         ),
         ),
-        'content'   => 'Single post content<!-- wp:vk-blocks/dynamic-if-else --><div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__label"><span>Else</span></div><div class="vk-dynamic-if-else-block__content">Else block content</div></div><!-- /wp:vk-blocks/dynamic-if-else -->',
+        'content'   => 'Single post content<!-- wp:vk-blocks/dynamic-if-else --><div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__content">Else block content</div></div><!-- /wp:vk-blocks/dynamic-if-else -->',
         'expected'  => 'Else block content',
         ),
         // elseブロックの内容が空の場合のテスト
@@ -2536,7 +2536,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
                         ),
         ),
         ),
-        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__label"><span>Else</span></div><div class="vk-dynamic-if-else-block__content"></div></div>',
+        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__content"></div></div>',
         'expected'  => '',
         ),
         );
