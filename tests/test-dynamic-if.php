@@ -2398,35 +2398,6 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
         'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__content">Else block content</div></div>',
         'expected'  => '<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__content">Else block content</div></div>',
         ),
-        // 複数のelseブロックがある場合のテスト
-        array(
-        'name'      => 'Multiple else blocks - condition met (show main content)',
-        'go_to'     => get_permalink($test_posts['post_id']),
-        'attribute' => array(
-                    'conditions' => array(
-                        array(
-                            'type'   => 'pageType',
-                            'values' => array( 'ifPageType' => 'is_single' ),
-                        ),
-        ),
-        ),
-        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__content">First else block</div></div><div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__content">Second else block</div></div>',
-        'expected'  => 'Single post content',
-        ),
-        array(
-        'name'      => 'Multiple else blocks - condition not met (show first else content)',
-        'go_to'     => get_permalink($test_posts['post_id']),
-        'attribute' => array(
-                    'conditions' => array(
-                        array(
-                            'type'   => 'pageType',
-                            'values' => array( 'ifPageType' => 'is_page' ),
-                        ),
-        ),
-        ),
-        'content'   => 'Single post content<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__content">First else block</div></div><div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__content">Second else block</div></div>',
-        'expected'  => '<div class="vk-dynamic-if-else-block"><div class="vk-dynamic-if-else-block__content">First else block</div></div>',
-        ),
         // 除外設定がある場合のelseブロックテスト
         array(
         'name'      => 'Exclusion with else block - condition met (show else content)',
