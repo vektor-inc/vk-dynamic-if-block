@@ -1194,74 +1194,27 @@ function vk_dynamic_if_block_extract_else_content($content)
         }
     }
 
-    if ($content_start_pos === false) {
-        // コンテンツ開始タグが見つからない場合は、elseブロックの開始位置から最後まで
+    // elseブロックの開始位置から親ブロックの終了位置まで全て取得
+    $parent_end_patterns = [
+        '</div><!-- /wp:vk-blocks/dynamic-if -->',
+        '<!-- /wp:vk-blocks/dynamic-if -->'
+    ];
+
+    $parent_end_pos = false;
+    foreach ($parent_end_patterns as $pattern) {
+        $pos = strpos($content, $pattern, $else_pos);
+        if ($pos !== false) {
+            $parent_end_pos = $pos;
+            break;
+        }
+    }
+
+    if ($parent_end_pos === false) {
+        // 親ブロックの終了タグが見つからない場合は、elseブロックの開始位置から最後まで
         $result = substr($content, $else_pos);
     } else {
-        // コンテンツ開始タグの終了位置を検索
-        $content_start_end = strpos($content, '>', $content_start_pos);
-        if ($content_start_end === false) {
-            $content_start_end = $content_start_pos;
-        } else {
-            $content_start_end++; // '>'の次の位置
-        }
-
-        // elseブロックの終了タグを検索
-        $else_end_patterns = [
-            '</div><!-- /wp:vk-blocks/dynamic-if-else -->',
-            '<!-- /wp:vk-blocks/dynamic-if-else -->',
-            '</div>'
-        ];
-
-        $else_end_pos = false;
-        foreach ($else_end_patterns as $pattern) {
-            $pos = strpos($content, $pattern, $content_start_end);
-            if ($pos !== false) {
-                $else_end_pos = $pos;
-                break;
-            }
-        }
-
-        // コメントブロック（Gutenbergエディタ形式）の場合は、コメントタグの終了位置を優先
-        // エディタ側ではHTMLタグを除去してテキストのみを表示する必要がある
-        $comment_end_pos = strpos($content, '<!-- /wp:vk-blocks/dynamic-if-else -->', $content_start_end);
-        if ($comment_end_pos !== false) {
-            $else_end_pos = $comment_end_pos;
-            // コメントブロック（エディタ形式）の場合は、コンテンツ部分のみを抽出
-            $result = substr($content, $content_start_end, $comment_end_pos - $content_start_end);
-            // エディタ側ではHTMLタグを除去してテキストのみを表示
-            $result = strip_tags($result);
-            return $result;
-        }
-
-        if ($else_end_pos === false) {
-            // elseブロックの終了タグが見つからない場合は、親ブロックの終了位置まで
-            $parent_end_patterns = [
-                '</div><!-- /wp:vk-blocks/dynamic-if -->',
-                '<!-- /wp:vk-blocks/dynamic-if -->',
-                '</div>'
-            ];
-
-            $parent_end_pos = false;
-            foreach ($parent_end_patterns as $pattern) {
-                $pos = strpos($content, $pattern, $content_start_end);
-                if ($pos !== false) {
-                    $parent_end_pos = $pos;
-                    break;
-                }
-            }
-
-            if ($parent_end_pos === false) {
-                // 親ブロックの終了タグも見つからない場合は、コンテンツ開始位置から最後まで
-                $result = substr($content, $content_start_end);
-            } else {
-                // コンテンツ開始位置から親ブロックの終了位置までを切り出し
-                $result = substr($content, $content_start_end, $parent_end_pos - $content_start_end);
-            }
-        } else {
-            // 通常ブロック（フロントエンド表示形式）の場合は、HTMLタグを保持してフォーマットを維持
-            $result = substr($content, $content_start_end, $else_end_pos - $content_start_end);
-        }
+        // elseブロックの開始位置から親ブロックの終了位置までを切り出し
+        $result = substr($content, $else_pos, $parent_end_pos - $else_pos);
     }
 
     // 通常ブロック（フロントエンド表示形式）ではHTMLタグを保持

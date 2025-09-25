@@ -1617,6 +1617,25 @@ registerBlockType( 'vk-blocks/dynamic-if-else', {
 		html: false,
 		innerBlocks: true,
 	},
+	deprecated: [
+		{
+			// v1.4.1以前のバージョン（ラベル付き）
+			attributes: {},
+			save() {
+				return (
+					<div className="vk-dynamic-if-else-block">
+						<div className="vk-dynamic-if-else-block__label">
+							<span>Else</span>
+						</div>
+						<div className="vk-dynamic-if-else-block__content">
+							<InnerBlocks.Content />
+						</div>
+					</div>
+				);
+			},
+		},
+		// 将来的に新しいsaveが追加される場合は、ここに追加
+	],
 	edit: function Edit() {
 		return (
 			<div
@@ -1645,9 +1664,6 @@ registerBlockType( 'vk-blocks/dynamic-if-else', {
 	save() {
 		return (
 			<div className="vk-dynamic-if-else-block">
-				<div className="vk-dynamic-if-else-block__label">
-					<span>Else</span>
-				</div>
 				<div className="vk-dynamic-if-else-block__content">
 					<InnerBlocks.Content />
 				</div>
