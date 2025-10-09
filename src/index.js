@@ -1381,12 +1381,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			userSelectOptions,
 		] );
 
-		const blockProps = useBlockProps({
-			className: BLOCK_CONFIG.className,
-		});
-
 		return (
-			<div {...blockProps}>
+			<div { ...useBlockProps( { className: BLOCK_CONFIG.className } ) }>
 				<InspectorControls>
 					<PanelBody
 						title={ __(
