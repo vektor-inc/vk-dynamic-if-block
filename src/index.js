@@ -117,6 +117,10 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 	supports: {
 		html: false,
 		innerBlocks: true,
+		layout: {
+			allowJustification: false,
+			allowSizingOnChildren: false
+		}
 	},
 	edit: function Edit( { attributes, setAttributes } ) {
 		const { conditions, conditionOperator, exclusion } = attributes;
@@ -1377,8 +1381,12 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			userSelectOptions,
 		] );
 
+		const blockProps = useBlockProps({
+			className: BLOCK_CONFIG.className,
+		});
+
 		return (
-			<div { ...useBlockProps( { className: BLOCK_CONFIG.className } ) }>
+			<div {...blockProps}>
 				<InspectorControls>
 					<PanelBody
 						title={ __(
