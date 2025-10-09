@@ -35,6 +35,8 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+[ Add function ] Added support for layout.allowJustification: false to allow full/wide align
+
 = 1.4.2 =
 [ Bug fix ] Fix an issue where else block content is cut off in the middle for complex HTML structures.
 
