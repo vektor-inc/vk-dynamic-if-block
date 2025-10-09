@@ -117,6 +117,10 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 	supports: {
 		html: false,
 		innerBlocks: true,
+		layout: {
+			allowJustification: false,
+			allowSizingOnChildren: false
+		}
 	},
 	edit: function Edit( { attributes, setAttributes } ) {
 		const { conditions, conditionOperator, exclusion } = attributes;

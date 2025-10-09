@@ -100,7 +100,11 @@
 	},
 	"supports": {
 		"html": false,
-		"innerBlocks": true
+		"innerBlocks": true,
+		"layout": {
+			"allowJustification": false,
+			"allowSizingOnChildren": false
+		}
 	},
 	"editorScript": "url:./build/index.js",
 	"editorStyle": "url:./build/editor.css"
