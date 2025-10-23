@@ -694,8 +694,53 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 								updateValue( 'ifPageType', value )
 							}
 						/>
-						{ values.ifPageType === 'is_page' &&
-							renderPageHierarchy() }
+						{ values.ifPageType === 'is_page' && (
+							<>
+								{ renderPageHierarchy() }
+								<BaseControl
+									label={ __( 'ページ選択', 'vk-dynamic-if-block' ) }
+									__nextHasNoMarginBottom
+								>
+									<div
+										style={ {
+											maxHeight: '200px',
+											overflowY: 'auto',
+											border: '1px solid #ddd',
+											borderRadius: '4px',
+											padding: '8px',
+											backgroundColor: '#fff'
+										} }
+									>
+										<CheckboxControl
+											label={ __( '全ての固定ページ', 'vk-dynamic-if-block' ) }
+											checked={ values.allPages || false }
+											onChange={ ( checked ) => {
+												updateValue( 'allPages', checked );
+												// 個別ページの選択は変更しない（All Pagesは独立した条件として扱う）
+											} }
+											__nextHasNoMarginBottom
+										/>
+										<hr style={ { margin: '8px 0', border: 'none', borderTop: '1px solid #ddd' } } />
+										{ ( vkDynamicIfBlockLocalizeData?.pageSelectOptions || [] ).map( ( page ) => (
+											<CheckboxControl
+												key={ page.value }
+												label={ page.label }
+												checked={ ( values.pageIds || [] ).includes( page.value ) }
+												onChange={ ( checked ) => {
+													const currentPageIds = values.pageIds || [];
+													const newPageIds = checked
+														? [ ...currentPageIds, page.value ]
+														: currentPageIds.filter( ( id ) => id !== page.value );
+													updateValue( 'pageIds', newPageIds );
+													// All Pagesの状態は変更しない（独立した条件として扱う）
+												} }
+												__nextHasNoMarginBottom
+											/>
+										) ) }
+									</div>
+								</BaseControl>
+							</>
+						) }
 					</>
 				),
 				postType: () => (

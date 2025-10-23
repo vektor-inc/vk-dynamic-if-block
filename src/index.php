@@ -479,11 +479,51 @@ function vk_dynamic_if_block_check_page_type($values)
 
     $result = $page_checks[$page_type] ?? false;
 
-    // is_pageの場合、階層条件もチェック
-    if ($page_type === 'is_page' && $result) {
-        $hierarchy_type = $values['pageHierarchyType'] ?? '';
-        if (!empty($hierarchy_type) && $hierarchy_type !== 'none') {
-            return vk_dynamic_if_block_check_page_hierarchy($values);
+    // is_pageの場合、階層条件と特定のページID条件もチェック
+    if ($page_type === 'is_page') {
+        if (!$result) {
+            return false;
+        }
+        
+        $page_ids = $values['pageIds'] ?? [];
+        $all_pages = $values['allPages'] ?? false;
+        
+        if ($all_pages) {
+            // 「全ての固定ページ」が選択されている場合
+            $hierarchy_type = $values['pageHierarchyType'] ?? '';
+            if (!empty($hierarchy_type) && $hierarchy_type !== 'none') {
+                return vk_dynamic_if_block_check_page_hierarchy($values);
+            }
+            return true; // 全ての固定ページで表示
+        } elseif (!empty($page_ids)) {
+            // 特定のページIDが指定されている場合
+            $current_page_id = get_the_ID();
+            if (!$current_page_id) {
+                return false;
+            }
+            
+            // ページIDが配列でない場合は配列に変換
+            if (!is_array($page_ids)) {
+                $page_ids = [$page_ids];
+            }
+            
+            // 現在のページIDが指定されたページIDのいずれかと一致するかチェック
+            $page_match = in_array($current_page_id, $page_ids);
+            
+            // 階層条件もチェック
+            $hierarchy_type = $values['pageHierarchyType'] ?? '';
+            if (!empty($hierarchy_type) && $hierarchy_type !== 'none') {
+                $hierarchy_match = vk_dynamic_if_block_check_page_hierarchy($values);
+                return $page_match && $hierarchy_match;
+            }
+            
+            return $page_match;
+        } else {
+            // 特定のページIDが指定されていない場合は、階層条件のみチェック
+            $hierarchy_type = $values['pageHierarchyType'] ?? '';
+            if (!empty($hierarchy_type) && $hierarchy_type !== 'none') {
+                return vk_dynamic_if_block_check_page_hierarchy($values);
+            }
         }
     }
 
@@ -959,6 +999,31 @@ function vk_dynamic_if_block_register_dynamic()
 add_action('init', 'vk_dynamic_if_block_register_dynamic');
 
 /**
+ * Get page select options for frontend.
+ *
+ * @return array Page select options.
+ */
+function vk_dynamic_if_block_get_page_select_options()
+{
+    $pages = get_pages([
+        'post_status' => 'publish',
+        'number' => 100, // 最大100ページまで
+        'sort_column' => 'menu_order',
+        'sort_order' => 'ASC'
+    ]);
+
+    $options = [];
+    foreach ($pages as $page) {
+        $options[] = [
+            'value' => $page->ID,
+            'label' => $page->post_title
+        ];
+    }
+
+    return $options;
+}
+
+/**
  * Set localize script data.
  *
  * @return void
@@ -1092,6 +1157,9 @@ function vk_dynamic_if_block_set_localize_script()
         }
     }
 
+    // ページ選択オプション
+    $page_options = vk_dynamic_if_block_get_page_select_options();
+
     wp_localize_script(
         'vk-dynamic-if-block',
         'vkDynamicIfBlockLocalizeData',
@@ -1102,7 +1170,8 @@ function vk_dynamic_if_block_set_localize_script()
             'userSelectOptions' => $user_options,
             'currentSiteLanguage' => get_locale(),
             'taxonomySelectOptions' => $taxonomy_options,
-            'termSelectOptions' => $term_options
+            'termSelectOptions' => $term_options,
+            'pageSelectOptions' => $page_options
         ]
     );
 }
