@@ -1220,6 +1220,32 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 									'ifPageType',
 									true
 								);
+								
+								// is_pageが選択されている場合の特別な処理
+								if (values.ifPageType === 'is_page') {
+									const allPages = values.allPages;
+									const pageIds = values.pageIds;
+									
+									// 特定のページが選択されている場合（全ての固定ページではない場合）
+									if (!allPages && pageIds && Array.isArray(pageIds) && pageIds.length > 0) {
+										const hierarchyLabel =
+											values.pageHierarchyType &&
+											values.pageHierarchyType !== 'none'
+												? generateLabelFromValues(
+														values,
+														PAGE_HIERARCHY_OPTIONS,
+														'pageHierarchyType'
+												  )
+												: null;
+										
+										const specificPageLabel = __( '特定のページのみ', 'vk-dynamic-if-block' );
+										
+										return hierarchyLabel
+											? `${ pageTypeLabel } (${ hierarchyLabel }, ${ specificPageLabel })`
+											: `${ pageTypeLabel } (${ specificPageLabel })`;
+									}
+								}
+								
 								const hierarchyLabel =
 									values.ifPageType === 'is_page' &&
 									values.pageHierarchyType &&
