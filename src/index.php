@@ -537,43 +537,42 @@ function vk_dynamic_if_block_check_page_type($values)
  *
  * @return bool Evaluation result.
  */
-function vk_dynamic_if_block_check_post_type($values)
+function vk_dynamic_if_block_check_post_type( $values )
 {
-    $post_type = $values['ifPostType'] ?? '';
-    if (empty($post_type) || $post_type === 'none') {
+    $post_type = $values[ 'ifPostType' ] ?? '';
+    if ( empty( $post_type ) || $post_type === 'none' ) {
         return true;
     }
 
     // VkHelpersを使用してより確実に投稿タイプを取得
-    if (class_exists('VkHelpers')) {
+    if ( class_exists( VkHelpers::class ) && is_callable( [ VkHelpers::class, 'get_post_type_info' ] ) ) {
         $post_type_info = VkHelpers::get_post_type_info();
-        $current_type = $post_type_info['slug']
-            ?? get_post_type();
+        $current_type = $post_type_info[ 'slug' ] ?? get_post_type();
     } else {
         // VkHelpersが存在しない場合はWordPress標準関数を使用
         $current_type = get_post_type();
-        if (empty($current_type)) {
+        if ( empty( $current_type ) ) {
             // アーカイブページの場合
-            if (is_post_type_archive()) {
-                $current_type = get_query_var('post_type');
-            } elseif (is_home() && !is_front_page()) {
+            if ( is_post_type_archive() ) {
+                $current_type = get_query_var( 'post_type' );
+            } elseif ( is_home() && !is_front_page() ) {
                 $current_type = 'post';
-            } elseif (is_front_page()) {
+            } elseif ( is_front_page() ) {
                 $current_type = 'page';
             }
         }
     }
 
     // 投稿タイプが一致しない場合はfalse
-    if ($current_type !== $post_type) {
+    if ( $current_type !== $post_type ) {
         return false;
     }
 
     // 固定ページの場合、階層条件もチェック
-    if ($post_type === 'page') {
-        $hierarchy_type = $values['pageHierarchyType'] ?? '';
-        if (!empty($hierarchy_type) && $hierarchy_type !== 'none') {
-            return vk_dynamic_if_block_check_page_hierarchy($values);
+    if ( $post_type === 'page' ) {
+        $hierarchy_type = $values[ 'pageHierarchyType' ] ?? '';
+        if ( !empty( $hierarchy_type ) && $hierarchy_type !== 'none' ) {
+            return vk_dynamic_if_block_check_page_hierarchy( $values );
         }
     }
 
