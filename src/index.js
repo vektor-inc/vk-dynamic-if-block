@@ -680,21 +680,11 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 		) => {
 			const { type = '', values = {} } = condition;
 			
-			// ローカル状態でAll Pagesのチェック状態を管理
-			const [localAllPages, setLocalAllPages] = useState(values.allPages);
-			
-			// values.allPagesが変更された時にローカル状態を同期
-			useEffect(() => {
-				setLocalAllPages(values.allPages);
-			}, [values.allPages]);
-			
 			// allPages が undefined の場合は適切なデフォルト値を設定
-			useEffect(() => {
-				if ( type === 'pageType' && values.allPages === undefined ) {
-					const defaultValue = values.ifPageType === 'is_page' ? true : false;
-					updateConditionValue( groupIndex, conditionIndex, 'allPages', defaultValue );
-				}
-			}, [type, values.allPages, values.ifPageType, groupIndex, conditionIndex]);
+			if ( type === 'pageType' && values.allPages === undefined ) {
+				const defaultValue = values.ifPageType === 'is_page' ? true : false;
+				updateConditionValue( groupIndex, conditionIndex, 'allPages', defaultValue );
+			}
 
 			const updateValue = ( key, value ) =>
 				updateConditionValue( groupIndex, conditionIndex, key, value );
@@ -741,15 +731,20 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 									>
 										<CheckboxControl
 											label={ __( 'All pages', 'vk-dynamic-if-block' ) }
-											checked={ localAllPages === true }
+											checked={ values.allPages === true }
 											onChange={ ( checked ) => {
-												// ローカル状態を即座に更新
-												setLocalAllPages(checked);
-												// 実際の状態も更新
-												updateConditionValue( groupIndex, conditionIndex, 'allPages', checked );
-												if ( checked ) {
-													updateConditionValue( groupIndex, conditionIndex, 'pageIds', [] );
-												}
+												// 一度に両方の値を更新
+												updateConditionAt( groupIndex, conditionIndex, ( condition ) => {
+													const newValues = { ...condition.values };
+													newValues.allPages = checked;
+													if ( checked ) {
+														newValues.pageIds = [];
+													}
+													return {
+														...condition,
+														values: newValues,
+													};
+												} );
 											} }
 											__nextHasNoMarginBottom
 										/>
@@ -759,19 +754,33 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 												key={ page.value }
 												label={ page.label }
 												checked={ ( values.pageIds || [] ).includes( page.value ) }
-												disabled={ localAllPages || false }
+												disabled={ values.allPages || false }
 												onChange={ ( checked ) => {
 													const currentPageIds = values.pageIds || [];
 													const newPageIds = checked
 														? [ ...currentPageIds, page.value ]
 														: currentPageIds.filter( ( id ) => id !== page.value );
 													
-													// 個別ページが選択された場合、「全ての固定ページ」のチェックを外す
-													if ( checked ) {
-														setLocalAllPages(false);
-														updateConditionValue( groupIndex, conditionIndex, 'allPages', false );
-													}
-													updateConditionValue( groupIndex, conditionIndex, 'pageIds', newPageIds );
+													// 一度に両方の値を更新
+													updateConditionAt( groupIndex, conditionIndex, ( condition ) => {
+														const newValues = { ...condition.values };
+														newValues.pageIds = newPageIds;
+														
+														// 個別ページが選択された場合、「全ての固定ページ」のチェックを外す
+														if ( checked ) {
+															newValues.allPages = false;
+														} else {
+															// 個別ページのチェックを外した場合、すべての個別ページが選択されていない場合は「全ての固定ページ」をチェック状態にする
+															if ( newPageIds.length === 0 ) {
+																newValues.allPages = true;
+															}
+														}
+														
+														return {
+															...condition,
+															values: newValues,
+														};
+													} );
 												} }
 												__nextHasNoMarginBottom
 											/>
