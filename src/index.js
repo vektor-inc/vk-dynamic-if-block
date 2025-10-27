@@ -605,7 +605,11 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				let newValues = condition.values;
 				if ( updates.type && updates.type !== condition.type ) {
 					if ( updates.type === 'pageType' ) {
-						newValues = { ifPageType: 'none' };
+						newValues = { 
+							ifPageType: 'none',
+							allPages: false,
+							pageIds: []
+						};
 					} else if ( updates.type === 'postType' ) {
 						newValues = { ifPostType: 'none' };
 					} else if ( updates.type === 'userRole' ) {
@@ -653,13 +657,20 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				return;
 			}
 
-			updateConditionAt( groupIndex, conditionIndex, ( condition ) => ( {
-				...condition,
-				values: {
-					...condition.values,
-					[ key ]: value,
-				},
-			} ) );
+			updateConditionAt( groupIndex, conditionIndex, ( condition ) => {
+				const newValues = { ...condition.values, [ key ]: value };
+				
+				// ifPageTypeがis_pageに変更された場合、allPagesとpageIdsのデフォルト値を設定
+				if ( key === 'ifPageType' && value === 'is_page' ) {
+					newValues.allPages = true; // デフォルトでAll Pagesをチェック状態にする
+					newValues.pageIds = []; // 個別ページ選択をクリア
+				}
+				
+				return {
+					...condition,
+					values: newValues,
+				};
+			} );
 		};
 
 		const renderConditionSettings = (
@@ -668,6 +679,21 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			conditionIndex = 0
 		) => {
 			const { type = '', values = {} } = condition;
+			
+			// ローカル状態でAll Pagesのチェック状態を管理
+			const [localAllPages, setLocalAllPages] = useState(values.allPages);
+			
+			// values.allPagesが変更された時にローカル状態を同期
+			useEffect(() => {
+				setLocalAllPages(values.allPages);
+			}, [values.allPages]);
+			
+			// allPagesがundefinedの場合は適切なデフォルト値を設定
+			if ( type === 'pageType' && values.allPages === undefined ) {
+				const defaultValue = values.ifPageType === 'is_page' ? true : false;
+				updateConditionValue( groupIndex, conditionIndex, 'allPages', defaultValue );
+			}
+			
 			const updateValue = ( key, value ) =>
 				updateConditionValue( groupIndex, conditionIndex, key, value );
 
@@ -690,15 +716,15 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							label={ __( 'Page Type', 'vk-dynamic-if-block' ) }
 							value={ values.ifPageType || 'none' }
 							options={ ifPageTypes }
-							onChange={ ( value ) =>
-								updateValue( 'ifPageType', value )
-							}
+							onChange={ ( value ) => {
+								updateValue( 'ifPageType', value );
+							} }
 						/>
-						{ values.ifPageType === 'is_page' && (
+						{ ( values.ifPageType === 'is_page' || values.ifPageType === 'page' ) && (
 							<>
 								{ renderPageHierarchy() }
 								<BaseControl
-									label={ __( 'ページ選択', 'vk-dynamic-if-block' ) }
+									label={ __( 'Select Pages', 'vk-dynamic-if-block' ) }
 									__nextHasNoMarginBottom
 								>
 									<div
@@ -712,11 +738,16 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 										} }
 									>
 										<CheckboxControl
-											label={ __( '全ての固定ページ', 'vk-dynamic-if-block' ) }
-											checked={ values.allPages || false }
+											label={ __( 'All pages', 'vk-dynamic-if-block' ) }
+											checked={ localAllPages === true }
 											onChange={ ( checked ) => {
-												updateValue( 'allPages', checked );
-												// 個別ページの選択は変更しない（All Pagesは独立した条件として扱う）
+												// ローカル状態を即座に更新
+												setLocalAllPages(checked);
+												// 実際の状態も更新
+												updateConditionValue( groupIndex, conditionIndex, 'allPages', checked );
+												if ( checked ) {
+													updateConditionValue( groupIndex, conditionIndex, 'pageIds', [] );
+												}
 											} }
 											__nextHasNoMarginBottom
 										/>
@@ -726,13 +757,19 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 												key={ page.value }
 												label={ page.label }
 												checked={ ( values.pageIds || [] ).includes( page.value ) }
+												disabled={ localAllPages || false }
 												onChange={ ( checked ) => {
 													const currentPageIds = values.pageIds || [];
 													const newPageIds = checked
 														? [ ...currentPageIds, page.value ]
 														: currentPageIds.filter( ( id ) => id !== page.value );
-													updateValue( 'pageIds', newPageIds );
-													// All Pagesの状態は変更しない（独立した条件として扱う）
+													
+													// 個別ページが選択された場合、「全ての固定ページ」のチェックを外す
+													if ( checked ) {
+														setLocalAllPages(false);
+														updateConditionValue( groupIndex, conditionIndex, 'allPages', false );
+													}
+													updateConditionValue( groupIndex, conditionIndex, 'pageIds', newPageIds );
 												} }
 												__nextHasNoMarginBottom
 											/>
