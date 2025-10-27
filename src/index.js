@@ -605,7 +605,11 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				let newValues = condition.values;
 				if ( updates.type && updates.type !== condition.type ) {
 					if ( updates.type === 'pageType' ) {
-						newValues = { ifPageType: 'none' };
+						newValues = { 
+							ifPageType: 'none',
+							allPages: false,
+							pageIds: []
+						};
 					} else if ( updates.type === 'postType' ) {
 						newValues = { ifPostType: 'none' };
 					} else if ( updates.type === 'userRole' ) {
@@ -653,13 +657,20 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				return;
 			}
 
-			updateConditionAt( groupIndex, conditionIndex, ( condition ) => ( {
-				...condition,
-				values: {
-					...condition.values,
-					[ key ]: value,
-				},
-			} ) );
+			updateConditionAt( groupIndex, conditionIndex, ( condition ) => {
+				const newValues = { ...condition.values, [ key ]: value };
+				
+				// ifPageTypeがis_pageに変更された場合、allPagesとpageIdsのデフォルト値を設定
+				if ( key === 'ifPageType' && value === 'is_page' ) {
+					newValues.allPages = true; // デフォルトでAll Pagesをチェック状態にする
+					newValues.pageIds = []; // 個別ページ選択をクリア
+				}
+				
+				return {
+					...condition,
+					values: newValues,
+				};
+			} );
 		};
 
 		const renderConditionSettings = (
@@ -668,6 +679,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			conditionIndex = 0
 		) => {
 			const { type = '', values = {} } = condition;
+
 			const updateValue = ( key, value ) =>
 				updateConditionValue( groupIndex, conditionIndex, key, value );
 
@@ -690,12 +702,87 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							label={ __( 'Page Type', 'vk-dynamic-if-block' ) }
 							value={ values.ifPageType || 'none' }
 							options={ ifPageTypes }
-							onChange={ ( value ) =>
-								updateValue( 'ifPageType', value )
-							}
+							onChange={ ( value ) => {
+								updateValue( 'ifPageType', value );
+							} }
 						/>
-						{ values.ifPageType === 'is_page' &&
-							renderPageHierarchy() }
+						{ ( values.ifPageType === 'is_page' || values.ifPageType === 'page' ) && (
+							<>
+								{ renderPageHierarchy() }
+								<BaseControl
+									label={ __( 'Select Pages', 'vk-dynamic-if-block' ) }
+									__nextHasNoMarginBottom
+								>
+									<div
+										style={ {
+											maxHeight: '200px',
+											overflowY: 'auto',
+											border: '1px solid #ddd',
+											borderRadius: '4px',
+											padding: '8px',
+											backgroundColor: '#fff'
+										} }
+									>
+										<CheckboxControl
+											label={ __( 'All pages', 'vk-dynamic-if-block' ) }
+											checked={ values.allPages === true }
+											onChange={ ( checked ) => {
+												// 一度に両方の値を更新
+												updateConditionAt( groupIndex, conditionIndex, ( condition ) => {
+													const newValues = { ...condition.values };
+													newValues.allPages = checked;
+													if ( checked ) {
+														newValues.pageIds = [];
+													}
+													return {
+														...condition,
+														values: newValues,
+													};
+												} );
+											} }
+											__nextHasNoMarginBottom
+										/>
+										<hr style={ { margin: '8px 0', border: 'none', borderTop: '1px solid #ddd' } } />
+										{ ( vkDynamicIfBlockLocalizeData?.pageSelectOptions || [] ).map( ( page ) => (
+											<CheckboxControl
+												key={ page.value }
+												label={ page.label }
+												checked={ ( values.pageIds || [] ).includes( page.value ) }
+												disabled={ values.allPages || false }
+												onChange={ ( checked ) => {
+													const currentPageIds = values.pageIds || [];
+													const newPageIds = checked
+														? [ ...currentPageIds, page.value ]
+														: currentPageIds.filter( ( id ) => id !== page.value );
+													
+													// 一度に両方の値を更新
+													updateConditionAt( groupIndex, conditionIndex, ( condition ) => {
+														const newValues = { ...condition.values };
+														newValues.pageIds = newPageIds;
+														
+														// 個別ページが選択された場合、「全ての固定ページ」のチェックを外す
+														if ( checked ) {
+															newValues.allPages = false;
+														} else {
+															// 個別ページのチェックを外した場合、すべての個別ページが選択されていない場合は「全ての固定ページ」をチェック状態にする
+															if ( newPageIds.length === 0 ) {
+																newValues.allPages = true;
+															}
+														}
+														
+														return {
+															...condition,
+															values: newValues,
+														};
+													} );
+												} }
+												__nextHasNoMarginBottom
+											/>
+										) ) }
+									</div>
+								</BaseControl>
+							</>
+						) }
 					</>
 				),
 				postType: () => (
@@ -1175,6 +1262,32 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 									'ifPageType',
 									true
 								);
+								
+								// is_pageが選択されている場合の特別な処理
+								if (values.ifPageType === 'is_page') {
+									const allPages = values.allPages;
+									const pageIds = values.pageIds;
+									
+									// 特定のページが選択されている場合（全ての固定ページではない場合）
+									if (!allPages && pageIds && Array.isArray(pageIds) && pageIds.length > 0) {
+										const hierarchyLabel =
+											values.pageHierarchyType &&
+											values.pageHierarchyType !== 'none'
+												? generateLabelFromValues(
+														values,
+														PAGE_HIERARCHY_OPTIONS,
+														'pageHierarchyType'
+												  )
+												: null;
+										
+										const specificPageLabel = __( '特定のページのみ', 'vk-dynamic-if-block' );
+										
+										return hierarchyLabel
+											? `${ pageTypeLabel } (${ hierarchyLabel }, ${ specificPageLabel })`
+											: `${ pageTypeLabel } (${ specificPageLabel })`;
+									}
+								}
+								
 								const hierarchyLabel =
 									values.ifPageType === 'is_page' &&
 									values.pageHierarchyType &&
@@ -1583,7 +1696,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 											} )
 										}
 									/>
-									<div class="alert alert-info">{__( 'By placing a Dynamic If -Else block inside a Dynamic If block, you can specify the elements to display if the conditions are not met.', 'vk-dynamic-if-block' )}</div>
+									<div className="alert alert-info">{__( 'By placing a Dynamic If -Else block inside a Dynamic If block, you can specify the elements to display if the conditions are not met.', 'vk-dynamic-if-block' )}</div>
 								</>
 							);
 						} )() }
