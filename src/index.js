@@ -679,12 +679,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			conditionIndex = 0
 		) => {
 			const { type = '', values = {} } = condition;
-			
-			// allPages が undefined の場合は適切なデフォルト値を設定
-			if ( type === 'pageType' && values.allPages === undefined ) {
-				const defaultValue = values.ifPageType === 'is_page' ? true : false;
-				updateConditionValue( groupIndex, conditionIndex, 'allPages', defaultValue );
-			}
 
 			const updateValue = ( key, value ) =>
 				updateConditionValue( groupIndex, conditionIndex, key, value );
