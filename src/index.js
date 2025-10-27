@@ -688,12 +688,14 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				setLocalAllPages(values.allPages);
 			}, [values.allPages]);
 			
-			// allPagesがundefinedの場合は適切なデフォルト値を設定
-			if ( type === 'pageType' && values.allPages === undefined ) {
-				const defaultValue = values.ifPageType === 'is_page' ? true : false;
-				updateConditionValue( groupIndex, conditionIndex, 'allPages', defaultValue );
-			}
-			
+			// allPages が undefined の場合は適切なデフォルト値を設定
+			useEffect(() => {
+				if ( type === 'pageType' && values.allPages === undefined ) {
+					const defaultValue = values.ifPageType === 'is_page' ? true : false;
+					updateConditionValue( groupIndex, conditionIndex, 'allPages', defaultValue );
+				}
+			}, [type, values.allPages, values.ifPageType, groupIndex, conditionIndex]);
+
 			const updateValue = ( key, value ) =>
 				updateConditionValue( groupIndex, conditionIndex, key, value );
 
