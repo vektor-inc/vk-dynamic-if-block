@@ -1325,7 +1325,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 												  )
 												: null;
 
-										const specificPageLabel = __( '特定のページのみ', 'vk-dynamic-if-block' );
+										const specificPageLabel = __( 'Specific pages only', 'vk-dynamic-if-block' );
 
 										return hierarchyLabel
 											? `${ pageTypeLabel } (${ hierarchyLabel }, ${ specificPageLabel })`
