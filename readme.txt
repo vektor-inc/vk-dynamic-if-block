@@ -35,6 +35,8 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+[ Bug fix ] Fix console warning message.
+
 = 1.5.0 =
 [ Add Function ] Added specific page selection functionality for Page Type conditions.
 
@@ -68,7 +70,7 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 [ Bug fix ] Fix Label color
 
 = 1.0.0 =
-[ Specification Change ] Changed UI to stacked condition format. 
+[ Specification Change ] Changed UI to stacked condition format.
 
 = 0.9.4 =
 [ Other ] Update alert message

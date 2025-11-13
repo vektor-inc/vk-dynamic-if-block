@@ -519,9 +519,17 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				label: def.func
 					? `${ def.label } ( ${ def.func } )`
 					: def.label,
-				simpleLabel: def.label,
 			};
 		} );
+
+		const pageTypeSimpleLabelMap = useMemo( () => {
+			return PAGE_TYPE_DEFINITIONS.reduce( ( map, def ) => {
+				return {
+					...map,
+					[ def.value ]: def.label,
+				};
+			}, {} );
+		}, [] );
 
 		const userRoles = useMemo( () => {
 			try {
@@ -605,7 +613,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				let newValues = condition.values;
 				if ( updates.type && updates.type !== condition.type ) {
 					if ( updates.type === 'pageType' ) {
-						newValues = { 
+						newValues = {
 							ifPageType: 'none',
 							allPages: false,
 							pageIds: []
@@ -659,13 +667,13 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 
 			updateConditionAt( groupIndex, conditionIndex, ( condition ) => {
 				const newValues = { ...condition.values, [ key ]: value };
-				
+
 				// ifPageTypeがis_pageに変更された場合、allPagesとpageIdsのデフォルト値を設定
 				if ( key === 'ifPageType' && value === 'is_page' ) {
 					newValues.allPages = true; // デフォルトでAll Pagesをチェック状態にする
 					newValues.pageIds = []; // 個別ページ選択をクリア
 				}
-				
+
 				return {
 					...condition,
 					values: newValues,
@@ -692,6 +700,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					onChange={ ( value ) =>
 						updateValue( 'pageHierarchyType', value )
 					}
+					__next40pxDefaultSize={ true }
+					__nextHasNoMarginBottom={ true }
 				/>
 			);
 
@@ -705,6 +715,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							onChange={ ( value ) => {
 								updateValue( 'ifPageType', value );
 							} }
+							__next40pxDefaultSize={ true }
+							__nextHasNoMarginBottom={ true }
 						/>
 						{ ( values.ifPageType === 'is_page' || values.ifPageType === 'page' ) && (
 							<>
@@ -754,12 +766,12 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 													const newPageIds = checked
 														? [ ...currentPageIds, page.value ]
 														: currentPageIds.filter( ( id ) => id !== page.value );
-													
+
 													// 一度に両方の値を更新
 													updateConditionAt( groupIndex, conditionIndex, ( condition ) => {
 														const newValues = { ...condition.values };
 														newValues.pageIds = newPageIds;
-														
+
 														// 個別ページが選択された場合、「全ての固定ページ」のチェックを外す
 														if ( checked ) {
 															newValues.allPages = false;
@@ -769,7 +781,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 																newValues.allPages = true;
 															}
 														}
-														
+
 														return {
 															...condition,
 															values: newValues,
@@ -797,6 +809,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							onChange={ ( value ) =>
 								updateValue( 'ifPostType', value )
 							}
+							__next40pxDefaultSize={ true }
+							__nextHasNoMarginBottom={ true }
 						/>
 						{ values.ifPostType === 'page' &&
 							renderPageHierarchy() }
@@ -825,6 +839,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							onChange={ ( value ) =>
 								updateValue( 'ifLanguage', value )
 							}
+							__next40pxDefaultSize={ true }
+							__nextHasNoMarginBottom={ true }
 						/>
 					);
 				},
@@ -955,6 +971,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						onChange={ ( value ) =>
 							updateValue( 'postAuthor', parseInt( value ) || 0 )
 						}
+						__next40pxDefaultSize={ true }
+						__nextHasNoMarginBottom={ true }
 					/>
 				),
 				customField: () => (
@@ -981,6 +999,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 									onChange={ ( value ) =>
 										updateValue( 'customFieldRule', value )
 									}
+									__next40pxDefaultSize={ true }
+									__nextHasNoMarginBottom={ true }
 								/>
 								{ values.customFieldRule === 'valueEquals' && (
 									<TextControl
@@ -1013,6 +1033,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							onChange={ ( value ) =>
 								updateValue( 'periodDisplaySetting', value )
 							}
+							__next40pxDefaultSize={ true }
+							__nextHasNoMarginBottom={ true }
 						/>
 						{ values.periodDisplaySetting &&
 							values.periodDisplaySetting !== 'none' && (
@@ -1033,8 +1055,10 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 												value
 											)
 										}
+										__next40pxDefaultSize={ true }
+										__nextHasNoMarginBottom={ true }
 									/>
-									{ ( values.periodSpecificationMethod === 'direct' || 
+									{ ( values.periodSpecificationMethod === 'direct' ||
 										! values.periodSpecificationMethod ) && (
 										<TextControl
 											label={ __(
@@ -1107,6 +1131,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						onChange={ ( checked ) =>
 							updateValue( 'showOnlyLoginUser', checked )
 						}
+						__nextHasNoMarginBottom={ true }
 					/>
 				),
 				taxonomy: () => {
@@ -1157,6 +1182,9 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 										} )
 									);
 								} }
+								__next40pxDefaultSize={ true }
+								__nextHasNoMarginBottom={ true }
+
 							/>
 							{ selectedTaxonomy &&
 								selectedTaxonomy !== 'none' && (
@@ -1183,6 +1211,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 												value ? [ value ] : []
 											);
 										} }
+										__next40pxDefaultSize={ true }
+										__nextHasNoMarginBottom={ true }
 									/>
 								) }
 						</>
@@ -1198,6 +1228,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						onChange={ ( checked ) =>
 							updateValue( 'showOnlyMobileDevice', checked )
 						}
+						__nextHasNoMarginBottom={ true }
 					/>
 				),
 			};
@@ -1210,7 +1241,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			values = {},
 			options = [],
 			valueKey = '',
-			useSimpleLabel = false
+			useSimpleLabel = false,
+			simpleLabelSource = null
 		) => {
 			const value = values[ valueKey ];
 			if ( ! value || ! Array.isArray( options ) ) {
@@ -1218,9 +1250,21 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			}
 
 			const option = options.find( ( o ) => o?.value === value );
-			return (
-				option?.[ useSimpleLabel ? 'simpleLabel' : 'label' ] || value
-			);
+
+			if ( useSimpleLabel ) {
+				let simpleLabel;
+				if ( typeof simpleLabelSource === 'function' ) {
+					simpleLabel = simpleLabelSource( option, value );
+				} else if ( simpleLabelSource && typeof simpleLabelSource === 'object' ) {
+					simpleLabel = simpleLabelSource[ value ];
+				}
+
+				if ( simpleLabel ) {
+					return simpleLabel;
+				}
+			}
+
+			return option?.label || value;
 		};
 
 		const generateLabels = useMemo( () => {
@@ -1260,14 +1304,15 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 									values,
 									ifPageTypes,
 									'ifPageType',
-									true
+									true,
+									pageTypeSimpleLabelMap
 								);
-								
+
 								// is_pageが選択されている場合の特別な処理
 								if (values.ifPageType === 'is_page') {
 									const allPages = values.allPages;
 									const pageIds = values.pageIds;
-									
+
 									// 特定のページが選択されている場合（全ての固定ページではない場合）
 									if (!allPages && pageIds && Array.isArray(pageIds) && pageIds.length > 0) {
 										const hierarchyLabel =
@@ -1279,15 +1324,15 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 														'pageHierarchyType'
 												  )
 												: null;
-										
+
 										const specificPageLabel = __( '特定のページのみ', 'vk-dynamic-if-block' );
-										
+
 										return hierarchyLabel
 											? `${ pageTypeLabel } (${ hierarchyLabel }, ${ specificPageLabel })`
 											: `${ pageTypeLabel } (${ specificPageLabel })`;
 									}
 								}
-								
+
 								const hierarchyLabel =
 									values.ifPageType === 'is_page' &&
 									values.pageHierarchyType &&
@@ -1552,6 +1597,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 													exclusion: checked,
 												} )
 											}
+											__nextHasNoMarginBottom={ true }
 										/>
 									</div>
 								);
@@ -1611,6 +1657,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 																							}
 																						)
 																					}
+																					__next40pxDefaultSize={ true }
+																					__nextHasNoMarginBottom={ true }
 																				/>
 																			</div>
 																			<div className="vkdif__condition-settings">
@@ -1682,6 +1730,8 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 															value,
 													} )
 												}
+												__next40pxDefaultSize={ true }
+												__nextHasNoMarginBottom={ true }
 											/>
 										) }
 									<ToggleControl
@@ -1695,6 +1745,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 												exclusion: checked,
 											} )
 										}
+										__nextHasNoMarginBottom={ true }
 									/>
 									<div className="alert alert-info">{__( 'By placing a Dynamic If -Else block inside a Dynamic If block, you can specify the elements to display if the conditions are not met.', 'vk-dynamic-if-block' )}</div>
 								</>
