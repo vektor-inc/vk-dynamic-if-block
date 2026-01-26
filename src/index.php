@@ -484,10 +484,10 @@ function vk_dynamic_if_block_check_page_type($values)
         if (!$result) {
             return false;
         }
-        
+
         $page_ids = $values['pageIds'] ?? [];
         $all_pages = $values['allPages'] ?? false;
-        
+
         if ($all_pages) {
             // 「全ての固定ページ」が選択されている場合
             $hierarchy_type = $values['pageHierarchyType'] ?? '';
@@ -501,22 +501,22 @@ function vk_dynamic_if_block_check_page_type($values)
             if (!$current_page_id) {
                 return false;
             }
-            
+
             // ページIDが配列でない場合は配列に変換
             if (!is_array($page_ids)) {
                 $page_ids = [$page_ids];
             }
-            
+
             // 現在のページIDが指定されたページIDのいずれかと一致するかチェック
             $page_match = in_array($current_page_id, $page_ids);
-            
+
             // 階層条件もチェック
             $hierarchy_type = $values['pageHierarchyType'] ?? '';
             if (!empty($hierarchy_type) && $hierarchy_type !== 'none') {
                 $hierarchy_match = vk_dynamic_if_block_check_page_hierarchy($values);
                 return $page_match && $hierarchy_match;
             }
-            
+
             return $page_match;
         } else {
             // 特定のページIDが指定されていない場合は、階層条件のみチェック
@@ -1067,33 +1067,37 @@ function vk_dynamic_if_block_set_localize_script()
     }
 
     // ユーザーオプション
-    $users = get_users(
-        [
-            'role__in' => apply_filters(
-                'vk_dynamic_if_block_author_role__in',
-                ['contributor', 'author', 'editor', 'administrator']
-            )
-        ]
-    );
-    $user_options = [
-        ['label' => __('Unspecified', 'vk-dynamic-if-block'), 'value' => 0]
-    ];
+	$user_options = [
+		['label' => __('Unspecified', 'vk-dynamic-if-block'), 'value' => 0]
+	];
+	$cache_key = 'vk_dynamic_if_block_post_authors';
 
-    foreach ($users as $user) {
-        $has_posts = false;
-        foreach (get_post_types(['public' => true], 'names') as $post_type) {
-            if (count_user_posts($user->ID, $post_type, true) > 0) {
-                $has_posts = true;
-                break;
-            }
-        }
-        if ($has_posts) {
-            $user_options[] = [
-                'label' => $user->display_name,
-                'value' => $user->ID
-            ];
-        }
-    }
+	$authors = get_transient( $cache_key );
+
+	if ( $authors === false ) {
+		global $wpdb;
+
+		$author_ids = $wpdb->get_col("
+			SELECT DISTINCT post_author
+			FROM {$wpdb->posts}
+			WHERE post_status = 'publish'
+		");
+
+		$authors = empty($author_ids) ? [] : get_users([
+			'include' => $author_ids,
+			'fields'  => [ 'ID', 'display_name' ],
+			'orderby' => 'include',
+		]);
+
+		set_transient( $cache_key, $authors, 10 * MINUTE_IN_SECONDS );
+	}
+
+	foreach ($authors as $author) {
+		$user_options[] = [
+			'label' => $author->display_name,
+			'value' => $author->ID,
+		];
+	}
 
     // タクソノミーオプション（実際に使用されているもののみ）
     $taxonomy_options = [];
