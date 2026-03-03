@@ -36,6 +36,7 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 == Changelog ==
 
 [ Bug fix ] Fix console warning message.
+[ Other ] Fix editor CSS loading method.
 
 = 1.5.0 =
 [ Add Function ] Added specific page selection functionality for Page Type conditions.
