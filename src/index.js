@@ -175,9 +175,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				return;
 			}
 
-			// 移行中フラグを設定
-			setIsMigrating( true );
-
 			// 新しい形式が既に存在する場合は移行不要
 			if (
 				conditions &&
@@ -188,7 +185,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				conditions[ 0 ].conditions.length > 0
 			) {
 				setHasMigrated( true );
-				setIsMigrating( false );
 				return;
 			}
 
@@ -300,7 +296,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 
 				setAttributes( { conditions: newConditions } );
 				setHasMigrated( true );
-				setIsMigrating( false );
 				return;
 			}
 
@@ -356,6 +351,9 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				setHasMigrated( true );
 				return;
 			}
+
+			// 実際にマイグレーションが必要な場合のみフラグを設定
+			setIsMigrating( true );
 
 			const newConditions = [];
 
