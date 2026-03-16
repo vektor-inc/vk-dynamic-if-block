@@ -36,6 +36,7 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 == Changelog ==
 
 [ Specification change ] Lightweight and faster author extraction method.
+[ Specification change ] Change the display order of page settings UI for Page Type > is_page.
 [ Bug fix ] Fix console warning message.
 [ Other ] Fix editor CSS loading method.
 
