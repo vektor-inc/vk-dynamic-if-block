@@ -38,6 +38,7 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 = 1.5.1 =
 [ Specification change ] Change the version number to four segments.
 [ Specification change ] Lightweight and faster author extraction method.
+[ Bug fix ] Fix an issue where blocks wobble on the template list screen in the site editor.
 [ Bug fix ] Fix console warning message.
 [ Other ] Fix editor CSS loading method.
 
