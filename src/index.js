@@ -720,7 +720,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						/>
 						{ ( values.ifPageType === 'is_page' || values.ifPageType === 'page' ) && (
 							<>
-								{ renderPageHierarchy() }
 								<BaseControl
 									label={ __( 'Select Pages', 'vk-dynamic-if-block' ) }
 									__nextHasNoMarginBottom
@@ -793,6 +792,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 										) ) }
 									</div>
 								</BaseControl>
+								{ renderPageHierarchy() }
 							</>
 						) }
 					</>
