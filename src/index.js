@@ -175,9 +175,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				return;
 			}
 
-			// 移行中フラグを設定
-			setIsMigrating( true );
-
 			// 新しい形式が既に存在する場合は移行不要
 			if (
 				conditions &&
@@ -188,7 +185,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				conditions[ 0 ].conditions.length > 0
 			) {
 				setHasMigrated( true );
-				setIsMigrating( false );
 				return;
 			}
 
@@ -300,7 +296,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 
 				setAttributes( { conditions: newConditions } );
 				setHasMigrated( true );
-				setIsMigrating( false );
 				return;
 			}
 
@@ -357,81 +352,91 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				return;
 			}
 
-			const newConditions = [];
+			// 実際にマイグレーションが必要な場合のみフラグを設定
+			setIsMigrating( true );
 
-			// 移行対象の条件を定義
-			const migrationRules = createMigrationRules( attributes );
+			try {
+				const newConditions = [];
 
-			// 各条件を移行
-			migrationRules.forEach( ( rule ) => {
-				const value = attributes[ rule.attr ];
-				if ( rule.condition( value ) ) {
-					// 無効な値のチェック
-					// 投稿タイプの存在チェックは動的に行うべきだが、
-					// 移行処理中は基本的に値を保持する
-					const isValidValue = true;
+				// 移行対象の条件を定義
+				const migrationRules = createMigrationRules( attributes );
 
-					if ( isValidValue ) {
-						const values = rule.customValues
-							? rule.customValues()
-							: {
-									[ rule.key ]: Array.isArray( value )
-										? value[ 0 ] || ''
-										: value,
-							  };
-						newConditions.push(
-							createConditionGroup( rule.type, values )
-						);
+				// 各条件を移行
+				migrationRules.forEach( ( rule ) => {
+					const value = attributes[ rule.attr ];
+					if ( rule.condition( value ) ) {
+						// 無効な値のチェック
+						// 投稿タイプの存在チェックは動的に行うべきだが、
+						// 移行処理中は基本的に値を保持する
+						const isValidValue = true;
+
+						if ( isValidValue ) {
+							const values = rule.customValues
+								? rule.customValues()
+								: {
+										[ rule.key ]: Array.isArray( value )
+											? value[ 0 ] || ''
+											: value,
+								  };
+							newConditions.push(
+								createConditionGroup( rule.type, values )
+							);
+						}
 					}
-				}
-			} );
+				} );
 
-			// 条件が1つもない場合は、デフォルトのCondition 1を作成
-			if ( newConditions.length === 0 ) {
-				// デフォルトでは何も制限しない（常に表示）
-				newConditions.push(
-					createConditionGroup( 'pageType', { ifPageType: 'none' } )
-				);
+				// 条件が1つもない場合は、デフォルトのCondition 1を作成
+				if ( newConditions.length === 0 ) {
+					// デフォルトでは何も制限しない（常に表示）
+					newConditions.push(
+						createConditionGroup( 'pageType', {
+							ifPageType: 'none',
+						} )
+					);
+				}
+
+				// 新しいconditionsを設定し、古い属性をクリア
+				const attributesToUpdate = { conditions: newConditions };
+
+				// 古い属性をクリア
+				oldAttributes.forEach( ( attr ) => {
+					let defaultValue = 'none';
+					if ( attr === 'userRole' ) {
+						defaultValue = [];
+					} else if ( attr === 'postAuthor' ) {
+						defaultValue = 0;
+					} else if ( attr === 'showOnlyLoginUser' ) {
+						defaultValue = false;
+					} else if ( attr === 'customFieldRule' ) {
+						defaultValue = 'valueExists';
+					} else if ( attr === 'periodSpecificationMethod' ) {
+						defaultValue = 'direct';
+					}
+					attributesToUpdate[ attr ] = defaultValue;
+				} );
+
+				// その他の古い属性もクリア
+				const additionalOldAttributes = [
+					'customFieldName',
+					'customFieldValue',
+					'periodDisplayValue',
+					'periodReferCustomField',
+					'showOnlyMobileDevice',
+				];
+
+				additionalOldAttributes.forEach( ( attr ) => {
+					let defaultValue = 'none';
+					if ( attr === 'showOnlyMobileDevice' ) {
+						defaultValue = false;
+					}
+					attributesToUpdate[ attr ] = defaultValue;
+				} );
+
+				setAttributes( attributesToUpdate );
+			} catch ( error ) {
+				// eslint-disable-next-line no-console
+				console.error( 'Migration failed:', error );
 			}
-
-			// 新しいconditionsを設定し、古い属性をクリア
-			const attributesToUpdate = { conditions: newConditions };
-
-			// 古い属性をクリア
-			oldAttributes.forEach( ( attr ) => {
-				let defaultValue = 'none';
-				if ( attr === 'userRole' ) {
-					defaultValue = [];
-				} else if ( attr === 'postAuthor' ) {
-					defaultValue = 0;
-				} else if ( attr === 'showOnlyLoginUser' ) {
-					defaultValue = false;
-				} else if ( attr === 'customFieldRule' ) {
-					defaultValue = 'valueExists';
-				} else if ( attr === 'periodSpecificationMethod' ) {
-					defaultValue = 'direct';
-				}
-				attributesToUpdate[ attr ] = defaultValue;
-			} );
-
-			// その他の古い属性もクリア
-			const additionalOldAttributes = [
-				'customFieldName',
-				'customFieldValue',
-				'periodDisplayValue',
-				'periodReferCustomField',
-				'showOnlyMobileDevice',
-			];
-
-			additionalOldAttributes.forEach( ( attr ) => {
-				let defaultValue = 'none';
-				if ( attr === 'showOnlyMobileDevice' ) {
-					defaultValue = false;
-				}
-				attributesToUpdate[ attr ] = defaultValue;
-			} );
-
-			setAttributes( attributesToUpdate );
 			setHasMigrated( true );
 			setIsMigrating( false );
 			// eslint-disable-next-line react-hooks/exhaustive-deps
