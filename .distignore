@@ -10,8 +10,11 @@
 .gitignore
 .svnignore
 .wp-env.json
+.wp-env.override.json
 .editorconfig
 .vscode/
+.coderabbit.yaml
+.phpunit.result.cache
 gulpfile.js
 package.json
 package-lock.json
@@ -21,6 +24,7 @@ composer.lock
 phpunit.xml
 phpunit.xml.dist
 webpack.config.js
+webpack2.config.js
 README.md
 vk-dynamic-if-block.code-workspace
 src/
