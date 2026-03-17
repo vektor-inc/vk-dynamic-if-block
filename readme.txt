@@ -35,6 +35,8 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+[ Specification change ] Change the display order of page settings UI for Page Type > is_page.
+
 = 1.5.1 =
 [ Specification change ] Change the version number to four segments.
 [ Specification change ] Lightweight and faster author extraction method.
