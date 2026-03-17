@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash ~/.claude/skills/wp-plugin-release/scripts/detect-release-state.sh)",
+      "Bash(git tag:*)",
+      "Bash(gh run:*)",
+      "WebSearch",
+      "Bash(node -e \":*)",
+      "Bash(ls phpunit*)",
+      "Bash(gh secret:*)",
+      "Bash(git mv:*)",
+      "Bash(gh repo:*)"
+    ]
+  }
+}

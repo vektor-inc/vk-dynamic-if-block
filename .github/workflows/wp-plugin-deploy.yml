@@ -1,0 +1,110 @@
+name: Release on Github
+on:
+    push:
+        tags:
+            - '[0-9]+.[0-9]+.[0-9]+'
+
+env:
+    plugin_name: vk-dynamic-if-block
+
+jobs:
+    test:
+        name: Build & Test
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                php-versions: ['8.4']
+                wp-versions: ['6.9']
+        steps:
+            - uses: actions/checkout@v4
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20.x
+            - name: Setup PHP ${{ matrix.php-versions }}
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: ${{ matrix.php-versions }}
+            - name: Cache vendor
+              uses: actions/cache@v4
+              with:
+                  path: vendor
+                  key: ${{ runner.os }}-php${{ matrix.php-versions }}-${{ hashFiles('**/composer.lock') }}
+            - name: Install dependencies
+              run: npm install && composer install
+            - name: Create dist
+              run: npm run dist
+            - name: Create wp-env override for dist smoke test
+              run: |
+                printf '{"plugins": ["./dist/%s"]}' "${{ env.plugin_name }}" > wp-env.override.json
+            - name: Start wp-env (dist)
+              run: |
+                n=0
+                until [ "$n" -ge 3 ]
+                do
+                  WP_ENV_PHP_VERSION=${{ matrix.php-versions }} WP_ENV_CORE=WordPress/WordPress#${{ matrix.wp-versions }} npm run wp-env start --update && break
+                  n=$((n+1))
+                  echo "Retrying wp-env start --update ($n)..."
+                  sleep 5
+                done
+                sudo chmod -R 777 ~/wp-env
+            - name: Smoke Test (dist)
+              uses: vektor-inc/wp-actions/smoke-test@main
+            - name: Switch wp-env to source for PHPUnit
+              run: |
+                rm wp-env.override.json
+                npm run wp-env start --update
+                sudo chmod -R 777 ~/wp-env
+            - name: Run PHPUnit (source)
+              run: npm run phpunit
+            - name: Run E2E
+              run: npm run e2e
+
+    deploy:
+        name: Deploy to .org
+        runs-on: ubuntu-latest
+        needs: [test]
+        steps:
+            - uses: actions/checkout@v4
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20.x
+            - name: Install dependencies
+              run: npm install
+            - name: Create dist
+              run: npm run dist
+            - name: WordPress Plugin Deploy
+              uses: 10up/action-wordpress-plugin-deploy@stable
+              env:
+                  BUILD_DIR: dist/vk-dynamic-if-block
+                  SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+                  SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+                  SLUG: vk-dynamic-if-block
+
+    release:
+        name: Create GitHub Release
+        runs-on: ubuntu-latest
+        needs: [test]
+        steps:
+            - uses: actions/checkout@v4
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20.x
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.4'
+            - name: Install dependencies
+              run: npm install
+            - name: Create dist
+              run: npm run dist
+            - name: Create zip
+              run: |
+                cd dist/ && zip -r ${{ env.plugin_name }}.zip ${{ env.plugin_name }}/ && mv ${{ env.plugin_name }}.zip ${GITHUB_WORKSPACE}
+            - name: Create GitHub Release
+              uses: softprops/action-gh-release@v2
+              with:
+                  files: ${{ env.plugin_name }}.zip
+                  generate_release_notes: true
