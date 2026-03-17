@@ -53,7 +53,14 @@ jobs:
             - name: Switch wp-env to source for PHPUnit
               run: |
                 rm wp-env.override.json
-                npm run wp-env start --update
+                n=0
+                until [ "$n" -ge 3 ]
+                do
+                  WP_ENV_PHP_VERSION=${{ matrix.php-versions }} WP_ENV_CORE=WordPress/WordPress#${{ matrix.wp-versions }} npm run wp-env start --update && break
+                  n=$((n+1))
+                  echo "Retrying wp-env start --update ($n)..."
+                  sleep 5
+                done
                 sudo chmod -R 777 ~/wp-env
             - name: Run PHPUnit (source)
               run: npm run phpunit
@@ -70,6 +77,10 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: 20.x
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.4'
             - name: Install dependencies
               run: npm install
             - name: Create dist
