@@ -34,7 +34,6 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
-= next version =
 [ Other ] Update vk-helpers library from 0.0.4 to 0.2.1.
 
 = 1.6.0 =
