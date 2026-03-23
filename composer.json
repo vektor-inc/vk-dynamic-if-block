@@ -1,6 +1,6 @@
 {
 	"require": {
-		"vektor-inc/vk-helpers": "^0.0.4"
+		"vektor-inc/vk-helpers": "^0.2.1"
 	},
 	"require-dev": {
 		"wp-phpunit/wp-phpunit": "^5.4",

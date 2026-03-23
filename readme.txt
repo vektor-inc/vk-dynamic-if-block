@@ -34,6 +34,8 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+[ Other ] Update vk-helpers library from 0.0.4 to 0.2.1.
+
 = 1.6.0 =
 [ Specification change ] Change the display order of page settings UI for Page Type > is_page.
 
