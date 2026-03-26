@@ -34,6 +34,12 @@ jobs:
               run: npm install && composer install
             - name: Create dist
               run: npm run dist
+            - name: Upload dist artifact
+              if: matrix.php-versions == '8.4' && matrix.wp-versions == '6.9'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: dist
+                  path: dist/
             - name: Create wp-env override for dist smoke test
               run: |
                 printf '{"plugins": ["./dist/%s"]}' "${{ env.plugin_name }}" > wp-env.override.json
@@ -47,22 +53,11 @@ jobs:
                   echo "Retrying wp-env start --update ($n)..."
                   sleep 5
                 done
+                [ "$n" -lt 3 ] || exit 1
                 sudo chmod -R 777 ~/wp-env
             - name: Smoke Test (dist)
               uses: vektor-inc/wp-actions/smoke-test@main
-            - name: Switch wp-env to source for PHPUnit
-              run: |
-                rm wp-env.override.json
-                n=0
-                until [ "$n" -ge 3 ]
-                do
-                  WP_ENV_PHP_VERSION=${{ matrix.php-versions }} WP_ENV_CORE=WordPress/WordPress#${{ matrix.wp-versions }} npm run wp-env start --update && break
-                  n=$((n+1))
-                  echo "Retrying wp-env start --update ($n)..."
-                  sleep 5
-                done
-                sudo chmod -R 777 ~/wp-env
-            - name: Run PHPUnit (source)
+            - name: Run PHPUnit
               run: npm run phpunit
             - name: Run E2E
               run: npm run e2e
@@ -73,18 +68,11 @@ jobs:
         needs: [test]
         steps:
             - uses: actions/checkout@v4
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
+            - name: Download dist artifact
+              uses: actions/download-artifact@v4
               with:
-                  node-version: 20.x
-            - name: Setup PHP
-              uses: shivammathur/setup-php@v2
-              with:
-                  php-version: '8.4'
-            - name: Install dependencies
-              run: npm install
-            - name: Create dist
-              run: npm run dist
+                  name: dist
+                  path: dist/
             - name: WordPress Plugin Deploy
               uses: 10up/action-wordpress-plugin-deploy@stable
               env:
@@ -98,19 +86,11 @@ jobs:
         runs-on: ubuntu-latest
         needs: [test]
         steps:
-            - uses: actions/checkout@v4
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
+            - name: Download dist artifact
+              uses: actions/download-artifact@v4
               with:
-                  node-version: 20.x
-            - name: Setup PHP
-              uses: shivammathur/setup-php@v2
-              with:
-                  php-version: '8.4'
-            - name: Install dependencies
-              run: npm install
-            - name: Create dist
-              run: npm run dist
+                  name: dist
+                  path: dist/
             - name: Create zip
               run: |
                 cd dist/ && zip -r ${{ env.plugin_name }}.zip ${{ env.plugin_name }}/ && mv ${{ env.plugin_name }}.zip ${GITHUB_WORKSPACE}
