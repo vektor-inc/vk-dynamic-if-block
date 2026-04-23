@@ -35,7 +35,7 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
-[ Other ] WordPress 7.0 のパターン挿入時にブロックがロックされて編集できなくなる問題に対応。supports.contentRole を追加してパターン内で選択・操作可能にしました。
+[ Other ] WordPress 7.0 のパターン挿入時にブロックがロックされて編集できなくなる問題に対応。
 [ Other ] Update vk-helpers library from 0.0.4 to 0.2.1.
 
 = 1.6.0 =
