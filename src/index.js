@@ -115,6 +115,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 		},
 	},
 	supports: {
+		contentRole: true,
 		html: false,
 		innerBlocks: true,
 	},
@@ -1783,6 +1784,7 @@ registerBlockType( 'vk-blocks/dynamic-if-else', {
 	parent: [ 'vk-blocks/dynamic-if' ],
 	attributes: {},
 	supports: {
+		contentRole: true,
 		html: false,
 		innerBlocks: true,
 	},

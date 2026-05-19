@@ -99,6 +99,7 @@
 		}
 	},
 	"supports": {
+		"contentRole": true,
 		"html": false,
 		"innerBlocks": true
 	},
