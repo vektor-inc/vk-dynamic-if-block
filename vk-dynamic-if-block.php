@@ -5,7 +5,7 @@
  * Description: A dynamic block displays its Inner Blocks based on specified conditions, such as whether the current page is the front page or a single post, the post type, or the value of a Custom Field.
  * Author: Vektor,Inc.
  * Author URI: https://vektor-inc.co.jp/en/
- * Version: 1.4.2
+ * Version: 1.6.1
  * License: GPL-2.0-or-later
  * Text Domain: vk-dynamic-if-block
  *
@@ -47,6 +47,18 @@ function vk_dynamic_if_block_enqueue_scripts()
         filemtime(plugin_dir_path(__FILE__) . 'build/index.js')
     );
 
+}
+
+add_action('enqueue_block_editor_assets', 'vk_dynamic_if_block_enqueue_scripts');
+
+/**
+ * Enqueue editor style via enqueue_block_assets so it is added to the block editor iframe correctly.
+ */
+function vk_dynamic_if_block_enqueue_editor_style()
+{
+    if (! is_admin() ) {
+        return;
+    }
     wp_enqueue_style(
         'vk-dynamic-if-block-editor',
         plugins_url('build/editor.css', __FILE__),
@@ -54,8 +66,7 @@ function vk_dynamic_if_block_enqueue_scripts()
         filemtime(plugin_dir_path(__FILE__) . 'build/editor.css')
     );
 }
-
-add_action('enqueue_block_editor_assets', 'vk_dynamic_if_block_enqueue_scripts');
+add_action('enqueue_block_assets', 'vk_dynamic_if_block_enqueue_editor_style');
 
 require_once plugin_dir_path(__FILE__) . 'build/index.php';
 

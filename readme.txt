@@ -4,7 +4,7 @@ Tags: dynamic block, if, Conditional branch, Conditional Display, Custom Field, 
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.4.2
+Stable tag: 1.6.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -37,6 +37,23 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 [ Add function ] Added support for layout.allowJustification: false to allow full/wide align
 
+= 1.6.1 =
+[ Other ] Fix an issue where blocks become locked and cannot be edited when inserting patterns in WordPress 7.0.
+[ Other ] Update vk-helpers library from 0.0.4 to 0.2.1.
+
+= 1.6.0 =
+[ Specification change ] Change the display order of page settings UI for Page Type > is_page.
+
+= 1.5.1 =
+[ Specification change ] Change the version number to four segments.
+[ Specification change ] Lightweight and faster author extraction method.
+[ Bug fix ] Fix an issue where blocks wobble on the template list screen in the site editor.
+[ Bug fix ] Fix console warning message.
+[ Other ] Fix editor CSS loading method.
+
+= 1.5.0 =
+[ Add Function ] Added specific page selection functionality for Page Type conditions.
+
 = 1.4.2 =
 [ Bug fix ] Fix an issue where else block content is cut off in the middle for complex HTML structures.
 
@@ -67,7 +84,7 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 [ Bug fix ] Fix Label color
 
 = 1.0.0 =
-[ Specification Change ] Changed UI to stacked condition format. 
+[ Specification Change ] Changed UI to stacked condition format.
 
 = 0.9.4 =
 [ Other ] Update alert message
