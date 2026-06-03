@@ -35,7 +35,7 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
-[ Add function ] Added support for layout.allowJustification: false to allow full/wide align
+[ New Feature ] Add support for full-width and wide alignment for inner blocks in block themes
 
 = 1.6.1 =
 [ Other ] Fix an issue where blocks become locked and cannot be edited when inserting patterns in WordPress 7.0.
