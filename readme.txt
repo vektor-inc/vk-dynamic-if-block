@@ -35,6 +35,8 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 == Changelog ==
 
+[ Bug fix ] Fix an issue where full-width blocks inside the Dynamic If block are misaligned in the editor.
+
 = 1.6.1 =
 [ Other ] Fix an issue where blocks become locked and cannot be edited when inserting patterns in WordPress 7.0.
 [ Other ] Update vk-helpers library from 0.0.4 to 0.2.1.
