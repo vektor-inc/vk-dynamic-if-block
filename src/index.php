@@ -837,7 +837,15 @@ function vk_dynamic_if_block_check_login_user($values)
  * 自動変換すると、意図せずモバイル端末で非表示になる事故につながるため、
  * 旧 false・未設定の値は必ず「指定なし」として扱う（自動的に pcOnly にはしない）。
  *
- * @param array $values Condition values.
+ * This function reads 'showOnlyMobileDevice' directly from the given array. It works
+ * whether the caller passes the new-format $condition['values'] or the legacy
+ * $attributes array as a whole, as long as 'showOnlyMobileDevice' is a top-level key.
+ *
+ * この関数は渡された配列から直接 'showOnlyMobileDevice' を読み取る。
+ * 新形式の $condition['values'] を渡しても、旧形式の $attributes 全体を
+ * 渡しても、そのキーが直下にあれば同様に動作する。
+ *
+ * @param array $values Array containing the 'showOnlyMobileDevice' key (either $condition['values'] or the whole $attributes array). / 'showOnlyMobileDevice' キーを含む配列（$condition['values'] または $attributes 全体のいずれか）。
  *
  * @return bool Evaluation result.
  */
