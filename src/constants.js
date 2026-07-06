@@ -34,6 +34,8 @@ export const CONDITION_TYPE_LABELS = {
 	),
 };
 
+// Device type options (No restriction / Mobile Devices Only / PC Only).
+// Stored in values.showOnlyMobileDevice of the mobileDevice condition type.
 // デバイス種類の選択肢（指定なし／モバイル端末のみ表示／PC表示のみ）
 // mobileDevice 条件タイプの values.showOnlyMobileDevice に格納する値
 export const MOBILE_DEVICE_OPTIONS = [
@@ -49,6 +51,14 @@ export const MOBILE_DEVICE_OPTIONS = [
 ];
 
 /**
+ * Normalize the stored value of the mobileDevice condition (which can be either
+ * a boolean or a string) into a string for SelectControl display.
+ *
+ * The old spec stored a boolean toggle (true/false), so the following mapping
+ * is applied for backward compatibility.
+ * - true             → 'mobileOnly' (old toggle ON = Mobile Devices Only)
+ * - false / unset    → 'none' (old toggle OFF / unset = No restriction; never auto-converted to PC Only)
+ *
  * mobileDevice 条件の保存値（真偽値／文字列いずれもあり得る）を
  * SelectControl 表示用の正規化した文字列に変換する。
  *
@@ -57,8 +67,8 @@ export const MOBILE_DEVICE_OPTIONS = [
  * - true          → 'mobileOnly'（旧トグルON = モバイル端末のみ表示）
  * - false／未設定 → 'none'（旧トグルOFF・未設定 = 指定なし。PC専用へは自動変換しない）
  *
- * @param {boolean|string|undefined} rawValue 保存されている値。
- * @return {string} 'none' | 'mobileOnly' | 'pcOnly' のいずれか。
+ * @param {boolean|string|undefined} rawValue The stored value. / 保存されている値。
+ * @return {string} One of 'none' | 'mobileOnly' | 'pcOnly'. / 'none' | 'mobileOnly' | 'pcOnly' のいずれか。
  */
 export const normalizeMobileDeviceValue = ( rawValue ) => {
 	if ( rawValue === true || rawValue === 'mobileOnly' ) {

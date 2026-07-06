@@ -647,6 +647,10 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							periodReferCustomField: '',
 						};
 					} else if ( updates.type === 'mobileDevice' ) {
+						// Use "No restriction" as the unrestricted default value
+						// (aligning with the other condition types prevents the
+						// bug where the value became empty right after switching,
+						// making the selection appear to change unintentionally).
 						// 「指定なし」を無制限相当のデフォルト値にする
 						// （他の条件タイプと揃えることで、切り替え直後に
 						// 値が空になり選択肢が意図せず変わって見える不具合を防ぐ）
@@ -1505,6 +1509,10 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 									);
 								}
 							},
+							// condition.type is 'mobileDevice', so the labelMap key
+							// must match it (fixed a bug where the old key
+							// 'showOnlyMobileDevice' didn't match and the label
+							// was never shown).
 							// condition.type は 'mobileDevice' のため、
 							// labelMap のキーもそれに合わせる
 							// （旧キー 'showOnlyMobileDevice' では一致せず

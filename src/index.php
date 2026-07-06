@@ -375,6 +375,7 @@ function vk_dynamic_if_block_render_old_attributes($attributes, $content)
     }
 
     // Mobile Device Check
+    // Delegate the three-value judgement (No restriction / Mobile Devices Only / PC Only) to the shared function.
     // 「指定なし／モバイル端末のみ表示／PC表示のみ」の3値判定を共通関数に委譲する
     $display = $display && vk_dynamic_if_block_check_mobile_device($attributes);
 
@@ -818,6 +819,15 @@ function vk_dynamic_if_block_check_login_user($values)
 /**
  * Check device type condition.
  *
+ * 'showOnlyMobileDevice' can hold one of the following values.
+ * - true (boolean) or 'mobileOnly' (string): Mobile Devices Only (compatible with the old toggle ON).
+ * - 'pcOnly' (string): PC Only (newly added option).
+ * - anything else (false, unset, 'none', empty string, etc.): No restriction (always display; compatible with the old toggle OFF / unset).
+ *
+ * Automatically converting old data saved with the boolean toggle to "PC Only" risks
+ * unintentionally hiding content on mobile devices, so legacy false/unset values are
+ * always treated as "No restriction" (never auto-converted to pcOnly).
+ *
  * 'showOnlyMobileDevice' は次の値を取り得る。
  * - true（真偽値）または 'mobileOnly'（文字列）: モバイル端末のみ表示（旧トグルONと互換）
  * - 'pcOnly'（文字列）                        : PC表示のみ（新規追加の選択肢）
@@ -843,6 +853,7 @@ function vk_dynamic_if_block_check_mobile_device($values)
         return !wp_is_mobile();
     }
 
+    // false, unset, 'none', empty string, etc. mean "No restriction" and should always display.
     // false・未設定・'none'・空文字などは「指定なし」として常に表示する
     return true;
 }
