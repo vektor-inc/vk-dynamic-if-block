@@ -28,10 +28,46 @@ export const CONDITION_TYPE_LABELS = {
 		'vk-dynamic-if-block'
 	),
 	mobileDevice: _x(
-		'Mobile Device Only',
+		'Device Type',
 		'Condition Type Label',
 		'vk-dynamic-if-block'
 	),
+};
+
+// デバイス種類の選択肢（指定なし／モバイル端末のみ表示／PC表示のみ）
+// mobileDevice 条件タイプの values.showOnlyMobileDevice に格納する値
+export const MOBILE_DEVICE_OPTIONS = [
+	{ value: 'none', label: __( 'No restriction', 'vk-dynamic-if-block' ) },
+	{
+		value: 'mobileOnly',
+		label: __( 'Mobile Devices Only', 'vk-dynamic-if-block' ),
+	},
+	{
+		value: 'pcOnly',
+		label: __( 'PC Only', 'vk-dynamic-if-block' ),
+	},
+];
+
+/**
+ * mobileDevice 条件の保存値（真偽値／文字列いずれもあり得る）を
+ * SelectControl 表示用の正規化した文字列に変換する。
+ *
+ * 旧仕様ではトグルの真偽値（true/false）で保存されていたため、
+ * 後方互換のために以下のマッピングを行う。
+ * - true          → 'mobileOnly'（旧トグルON = モバイル端末のみ表示）
+ * - false／未設定 → 'none'（旧トグルOFF・未設定 = 指定なし。PC専用へは自動変換しない）
+ *
+ * @param {boolean|string|undefined} rawValue 保存されている値。
+ * @return {string} 'none' | 'mobileOnly' | 'pcOnly' のいずれか。
+ */
+export const normalizeMobileDeviceValue = ( rawValue ) => {
+	if ( rawValue === true || rawValue === 'mobileOnly' ) {
+		return 'mobileOnly';
+	}
+	if ( rawValue === 'pcOnly' ) {
+		return 'pcOnly';
+	}
+	return 'none';
 };
 
 // ページタイプ定義

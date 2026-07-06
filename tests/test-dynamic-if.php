@@ -1232,6 +1232,100 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
         'content'   => 'Mobile device not specified (non-mobile)',
         'expected'  => 'Mobile device not specified (non-mobile)',
         ),
+        // issue #115: 条件タイプ「デバイスの種類」を SelectControl 化したことに伴う新しい3値のテスト
+        // 「指定なし」（'none'）: 常に表示される
+        array(
+        'name'      => 'Device type "No restriction" (mobile)',
+        'go_to'     => get_permalink($test_posts['parent_page_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'mobileDevice',
+                            'values' => array( 'showOnlyMobileDevice' => 'none' ),
+                        ),
+        ),
+        ),
+        'is_mobile' => true,
+        'content'   => 'Device type "No restriction" (mobile)',
+        'expected'  => 'Device type "No restriction" (mobile)',
+        ),
+        array(
+        'name'      => 'Device type "No restriction" (non-mobile)',
+        'go_to'     => get_permalink($test_posts['parent_page_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'mobileDevice',
+                            'values' => array( 'showOnlyMobileDevice' => 'none' ),
+                        ),
+        ),
+        ),
+        'is_mobile' => false,
+        'content'   => 'Device type "No restriction" (non-mobile)',
+        'expected'  => 'Device type "No restriction" (non-mobile)',
+        ),
+        // 「モバイル端末のみ表示」（'mobileOnly'）: モバイル端末でのみ表示される
+        array(
+        'name'      => 'Device type "Mobile Devices Only" (mobile)',
+        'go_to'     => get_permalink($test_posts['parent_page_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'mobileDevice',
+                            'values' => array( 'showOnlyMobileDevice' => 'mobileOnly' ),
+                        ),
+        ),
+        ),
+        'is_mobile' => true,
+        'content'   => 'Device type "Mobile Devices Only" (mobile)',
+        'expected'  => 'Device type "Mobile Devices Only" (mobile)',
+        ),
+        array(
+        'name'      => 'Device type "Mobile Devices Only" (non-mobile)',
+        'go_to'     => get_permalink($test_posts['parent_page_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'mobileDevice',
+                            'values' => array( 'showOnlyMobileDevice' => 'mobileOnly' ),
+                        ),
+        ),
+        ),
+        'is_mobile' => false,
+        'content'   => 'Device type "Mobile Devices Only" (non-mobile)',
+        'expected'  => '',
+        ),
+        // 「PC表示のみ」（'pcOnly'）: モバイル端末以外（PC）でのみ表示される。今回新規追加の選択肢
+        array(
+        'name'      => 'Device type "PC Only" (mobile)',
+        'go_to'     => get_permalink($test_posts['parent_page_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'mobileDevice',
+                            'values' => array( 'showOnlyMobileDevice' => 'pcOnly' ),
+                        ),
+        ),
+        ),
+        'is_mobile' => true,
+        'content'   => 'Device type "PC Only" (mobile)',
+        'expected'  => '',
+        ),
+        array(
+        'name'      => 'Device type "PC Only" (non-mobile)',
+        'go_to'     => get_permalink($test_posts['parent_page_id']),
+        'attribute' => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'mobileDevice',
+                            'values' => array( 'showOnlyMobileDevice' => 'pcOnly' ),
+                        ),
+        ),
+        ),
+        'is_mobile' => false,
+        'content'   => 'Device type "PC Only" (non-mobile)',
+        'expected'  => 'Device type "PC Only" (non-mobile)',
+        ),
         /******************************************
          * Display Period 
 */

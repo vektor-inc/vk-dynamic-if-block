@@ -30,6 +30,8 @@ import {
 	generateId,
 	createConditionGroup,
 	sortLanguages,
+	MOBILE_DEVICE_OPTIONS,
+	normalizeMobileDeviceValue,
 } from './constants';
 
 // グローバル変数の宣言
@@ -644,6 +646,11 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							periodDisplayValue: '',
 							periodReferCustomField: '',
 						};
+					} else if ( updates.type === 'mobileDevice' ) {
+						// 「指定なし」を無制限相当のデフォルト値にする
+						// （他の条件タイプと揃えることで、切り替え直後に
+						// 値が空になり選択肢が意図せず変わって見える不具合を防ぐ）
+						newValues = { showOnlyMobileDevice: 'none' };
 					} else {
 						newValues = {};
 					}
@@ -1225,15 +1232,16 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					);
 				},
 				mobileDevice: () => (
-					<ToggleControl
-						label={ __(
-							'Displayed only on mobile devices.',
-							'vk-dynamic-if-block'
+					<SelectControl
+						label={ __( 'Device Type', 'vk-dynamic-if-block' ) }
+						value={ normalizeMobileDeviceValue(
+							values.showOnlyMobileDevice
 						) }
-						checked={ values.showOnlyMobileDevice || false }
-						onChange={ ( checked ) =>
-							updateValue( 'showOnlyMobileDevice', checked )
+						options={ MOBILE_DEVICE_OPTIONS }
+						onChange={ ( value ) =>
+							updateValue( 'showOnlyMobileDevice', value )
 						}
+						__next40pxDefaultSize={ true }
 						__nextHasNoMarginBottom={ true }
 					/>
 				),
@@ -1497,13 +1505,28 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 									);
 								}
 							},
-							showOnlyMobileDevice: () =>
-								values.showOnlyMobileDevice
-									? __(
-											'Mobile Device Only',
-											'vk-dynamic-if-block'
-									  )
-									: null,
+							// condition.type は 'mobileDevice' のため、
+							// labelMap のキーもそれに合わせる
+							// （旧キー 'showOnlyMobileDevice' では一致せず
+							// ラベルが表示されない不具合があったため修正）
+							mobileDevice: () => {
+								const deviceType = normalizeMobileDeviceValue(
+									values.showOnlyMobileDevice
+								);
+								if ( deviceType === 'mobileOnly' ) {
+									return __(
+										'Mobile Devices Only',
+										'vk-dynamic-if-block'
+									);
+								}
+								if ( deviceType === 'pcOnly' ) {
+									return __(
+										'PC Only',
+										'vk-dynamic-if-block'
+									);
+								}
+								return null;
+							},
 						};
 
 						const label =
