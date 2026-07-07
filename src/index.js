@@ -1521,19 +1521,19 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 								const deviceType = normalizeMobileDeviceValue(
 									values.showOnlyMobileDevice
 								);
-								if ( deviceType === 'mobileOnly' ) {
-									return __(
-										'Mobile Devices Only',
-										'vk-dynamic-if-block'
-									);
+								// Look up the label from MOBILE_DEVICE_OPTIONS instead of
+								// hardcoding it here, so the two never drift apart.
+								// ラベル文字列を MOBILE_DEVICE_OPTIONS から参照する
+								// （ここに直接書かないことで、両者が食い違わないようにする）
+								if ( deviceType === 'none' ) {
+									return null;
 								}
-								if ( deviceType === 'pcOnly' ) {
-									return __(
-										'PC Only',
-										'vk-dynamic-if-block'
-									);
-								}
-								return null;
+								return (
+									MOBILE_DEVICE_OPTIONS.find(
+										( option ) =>
+											option.value === deviceType
+									)?.label ?? null
+								);
 							},
 						};
 
