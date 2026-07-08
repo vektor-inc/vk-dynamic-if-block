@@ -28,10 +28,56 @@ export const CONDITION_TYPE_LABELS = {
 		'vk-dynamic-if-block'
 	),
 	mobileDevice: _x(
-		'Mobile Device Only',
+		'Device Type',
 		'Condition Type Label',
 		'vk-dynamic-if-block'
 	),
+};
+
+// Device type options (No restriction / Mobile Devices Only / PC Only).
+// Stored in values.showOnlyMobileDevice of the mobileDevice condition type.
+// デバイス種類の選択肢（指定なし／モバイル端末のみ表示／PC表示のみ）
+// mobileDevice 条件タイプの values.showOnlyMobileDevice に格納する値
+export const MOBILE_DEVICE_OPTIONS = [
+	{ value: 'none', label: __( 'No restriction', 'vk-dynamic-if-block' ) },
+	{
+		value: 'mobileOnly',
+		label: __( 'Mobile Devices Only', 'vk-dynamic-if-block' ),
+	},
+	{
+		value: 'pcOnly',
+		label: __( 'PC Only', 'vk-dynamic-if-block' ),
+	},
+];
+
+/**
+ * Normalize the stored value of the mobileDevice condition (which can be either
+ * a boolean or a string) into a string for SelectControl display.
+ *
+ * The old spec stored a boolean toggle (true/false), so the following mapping
+ * is applied for backward compatibility.
+ * - true             → 'mobileOnly' (old toggle ON = Mobile Devices Only)
+ * - false / unset    → 'none' (old toggle OFF / unset = No restriction; never auto-converted to PC Only)
+ *
+ * mobileDevice 条件の保存値（真偽値／文字列いずれもあり得る）を
+ * SelectControl 表示用の正規化した文字列に変換する。
+ *
+ * 旧仕様ではトグルの真偽値（true/false）で保存されていたため、
+ * 後方互換のために以下のマッピングを行う。
+ * - true          → 'mobileOnly'（旧トグルON = モバイル端末のみ表示）
+ * - false／未設定 → 'none'（旧トグルOFF・未設定 = 指定なし。PC専用へは自動変換しない）
+ *
+ * @param {boolean|string|undefined} rawValue The stored value. / 保存されている値。
+ * @return {string} One of 'none' | 'mobileOnly' | 'pcOnly'. / 'none' | 'mobileOnly' | 'pcOnly' のいずれか。
+ */
+export const normalizeMobileDeviceValue = ( rawValue ) => {
+	if ( rawValue === true || rawValue === 'mobileOnly' ) {
+		return 'mobileOnly';
+	}
+	if ( rawValue === 'pcOnly' ) {
+		return 'pcOnly';
+	}
+	return 'none';
 };
 
 // ページタイプ定義

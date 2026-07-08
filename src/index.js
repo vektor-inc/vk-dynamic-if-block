@@ -30,6 +30,8 @@ import {
 	generateId,
 	createConditionGroup,
 	sortLanguages,
+	MOBILE_DEVICE_OPTIONS,
+	normalizeMobileDeviceValue,
 } from './constants';
 
 // グローバル変数の宣言
@@ -644,6 +646,15 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							periodDisplayValue: '',
 							periodReferCustomField: '',
 						};
+					} else if ( updates.type === 'mobileDevice' ) {
+						// Use "No restriction" as the unrestricted default value
+						// (aligning with the other condition types prevents the
+						// bug where the value became empty right after switching,
+						// making the selection appear to change unintentionally).
+						// 「指定なし」を無制限相当のデフォルト値にする
+						// （他の条件タイプと揃えることで、切り替え直後に
+						// 値が空になり選択肢が意図せず変わって見える不具合を防ぐ）
+						newValues = { showOnlyMobileDevice: 'none' };
 					} else {
 						newValues = {};
 					}
@@ -1225,15 +1236,16 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					);
 				},
 				mobileDevice: () => (
-					<ToggleControl
-						label={ __(
-							'Displayed only on mobile devices.',
-							'vk-dynamic-if-block'
+					<SelectControl
+						label={ __( 'Device Type', 'vk-dynamic-if-block' ) }
+						value={ normalizeMobileDeviceValue(
+							values.showOnlyMobileDevice
 						) }
-						checked={ values.showOnlyMobileDevice || false }
-						onChange={ ( checked ) =>
-							updateValue( 'showOnlyMobileDevice', checked )
+						options={ MOBILE_DEVICE_OPTIONS }
+						onChange={ ( value ) =>
+							updateValue( 'showOnlyMobileDevice', value )
 						}
+						__next40pxDefaultSize={ true }
 						__nextHasNoMarginBottom={ true }
 					/>
 				),
@@ -1497,13 +1509,32 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 									);
 								}
 							},
-							showOnlyMobileDevice: () =>
-								values.showOnlyMobileDevice
-									? __(
-											'Mobile Device Only',
-											'vk-dynamic-if-block'
-									  )
-									: null,
+							// condition.type is 'mobileDevice', so the labelMap key
+							// must match it (fixed a bug where the old key
+							// 'showOnlyMobileDevice' didn't match and the label
+							// was never shown).
+							// condition.type は 'mobileDevice' のため、
+							// labelMap のキーもそれに合わせる
+							// （旧キー 'showOnlyMobileDevice' では一致せず
+							// ラベルが表示されない不具合があったため修正）
+							mobileDevice: () => {
+								const deviceType = normalizeMobileDeviceValue(
+									values.showOnlyMobileDevice
+								);
+								// Look up the label from MOBILE_DEVICE_OPTIONS instead of
+								// hardcoding it here, so the two never drift apart.
+								// ラベル文字列を MOBILE_DEVICE_OPTIONS から参照する
+								// （ここに直接書かないことで、両者が食い違わないようにする）
+								if ( deviceType === 'none' ) {
+									return null;
+								}
+								return (
+									MOBILE_DEVICE_OPTIONS.find(
+										( option ) =>
+											option.value === deviceType
+									)?.label ?? null
+								);
+							},
 						};
 
 						const label =
