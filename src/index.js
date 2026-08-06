@@ -717,7 +717,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					onChange={ ( value ) =>
 						updateValue( 'pageHierarchyType', value )
 					}
-					__next40pxDefaultSize={ true }
 					__nextHasNoMarginBottom={ true }
 				/>
 			);
@@ -732,7 +731,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							onChange={ ( value ) => {
 								updateValue( 'ifPageType', value );
 							} }
-							__next40pxDefaultSize={ true }
 							__nextHasNoMarginBottom={ true }
 						/>
 						{ ( values.ifPageType === 'is_page' || values.ifPageType === 'page' ) && (
@@ -826,7 +824,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							onChange={ ( value ) =>
 								updateValue( 'ifPostType', value )
 							}
-							__next40pxDefaultSize={ true }
 							__nextHasNoMarginBottom={ true }
 						/>
 						{ values.ifPostType === 'page' &&
@@ -856,7 +853,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							onChange={ ( value ) =>
 								updateValue( 'ifLanguage', value )
 							}
-							__next40pxDefaultSize={ true }
 							__nextHasNoMarginBottom={ true }
 						/>
 					);
@@ -988,7 +984,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						onChange={ ( value ) =>
 							updateValue( 'postAuthor', parseInt( value ) || 0 )
 						}
-						__next40pxDefaultSize={ true }
 						__nextHasNoMarginBottom={ true }
 					/>
 				),
@@ -1016,7 +1011,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 									onChange={ ( value ) =>
 										updateValue( 'customFieldRule', value )
 									}
-									__next40pxDefaultSize={ true }
 									__nextHasNoMarginBottom={ true }
 								/>
 								{ values.customFieldRule === 'valueEquals' && (
@@ -1050,7 +1044,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							onChange={ ( value ) =>
 								updateValue( 'periodDisplaySetting', value )
 							}
-							__next40pxDefaultSize={ true }
 							__nextHasNoMarginBottom={ true }
 						/>
 						{ values.periodDisplaySetting &&
@@ -1072,7 +1065,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 												value
 											)
 										}
-										__next40pxDefaultSize={ true }
 										__nextHasNoMarginBottom={ true }
 									/>
 									{ ( values.periodSpecificationMethod === 'direct' ||
@@ -1199,7 +1191,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 										} )
 									);
 								} }
-								__next40pxDefaultSize={ true }
 								__nextHasNoMarginBottom={ true }
 
 							/>
@@ -1228,7 +1219,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 												value ? [ value ] : []
 											);
 										} }
-										__next40pxDefaultSize={ true }
 										__nextHasNoMarginBottom={ true }
 									/>
 								) }
@@ -1245,7 +1235,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						onChange={ ( value ) =>
 							updateValue( 'showOnlyMobileDevice', value )
 						}
-						__next40pxDefaultSize={ true }
 						__nextHasNoMarginBottom={ true }
 					/>
 				),
@@ -1694,7 +1683,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 																							}
 																						)
 																					}
-																					__next40pxDefaultSize={ true }
 																					__nextHasNoMarginBottom={ true }
 																				/>
 																			</div>
@@ -1767,7 +1755,6 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 															value,
 													} )
 												}
-												__next40pxDefaultSize={ true }
 												__nextHasNoMarginBottom={ true }
 											/>
 										) }
