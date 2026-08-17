@@ -174,7 +174,7 @@ function vk_dynamic_if_block_render_conditions($attributes, $content)
     $cache_key = '';
     if (! $skip_cache) {
         // 条件評価の結果をキャッシュするためのキーを生成
-        $cache_key = 'vk_dynamic_if_block_' . md5(serialize($attributes) . serialize($content) . get_the_ID() . get_queried_object_id());
+        $cache_key = vk_dynamic_if_block_get_cache_key($attributes, $content, 'vk_dynamic_if_block_');
 
         // キャッシュから結果を取得
         $cached_result = wp_cache_get($cache_key, 'vk_dynamic_if_block');
@@ -262,7 +262,7 @@ function vk_dynamic_if_block_render_old_attributes($attributes, $content)
     $cache_key = '';
     if (! $skip_cache) {
         // 条件評価の結果をキャッシュするためのキーを生成
-        $cache_key = 'vk_dynamic_if_block_old_' . md5(serialize($attributes) . serialize($content) . get_the_ID() . get_queried_object_id());
+        $cache_key = vk_dynamic_if_block_get_cache_key($attributes, $content, 'vk_dynamic_if_block_old_');
 
         // キャッシュから結果を取得
         $cached_result = wp_cache_get($cache_key, 'vk_dynamic_if_block');
@@ -416,6 +416,27 @@ function vk_dynamic_if_block_render_old_attributes($attributes, $content)
 
         return $result_content;
     }
+}
+
+/**
+ * Build the cache key for the display judgement.
+ *
+ * The key is built from the block attributes, the block content, the current post and the
+ * queried object, so that a different block or a different page never shares the same key.
+ *
+ * 表示判定の結果をキャッシュするためのキーを組み立てる。
+ * ブロックの属性・中身・表示中の投稿・クエリ対象から組み立てるため、
+ * 別のブロックや別のページが同じキーを共有することはない。
+ *
+ * @param array  $attributes Block attributes. / ブロックの属性。
+ * @param string $content    Block content. / ブロックの中身。
+ * @param string $prefix     Key prefix. / キーの接頭辞。
+ *
+ * @return string Cache key. / キャッシュキー。
+ */
+function vk_dynamic_if_block_get_cache_key($attributes, $content, $prefix)
+{
+    return $prefix . md5(serialize($attributes) . serialize($content) . get_the_ID() . get_queried_object_id());
 }
 
 /**

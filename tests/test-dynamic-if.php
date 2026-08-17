@@ -2694,7 +2694,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
     /**
      * リクエスト状態に依存する条件が含まれるかの判定テスト
      *
-     * 端末種別・ログイン状態・ユーザー権限・時刻に依存する条件を含む場合、
+     * 端末種別・ログイン状態・ユーザー権限・時刻・言語に依存する条件を含む場合、
      * 表示判定の結果をリクエストをまたいでキャッシュしてはいけないため true を返す。
      */
     public function test_vk_dynamic_if_block_has_request_state_condition()
@@ -3053,9 +3053,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
             ),
         );
 
+        // 端末種別の条件を含むケースが PC 環境であることを前提にしているため、明示的に固定する
+        add_filter('wp_is_mobile', '__return_false');
+
         foreach ( $test_cases as $case ) {
-            // レンダー関数と同じ計算式でキャッシュキーを組み立てる
-            $cache_key = 'vk_dynamic_if_block_' . md5(serialize($case['attributes']) . serialize($content) . get_the_ID() . get_queried_object_id());
+            // レンダー関数と同じヘルパーでキャッシュキーを組み立てる
+            $cache_key = vk_dynamic_if_block_get_cache_key($case['attributes'], $content, 'vk_dynamic_if_block_');
 
             // 前のケースの残りを消してから仕込む
             wp_cache_delete($cache_key, 'vk_dynamic_if_block');
@@ -3081,6 +3084,8 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
             // 後始末
             wp_cache_delete($cache_key, 'vk_dynamic_if_block');
         }
+
+        remove_all_filters('wp_is_mobile');
     }
 
     /**
@@ -3150,9 +3155,12 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
         // 未ログイン状態であることを保証する（ログインユーザー条件のケースの前提）
         wp_set_current_user(0);
 
+        // 端末種別の条件を含むケースが PC 環境であることを前提にしているため、明示的に固定する
+        add_filter('wp_is_mobile', '__return_false');
+
         foreach ( $test_cases as $case ) {
-            // レンダー関数と同じ計算式でキャッシュキーを組み立てる
-            $cache_key = 'vk_dynamic_if_block_old_' . md5(serialize($case['attributes']) . serialize($content) . get_the_ID() . get_queried_object_id());
+            // レンダー関数と同じヘルパーでキャッシュキーを組み立てる
+            $cache_key = vk_dynamic_if_block_get_cache_key($case['attributes'], $content, 'vk_dynamic_if_block_old_');
 
             // 前のケースの残りを消してから仕込む
             wp_cache_delete($cache_key, 'vk_dynamic_if_block');
@@ -3178,6 +3186,8 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
             // 後始末
             wp_cache_delete($cache_key, 'vk_dynamic_if_block');
         }
+
+        remove_all_filters('wp_is_mobile');
     }
 
 }
