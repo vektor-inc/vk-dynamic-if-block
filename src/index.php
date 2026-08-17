@@ -422,11 +422,13 @@ function vk_dynamic_if_block_render_old_attributes($attributes, $content)
  * Build the cache key for the display judgement.
  *
  * The key is built from the block attributes, the block content, the current post and the
- * queried object, so that a different block or a different page never shares the same key.
+ * queried object. Note that pages where both get_the_ID() and get_queried_object_id() are
+ * unavailable (search results, 404, post type archives, etc.) produce the same key.
  *
  * 表示判定の結果をキャッシュするためのキーを組み立てる。
- * ブロックの属性・中身・表示中の投稿・クエリ対象から組み立てるため、
- * 別のブロックや別のページが同じキーを共有することはない。
+ * ブロックの属性・中身・表示中の投稿・クエリ対象から組み立てる。
+ * ただし get_the_ID() と get_queried_object_id() のどちらも得られないページ
+ * （検索結果・404・投稿タイプアーカイブなど）同士では同じキーになる点に注意。
  *
  * @param array  $attributes Block attributes. / ブロックの属性。
  * @param string $content    Block content. / ブロックの中身。
