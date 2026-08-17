@@ -2777,6 +2777,18 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
                 'expected'            => true,
             ),
             array(
+                'test_condition_name' => 'conditions に言語が含まれる場合 => true',
+                'attributes'          => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'language',
+                            'values' => array( 'ifLanguage' => 'en_US' ),
+                        ),
+                    ),
+                ),
+                'expected'            => true,
+            ),
+            array(
                 'test_condition_name' => 'ネストされた条件の中だけに端末種別がある場合 => true',
                 'attributes'          => array(
                     'conditions' => array(
@@ -2869,6 +2881,16 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
                 'expected'            => false,
             ),
             array(
+                'test_condition_name' => '旧属性で言語が指定されている場合 => true',
+                'attributes'          => array( 'ifLanguage' => 'en_US' ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => '旧属性で言語が none の場合 => false',
+                'attributes'          => array( 'ifLanguage' => 'none' ),
+                'expected'            => false,
+            ),
+            array(
                 'test_condition_name' => '旧属性で期間指定（公開終了日時）が指定されている場合 => true',
                 'attributes'          => array( 'periodDisplaySetting' => 'deadline' ),
                 'expected'            => true,
@@ -2920,6 +2942,241 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
 
             // 期待値テスト
             $this->assertSame($case['expected'], $actual, $case['test_condition_name']);
+        }
+    }
+
+    /**
+     * 新しい属性構造でのキャッシュ利用有無のテスト
+     *
+     * リクエスト状態に依存する条件を含む場合はキャッシュの読み書きを行わず、
+     * 含まない場合は従来どおりキャッシュを利用することを確認する。
+     */
+    public function test_vk_dynamic_if_block_render_conditions()
+    {
+        // else ブロックを含むコンテンツと、条件成立時・不成立時それぞれの出力
+        $content     = '<p>main</p><div class="vk-dynamic-if-else-block__content">else</div>';
+        $main_output = '<p>main</p>';
+        $else_output = '<div class="vk-dynamic-if-else-block__content">else</div>';
+
+        // 常に true になる条件（ページ種別の指定なし）
+        $not_request_state_condition = array(
+            'type'   => 'pageType',
+            'values' => array( 'ifPageType' => 'none' ),
+        );
+
+        // テストの配列
+        // seed         : レンダー前にキャッシュへ仕込む値（null なら仕込まない）
+        // expected     : レンダー結果の期待値
+        // expected_cache : レンダー後にキャッシュへ保存されている値の期待値（キーが無い場合は検証しない）
+        $test_cases = array(
+            array(
+                'test_condition_name' => 'リクエスト状態に依存しない条件で、逆の値をキャッシュに仕込んだ場合 => キャッシュが使われて else が返る',
+                'attributes'          => array(
+                    'conditions' => array( $not_request_state_condition ),
+                    'exclusion'  => false,
+                ),
+                'seed'                => 'false',
+                'expected'            => $else_output,
+            ),
+            array(
+                'test_condition_name' => 'リクエスト状態に依存しない条件で、キャッシュが空の場合 => 判定結果がキャッシュへ保存される',
+                'attributes'          => array(
+                    'conditions' => array( $not_request_state_condition ),
+                    'exclusion'  => false,
+                ),
+                'seed'                => null,
+                'expected'            => $main_output,
+                'expected_cache'      => 'true',
+            ),
+            array(
+                'test_condition_name' => 'ログイン状態の条件を含み、逆の値をキャッシュに仕込んだ場合 => 仕込み値は使われず main が返る',
+                'attributes'          => array(
+                    'conditions' => array(
+                        $not_request_state_condition,
+                        array(
+                            'type'   => 'loginUser',
+                            'values' => array( 'showOnlyLoginUser' => false ),
+                        ),
+                    ),
+                    'exclusion'  => false,
+                ),
+                'seed'                => 'false',
+                'expected'            => $main_output,
+            ),
+            array(
+                'test_condition_name' => 'ログイン状態の条件を含み、キャッシュが空の場合 => キャッシュへ保存されない',
+                'attributes'          => array(
+                    'conditions' => array(
+                        $not_request_state_condition,
+                        array(
+                            'type'   => 'loginUser',
+                            'values' => array( 'showOnlyLoginUser' => false ),
+                        ),
+                    ),
+                    'exclusion'  => false,
+                ),
+                'seed'                => null,
+                'expected'            => $main_output,
+                'expected_cache'      => false,
+            ),
+            array(
+                'test_condition_name' => 'ネストされた条件の中だけに端末種別があり、逆の値をキャッシュに仕込んだ場合 => 仕込み値は使われず main が返る',
+                'attributes'          => array(
+                    'conditions' => array(
+                        array(
+                            'conditions' => array(
+                                array(
+                                    'type'   => 'mobileDevice',
+                                    'values' => array( 'showOnlyMobileDevice' => 'pcOnly' ),
+                                ),
+                            ),
+                        ),
+                    ),
+                    'exclusion'  => false,
+                ),
+                'seed'                => 'false',
+                'expected'            => $main_output,
+            ),
+            array(
+                'test_condition_name' => '言語の条件を含み、逆の値をキャッシュに仕込んだ場合 => 仕込み値は使われず main が返る',
+                'attributes'          => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'language',
+                            'values' => array( 'ifLanguage' => get_locale() ),
+                        ),
+                    ),
+                    'exclusion'  => false,
+                ),
+                'seed'                => 'false',
+                'expected'            => $main_output,
+            ),
+        );
+
+        foreach ( $test_cases as $case ) {
+            // レンダー関数と同じ計算式でキャッシュキーを組み立てる
+            $cache_key = 'vk_dynamic_if_block_' . md5(serialize($case['attributes']) . serialize($content) . get_the_ID() . get_queried_object_id());
+
+            // 前のケースの残りを消してから仕込む
+            wp_cache_delete($cache_key, 'vk_dynamic_if_block');
+            if ($case['seed'] !== null ) {
+                wp_cache_set($cache_key, $case['seed'], 'vk_dynamic_if_block', 60);
+            }
+
+            // テスト関数実行
+            $actual = vk_dynamic_if_block_render_conditions($case['attributes'], $content);
+
+            // 期待値テスト
+            $this->assertSame($case['expected'], $actual, $case['test_condition_name']);
+
+            // キャッシュへの書き込み有無テスト
+            if (array_key_exists('expected_cache', $case) ) {
+                $this->assertSame(
+                    $case['expected_cache'],
+                    wp_cache_get($cache_key, 'vk_dynamic_if_block'),
+                    $case['test_condition_name']
+                );
+            }
+
+            // 後始末
+            wp_cache_delete($cache_key, 'vk_dynamic_if_block');
+        }
+    }
+
+    /**
+     * 旧属性構造でのキャッシュ利用有無のテスト
+     *
+     * リクエスト状態に依存する条件を含む場合はキャッシュの読み書きを行わず、
+     * 含まない場合は従来どおりキャッシュを利用することを確認する。
+     */
+    public function test_vk_dynamic_if_block_render_old_attributes()
+    {
+        // else ブロックを含むコンテンツと、条件成立時・不成立時それぞれの出力
+        $content     = '<p>main</p><div class="vk-dynamic-if-else-block__content">else</div>';
+        $main_output = '<p>main</p>';
+        $else_output = '<div class="vk-dynamic-if-else-block__content">else</div>';
+
+        // テストの配列
+        $test_cases = array(
+            array(
+                'test_condition_name' => '旧属性でリクエスト状態に依存しない条件のみ、逆の値をキャッシュに仕込んだ場合 => キャッシュが使われて else が返る',
+                'attributes'          => array(
+                    'ifPageType' => 'none',
+                    'exclusion'  => false,
+                ),
+                'seed'                => 'false',
+                'expected'            => $else_output,
+            ),
+            array(
+                'test_condition_name' => '旧属性でリクエスト状態に依存しない条件のみ、キャッシュが空の場合 => 判定結果がキャッシュへ保存される',
+                'attributes'          => array(
+                    'ifPageType' => 'none',
+                    'exclusion'  => false,
+                ),
+                'seed'                => null,
+                'expected'            => $main_output,
+                'expected_cache'      => 'true',
+            ),
+            array(
+                'test_condition_name' => '旧属性で言語を指定し、逆の値をキャッシュに仕込んだ場合 => 仕込み値は使われず main が返る',
+                'attributes'          => array(
+                    'ifLanguage' => get_locale(),
+                    'exclusion'  => false,
+                ),
+                'seed'                => 'false',
+                'expected'            => $main_output,
+            ),
+            array(
+                'test_condition_name' => '旧属性でログインユーザーのみ表示を指定し（未ログイン）、逆の値をキャッシュに仕込んだ場合 => 仕込み値は使われず else が返る',
+                'attributes'          => array(
+                    'showOnlyLoginUser' => true,
+                    'exclusion'         => false,
+                ),
+                'seed'                => 'true',
+                'expected'            => $else_output,
+            ),
+            array(
+                'test_condition_name' => '旧属性で端末種別に PC 表示のみを指定し、キャッシュが空の場合 => キャッシュへ保存されない',
+                'attributes'          => array(
+                    'showOnlyMobileDevice' => 'pcOnly',
+                    'exclusion'            => false,
+                ),
+                'seed'                => null,
+                'expected'            => $main_output,
+                'expected_cache'      => false,
+            ),
+        );
+
+        // 未ログイン状態であることを保証する（ログインユーザー条件のケースの前提）
+        wp_set_current_user(0);
+
+        foreach ( $test_cases as $case ) {
+            // レンダー関数と同じ計算式でキャッシュキーを組み立てる
+            $cache_key = 'vk_dynamic_if_block_old_' . md5(serialize($case['attributes']) . serialize($content) . get_the_ID() . get_queried_object_id());
+
+            // 前のケースの残りを消してから仕込む
+            wp_cache_delete($cache_key, 'vk_dynamic_if_block');
+            if ($case['seed'] !== null ) {
+                wp_cache_set($cache_key, $case['seed'], 'vk_dynamic_if_block', 60);
+            }
+
+            // テスト関数実行
+            $actual = vk_dynamic_if_block_render_old_attributes($case['attributes'], $content);
+
+            // 期待値テスト
+            $this->assertSame($case['expected'], $actual, $case['test_condition_name']);
+
+            // キャッシュへの書き込み有無テスト
+            if (array_key_exists('expected_cache', $case) ) {
+                $this->assertSame(
+                    $case['expected_cache'],
+                    wp_cache_get($cache_key, 'vk_dynamic_if_block'),
+                    $case['test_condition_name']
+                );
+            }
+
+            // 後始末
+            wp_cache_delete($cache_key, 'vk_dynamic_if_block');
         }
     }
 

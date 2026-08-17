@@ -423,11 +423,13 @@ function vk_dynamic_if_block_render_old_attributes($attributes, $content)
  *
  * The result of these condition types changes per request even when the block attributes,
  * the block content and the current post are exactly the same, because they depend on the
- * device, the login state, the capability of the current user, or the current time.
+ * device, the login state, the capability of the current user, the current time, or the
+ * locale of the visitor.
  * They must never be shared between requests through a persistent object cache.
  *
  * これらの条件タイプは、ブロックの属性・中身・表示中の投稿がまったく同じでも、
- * 端末種別・ログイン状態・ユーザー権限・現在時刻に依存するためリクエストごとに結果が変わる。
+ * 端末種別・ログイン状態・ユーザー権限・現在時刻・訪問者の言語に依存するため、
+ * リクエストごとに結果が変わる。
  * 永続オブジェクトキャッシュでリクエストをまたいで共有してはいけない。
  *
  * @return array List of condition type slugs. / 条件タイプのスラッグ一覧。
@@ -443,6 +445,11 @@ function vk_dynamic_if_block_get_request_state_condition_types()
         'userRole',
         // Current time. / 現在時刻
         'period',
+        // Locale. get_locale() goes through the 'locale' filter, so multilingual plugins
+        // such as Polylang and WPML make it vary by visitor.
+        // 言語。get_locale() は 'locale' フィルターを通るため、Polylang や WPML などの
+        // 多言語プラグインが入った環境では訪問者ごとに値が変わる
+        'language',
     );
 }
 
@@ -535,6 +542,15 @@ function vk_dynamic_if_block_has_request_state_condition($attributes)
 
     // Legacy structure: login state. / 旧構造: ログイン状態
     if (! empty($attributes['showOnlyLoginUser'])) {
+        return true;
+    }
+
+    // Legacy structure: locale.
+    // Matches the evaluation in vk_dynamic_if_block_render_old_attributes(), which skips
+    // the check when the value is empty or 'none' ("no restriction").
+    // 旧構造: 言語。vk_dynamic_if_block_render_old_attributes() の評価と同じく、
+    // 空値と 'none'（指定なし）のときは判定自体が行われないため対象外とする
+    if (! empty($attributes['ifLanguage']) && 'none' !== $attributes['ifLanguage']) {
         return true;
     }
 
