@@ -2691,4 +2691,236 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
         wp_delete_post($test_posts['home_page_id'], true);
     }
 
+    /**
+     * リクエスト状態に依存する条件が含まれるかの判定テスト
+     *
+     * 端末種別・ログイン状態・ユーザー権限・時刻に依存する条件を含む場合、
+     * 表示判定の結果をリクエストをまたいでキャッシュしてはいけないため true を返す。
+     */
+    public function test_vk_dynamic_if_block_has_request_state_condition()
+    {
+        // テストの配列
+        $test_cases = array(
+            array(
+                'test_condition_name' => '条件が空の配列の場合 => false',
+                'attributes'          => array(),
+                'expected'            => false,
+            ),
+            array(
+                'test_condition_name' => '属性が配列でない場合 => false',
+                'attributes'          => 'not-an-array',
+                'expected'            => false,
+            ),
+            array(
+                'test_condition_name' => 'conditions が配列でない場合 => false',
+                'attributes'          => array( 'conditions' => 'not-an-array' ),
+                'expected'            => false,
+            ),
+            array(
+                'test_condition_name' => 'conditions がページタイプのみの場合 => false',
+                'attributes'          => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'pageType',
+                            'values' => array( 'ifPageType' => 'is_single' ),
+                        ),
+                    ),
+                ),
+                'expected'            => false,
+            ),
+            array(
+                'test_condition_name' => 'conditions に端末種別が含まれる場合 => true',
+                'attributes'          => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'mobileDevice',
+                            'values' => array( 'showOnlyMobileDevice' => 'mobileOnly' ),
+                        ),
+                    ),
+                ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => 'conditions にログイン状態が含まれる場合 => true',
+                'attributes'          => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'loginUser',
+                            'values' => array( 'showOnlyLoginUser' => true ),
+                        ),
+                    ),
+                ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => 'conditions にユーザー権限が含まれる場合 => true',
+                'attributes'          => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'userRole',
+                            'values' => array( 'userRole' => array( 'editor' ) ),
+                        ),
+                    ),
+                ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => 'conditions に期間指定が含まれる場合 => true',
+                'attributes'          => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'period',
+                            'values' => array( 'periodDisplaySetting' => 'deadline' ),
+                        ),
+                    ),
+                ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => 'ネストされた条件の中だけに端末種別がある場合 => true',
+                'attributes'          => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'pageType',
+                            'values' => array( 'ifPageType' => 'is_single' ),
+                        ),
+                        array(
+                            'conditions' => array(
+                                array(
+                                    'type'   => 'mobileDevice',
+                                    'values' => array( 'showOnlyMobileDevice' => 'pcOnly' ),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => '2階層ネストされた条件の中だけにログイン状態がある場合 => true',
+                'attributes'          => array(
+                    'conditions' => array(
+                        array(
+                            'conditions' => array(
+                                array(
+                                    'conditions' => array(
+                                        array(
+                                            'type'   => 'loginUser',
+                                            'values' => array( 'showOnlyLoginUser' => true ),
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => 'ネストされた条件がリクエスト状態に依存しない場合 => false',
+                'attributes'          => array(
+                    'conditions' => array(
+                        array(
+                            'conditions' => array(
+                                array(
+                                    'type'   => 'postType',
+                                    'values' => array( 'ifPostType' => 'post' ),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+                'expected'            => false,
+            ),
+            array(
+                'test_condition_name' => 'groups の中だけにユーザー権限がある場合 => true',
+                'attributes'          => array(
+                    'groups' => array(
+                        array(
+                            'conditions' => array(
+                                array(
+                                    'type'   => 'userRole',
+                                    'values' => array( 'userRole' => array( 'administrator' ) ),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => '旧属性でユーザー権限が指定されている場合 => true',
+                'attributes'          => array( 'userRole' => array( 'editor' ) ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => '旧属性でユーザー権限が空配列の場合 => false',
+                'attributes'          => array( 'userRole' => array() ),
+                'expected'            => false,
+            ),
+            array(
+                'test_condition_name' => '旧属性でログインユーザーのみ表示が指定されている場合 => true',
+                'attributes'          => array( 'showOnlyLoginUser' => true ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => '旧属性でログインユーザーのみ表示が空文字の場合 => false',
+                'attributes'          => array( 'showOnlyLoginUser' => '' ),
+                'expected'            => false,
+            ),
+            array(
+                'test_condition_name' => '旧属性で期間指定（公開終了日時）が指定されている場合 => true',
+                'attributes'          => array( 'periodDisplaySetting' => 'deadline' ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => '旧属性で期間指定が none の場合 => false',
+                'attributes'          => array( 'periodDisplaySetting' => 'none' ),
+                'expected'            => false,
+            ),
+            array(
+                'test_condition_name' => '旧属性で端末種別がモバイル端末のみ（旧トグルON）の場合 => true',
+                'attributes'          => array( 'showOnlyMobileDevice' => true ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => '旧属性で端末種別が mobileOnly の場合 => true',
+                'attributes'          => array( 'showOnlyMobileDevice' => 'mobileOnly' ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => '旧属性で端末種別が pcOnly の場合 => true',
+                'attributes'          => array( 'showOnlyMobileDevice' => 'pcOnly' ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => '旧属性で端末種別が none（指定なし）の場合 => false',
+                'attributes'          => array( 'showOnlyMobileDevice' => 'none' ),
+                'expected'            => false,
+            ),
+            array(
+                'test_condition_name' => '旧属性で端末種別が false（旧トグルOFF）の場合 => false',
+                'attributes'          => array( 'showOnlyMobileDevice' => false ),
+                'expected'            => false,
+            ),
+            array(
+                'test_condition_name' => '旧属性でリクエスト状態に依存しない条件のみの場合 => false',
+                'attributes'          => array(
+                    'ifPageType'      => 'is_single',
+                    'ifPostType'      => 'post',
+                    'customFieldName' => 'test_field',
+                ),
+                'expected'            => false,
+            ),
+        );
+
+        foreach ( $test_cases as $case ) {
+            // テスト関数実行
+            $actual = vk_dynamic_if_block_has_request_state_condition($case['attributes']);
+
+            // 期待値テスト
+            $this->assertSame($case['expected'], $actual, $case['test_condition_name']);
+        }
+    }
+
 }

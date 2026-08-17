@@ -167,17 +167,24 @@ function vk_dynamic_if_block_render_conditions($attributes, $content)
         return $content;
     }
 
-    // 条件評価の結果をキャッシュするためのキーを生成
-    $cache_key = 'vk_dynamic_if_block_' . md5(serialize($attributes) . serialize($content) . get_the_ID() . get_queried_object_id());
+    // Conditions that depend on per-request state must not be cached across requests.
+    // リクエストごとに変わる状態に依存する条件は、リクエストをまたいでキャッシュしてはいけない
+    $skip_cache = vk_dynamic_if_block_has_request_state_condition($attributes);
 
-    // キャッシュから結果を取得
-    $cached_result = wp_cache_get($cache_key, 'vk_dynamic_if_block');
-    if ($cached_result !== false) {
-        // キャッシュされた結果を使用
-        if ($cached_result === 'true') {
-            return vk_dynamic_if_block_extract_content_without_else($content);
-        } elseif ($cached_result === 'false') {
-            return vk_dynamic_if_block_extract_else_content($content);
+    $cache_key = '';
+    if (! $skip_cache) {
+        // 条件評価の結果をキャッシュするためのキーを生成
+        $cache_key = 'vk_dynamic_if_block_' . md5(serialize($attributes) . serialize($content) . get_the_ID() . get_queried_object_id());
+
+        // キャッシュから結果を取得
+        $cached_result = wp_cache_get($cache_key, 'vk_dynamic_if_block');
+        if ($cached_result !== false) {
+            // キャッシュされた結果を使用
+            if ($cached_result === 'true') {
+                return vk_dynamic_if_block_extract_content_without_else($content);
+            } elseif ($cached_result === 'false') {
+                return vk_dynamic_if_block_extract_else_content($content);
+            }
         }
     }
 
@@ -216,8 +223,10 @@ function vk_dynamic_if_block_render_conditions($attributes, $content)
 
     $final_result = ($attributes['exclusion'] ? !$display : $display);
 
-    // 結果をキャッシュに保存（1分間有効）
-    wp_cache_set($cache_key, $final_result ? 'true' : 'false', 'vk_dynamic_if_block', 60);
+    if (! $skip_cache) {
+        // 結果をキャッシュに保存（1分間有効）
+        wp_cache_set($cache_key, $final_result ? 'true' : 'false', 'vk_dynamic_if_block', 60);
+    }
 
 
     // elseブロックの処理
@@ -246,17 +255,24 @@ function vk_dynamic_if_block_render_conditions($attributes, $content)
  */
 function vk_dynamic_if_block_render_old_attributes($attributes, $content)
 {
-    // 条件評価の結果をキャッシュするためのキーを生成
-    $cache_key = 'vk_dynamic_if_block_old_' . md5(serialize($attributes) . serialize($content) . get_the_ID() . get_queried_object_id());
+    // Conditions that depend on per-request state must not be cached across requests.
+    // リクエストごとに変わる状態に依存する条件は、リクエストをまたいでキャッシュしてはいけない
+    $skip_cache = vk_dynamic_if_block_has_request_state_condition($attributes);
 
-    // キャッシュから結果を取得
-    $cached_result = wp_cache_get($cache_key, 'vk_dynamic_if_block');
-    if ($cached_result !== false) {
-        // キャッシュされた結果を使用
-        if ($cached_result === 'true') {
-            return vk_dynamic_if_block_extract_content_without_else($content);
-        } elseif ($cached_result === 'false') {
-            return vk_dynamic_if_block_extract_else_content($content);
+    $cache_key = '';
+    if (! $skip_cache) {
+        // 条件評価の結果をキャッシュするためのキーを生成
+        $cache_key = 'vk_dynamic_if_block_old_' . md5(serialize($attributes) . serialize($content) . get_the_ID() . get_queried_object_id());
+
+        // キャッシュから結果を取得
+        $cached_result = wp_cache_get($cache_key, 'vk_dynamic_if_block');
+        if ($cached_result !== false) {
+            // キャッシュされた結果を使用
+            if ($cached_result === 'true') {
+                return vk_dynamic_if_block_extract_content_without_else($content);
+            } elseif ($cached_result === 'false') {
+                return vk_dynamic_if_block_extract_else_content($content);
+            }
         }
     }
 
@@ -382,8 +398,10 @@ function vk_dynamic_if_block_render_old_attributes($attributes, $content)
     // Exclusion Check
     $final_result = ($attributes['exclusion'] ? !$display : $display);
 
-    // 結果をキャッシュに保存（1分間有効）
-    wp_cache_set($cache_key, $final_result ? 'true' : 'false', 'vk_dynamic_if_block', 60);
+    if (! $skip_cache) {
+        // 結果をキャッシュに保存（1分間有効）
+        wp_cache_set($cache_key, $final_result ? 'true' : 'false', 'vk_dynamic_if_block', 60);
+    }
 
     // elseブロックの処理
     if ($final_result) {
@@ -398,6 +416,146 @@ function vk_dynamic_if_block_render_old_attributes($attributes, $content)
 
         return $result_content;
     }
+}
+
+/**
+ * Get the condition types that depend on per-request state.
+ *
+ * The result of these condition types changes per request even when the block attributes,
+ * the block content and the current post are exactly the same, because they depend on the
+ * device, the login state, the capability of the current user, or the current time.
+ * They must never be shared between requests through a persistent object cache.
+ *
+ * これらの条件タイプは、ブロックの属性・中身・表示中の投稿がまったく同じでも、
+ * 端末種別・ログイン状態・ユーザー権限・現在時刻に依存するためリクエストごとに結果が変わる。
+ * 永続オブジェクトキャッシュでリクエストをまたいで共有してはいけない。
+ *
+ * @return array List of condition type slugs. / 条件タイプのスラッグ一覧。
+ */
+function vk_dynamic_if_block_get_request_state_condition_types()
+{
+    return array(
+        // Device type (wp_is_mobile()). / 端末種別（wp_is_mobile()）
+        'mobileDevice',
+        // Login state (is_user_logged_in()). / ログイン状態（is_user_logged_in()）
+        'loginUser',
+        // Capability of the current user. / 現在のユーザーの権限
+        'userRole',
+        // Current time. / 現在時刻
+        'period',
+    );
+}
+
+/**
+ * Check whether the given condition list contains a request state dependent condition.
+ *
+ * Each element of the list may hold a nested condition list under the 'conditions' key,
+ * so the list is scanned recursively.
+ *
+ * 各要素は 'conditions' キーに入れ子の条件配列を持つことがあるため、再帰的に走査する。
+ *
+ * @param mixed $conditions Condition list. / 条件の配列。
+ *
+ * @return bool True when at least one request state dependent condition is found. / リクエスト状態に依存する条件が1つでもあれば true。
+ */
+function vk_dynamic_if_block_has_request_state_condition_in_conditions($conditions)
+{
+    if (! is_array($conditions)) {
+        return false;
+    }
+
+    $request_state_types = vk_dynamic_if_block_get_request_state_condition_types();
+
+    foreach ($conditions as $condition) {
+        if (! is_array($condition)) {
+            continue;
+        }
+
+        // Check the condition type of this element. / この要素自身の条件タイプを判定する
+        if (isset($condition['type']) && in_array($condition['type'], $request_state_types, true)) {
+            return true;
+        }
+
+        // Scan the nested condition list. / 入れ子の条件配列を走査する
+        if (
+            isset($condition['conditions'])
+            && vk_dynamic_if_block_has_request_state_condition_in_conditions($condition['conditions'])
+        ) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Check whether the given block attributes contain a request state dependent condition.
+ *
+ * Supports both the current attribute structure ('conditions' / 'groups') and the legacy
+ * attribute structure, so that both render functions can share this single judgement.
+ *
+ * 現行の属性構造（'conditions' / 'groups'）と旧属性構造の両方に対応し、
+ * 2つのレンダー関数が同じ判定を共有できるようにしている。
+ *
+ * @param mixed $attributes Block attributes. / ブロックの属性。
+ *
+ * @return bool True when the block must not be cached. / キャッシュしてはいけない場合に true。
+ */
+function vk_dynamic_if_block_has_request_state_condition($attributes)
+{
+    if (! is_array($attributes)) {
+        return false;
+    }
+
+    // Current structure: the 'conditions' list. / 現行構造: 'conditions' の配列
+    if (
+        isset($attributes['conditions'])
+        && vk_dynamic_if_block_has_request_state_condition_in_conditions($attributes['conditions'])
+    ) {
+        return true;
+    }
+
+    // Current structure: each group holds its own 'conditions' list. / 現行構造: 各グループが持つ 'conditions' の配列
+    if (isset($attributes['groups']) && is_array($attributes['groups'])) {
+        foreach ($attributes['groups'] as $group) {
+            if (
+                is_array($group)
+                && isset($group['conditions'])
+                && vk_dynamic_if_block_has_request_state_condition_in_conditions($group['conditions'])
+            ) {
+                return true;
+            }
+        }
+    }
+
+    // Legacy structure: capability of the current user. / 旧構造: 現在のユーザーの権限
+    if (! empty($attributes['userRole'])) {
+        return true;
+    }
+
+    // Legacy structure: login state. / 旧構造: ログイン状態
+    if (! empty($attributes['showOnlyLoginUser'])) {
+        return true;
+    }
+
+    // Legacy structure: current time.
+    // 'none' and empty values mean "no restriction", so they are not request state dependent.
+    // 旧構造: 現在時刻。'none' や空値は「指定なし」なのでリクエスト状態に依存しない
+    if (! empty($attributes['periodDisplaySetting']) && 'none' !== $attributes['periodDisplaySetting']) {
+        return true;
+    }
+
+    // Legacy structure: device type.
+    // Only the values that actually restrict the display are treated as request state dependent,
+    // in the same way as vk_dynamic_if_block_check_mobile_device().
+    // 旧構造: 端末種別。vk_dynamic_if_block_check_mobile_device() と同じく、
+    // 実際に表示を制限する値のみをリクエスト状態に依存するものとして扱う
+    $device_type = $attributes['showOnlyMobileDevice'] ?? false;
+    if (true === $device_type || 'mobileOnly' === $device_type || 'pcOnly' === $device_type) {
+        return true;
+    }
+
+    return false;
 }
 
 /**
