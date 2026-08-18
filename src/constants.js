@@ -348,13 +348,16 @@ export const OLD_ATTRIBUTE_CLEARED_VALUES = {
 	ifLanguage: 'none',
 	userRole: [],
 	postAuthor: 0,
-	customFieldName: 'none',
+	// 属性宣言上の既定値が空文字のものは空文字に戻す（保存内容から消えるようにするため）
+	// The attributes whose declared default is an empty string are reset to it, so
+	// that they disappear from the saved markup.
+	customFieldName: '',
 	customFieldRule: 'valueExists',
-	customFieldValue: 'none',
+	customFieldValue: '',
 	periodDisplaySetting: 'none',
 	periodSpecificationMethod: 'direct',
-	periodDisplayValue: 'none',
-	periodReferCustomField: 'none',
+	periodDisplayValue: '',
+	periodReferCustomField: '',
 	showOnlyLoginUser: false,
 	showOnlyMobileDevice: false,
 };
@@ -416,6 +419,61 @@ export const isOldAttributeCleared = ( attr, value ) => {
 		return value !== true;
 	}
 	return value === clearedValue || value === 'none';
+};
+
+/**
+ * Insert the migrated conditions into the groups that do not hold them yet.
+ * Conditions inside a group are combined with AND while groups are combined with
+ * conditionOperator, so inserting into every group keeps the restriction for both
+ * operators ( (A and L) or (B and L) = (A or B) and L ). A group that already holds
+ * the same type of condition is left untouched even when its value differs, because
+ * a duplicated condition of the same type would restrict the display more than the
+ * visible setting does. The check is made per group, since a type held by another
+ * group does not restrict this group at all.
+ *
+ * 移行した条件を、まだ持っていないグループへ差し込む。
+ * グループ内は AND 結合、グループ同士は conditionOperator で結合されるため、各グループへ
+ * 差し込めばどちらの演算子でも制限が保たれる（ (A∧L)∨(B∧L) = (A∨B)∧L ）。
+ * 同じ種類の条件を既に持つグループは、値が違ってもそのままにする。グループ内は AND 結合の
+ * ため、同種の条件を重複させると画面上の設定より表示が絞られてしまうからで、判定は
+ * グループ単位で行う。別のグループが持つ条件は、このグループを何ら制限しないため。
+ *
+ * @param {Array} conditions         Condition groups. / 条件グループ。
+ * @param {Array} migratedConditions Conditions to insert. / 差し込む条件。
+ * @return {Array|null} New condition groups, or null when nothing was inserted. / 新しい条件グループ。差し込みが無い場合は null。
+ */
+export const insertMigratedConditions = ( conditions, migratedConditions ) => {
+	let inserted = false;
+
+	const newConditions = conditions.map( ( group ) => {
+		const groupConditions = group?.conditions || [];
+		const added = migratedConditions.filter(
+			( migrated ) =>
+				! groupConditions.some(
+					( condition ) => condition?.type === migrated.type
+				)
+		);
+
+		if ( added.length === 0 ) {
+			return group;
+		}
+
+		inserted = true;
+
+		return {
+			...group,
+			conditions: [
+				...groupConditions,
+				...added.map( ( migrated ) => ( {
+					id: generateId(),
+					type: migrated.type,
+					values: { ...migrated.values },
+				} ) ),
+			],
+		};
+	} );
+
+	return inserted ? newConditions : null;
 };
 
 // ユーティリティ関数

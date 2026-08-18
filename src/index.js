@@ -30,6 +30,7 @@ import {
 	buildMigrationValues,
 	isOldAttributeSet,
 	isOldAttributeCleared,
+	insertMigratedConditions,
 	OLD_ATTRIBUTE_CLEARED_VALUES,
 	generateId,
 	createConditionGroup,
@@ -441,20 +442,32 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				);
 
 				if ( hasOldAttributes ) {
+					// Clearing an old attribute is what switches the PHP evaluation from
+					// the legacy attribute path to the conditions path, and the conditions
+					// path inverts its whole result with exclusion or with an inverted
+					// group. Under such an inversion a condition added inside a group no
+					// longer restricts the display on its own, so neither the migration
+					// nor the clearing is performed and the block keeps being evaluated
+					// with its old attributes. This is decided before the migration,
+					// because the switch of the evaluation path happens even when nothing
+					// has to be migrated.
+					// PHP の判定を旧属性経路から conditions 経路へ切り替えるのは旧属性の
+					// クリアであり、conditions 経路は exclusion や inverted で結果全体が反転する。
+					// 反転がある状態ではグループ内へ差し込んだ条件が単体で表示を絞らなくなるため、
+					// 移行もクリアも行わず旧属性のままの判定を維持する。
+					// 経路の切り替えは移行対象が0件でも起きるので、移行より先に判定する
+					const hasInvertedGroup = conditions.some(
+						( group ) => group?.inverted
+					);
+					if ( exclusion || hasInvertedGroup ) {
+						return;
+					}
+
 					// Clearing an old attribute without creating the equivalent condition
 					// would silently drop the restriction it holds, so the missing
 					// conditions are created from the values that are still set.
 					// 対応する条件を作らずに旧属性を消すと、その属性が持っていた制限が
 					// 失われてしまうため、値が残っている旧属性から不足している条件を先に作成する
-					const existingConditionTypes = new Set();
-					conditions.forEach( ( group ) => {
-						( group?.conditions || [] ).forEach( ( condition ) => {
-							if ( condition?.type ) {
-								existingConditionTypes.add( condition.type );
-							}
-						} );
-					} );
-
 					const migratedConditions = [];
 					createMigrationRules( attributes ).forEach( ( rule ) => {
 						// 値が残っていない旧属性は移行するものが無い
@@ -463,65 +476,28 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 							return;
 						}
 
-						// The same type of condition already exists, so it is treated as
-						// migrated even when its value differs. This is a deliberate
-						// trade-off: creating a duplicated condition of the same type
-						// would restrict the display more than the visible setting does.
-						// 同じ種類の条件が既にある場合は、値が違っても移行済みとみなす。
-						// 同種の条件を重複して作ると画面上の設定より表示が絞られてしまうため、
-						// 旧属性側の値を捨てる意図的な割り切り
-						if ( existingConditionTypes.has( rule.type ) ) {
-							return;
-						}
-
 						migratedConditions.push( {
-							id: generateId(),
 							type: rule.type,
 							values: buildMigrationValues( rule, attributes ),
 						} );
 					} );
 
-					// A migrated condition has to keep restricting the display on its own.
-					// Groups are combined with conditionOperator and the whole result is
-					// inverted by exclusion or by an inverted group, so adding a group would
-					// widen the display instead of restricting it. Conditions inside a group
-					// are always combined with AND, hence the migrated conditions are pushed
-					// into every group ( (A∧L)∨(B∧L) = (A∨B)∧L ). When the result is inverted
-					// that equality does not hold, so nothing is migrated nor cleared and the
-					// block keeps being evaluated with its old attributes.
-					// 移行した条件は単体で表示を絞り続ける必要がある。グループ同士は
-					// conditionOperator で結合され、exclusion や inverted で結果全体が反転する
-					// ため、グループを足すと逆に表示が広がってしまう。グループ内は常に AND 結合
-					// なので、移行した条件は各グループの中へ差し込む（ (A∧L)∨(B∧L) = (A∨B)∧L ）。
-					// 反転がある場合はこの等式が成り立たないため、移行もクリアも行わず、
-					// 旧属性のままの判定を維持する
-					const hasInvertedGroup = conditions.some(
-						( group ) => group?.inverted
-					);
-					if (
-						migratedConditions.length > 0 &&
-						( exclusion || hasInvertedGroup )
-					) {
-						return;
-					}
-
 					const attributesToUpdate = {};
 
 					if ( migratedConditions.length > 0 ) {
-						attributesToUpdate.conditions = conditions.map(
-							( group ) => ( {
-								...group,
-								conditions: [
-									...( group?.conditions || [] ),
-									...migratedConditions.map(
-										( condition ) => ( {
-											...condition,
-											id: generateId(),
-										} )
-									),
-								],
-							} )
+						// 移行した条件は、その種類をまだ持たないグループへ差し込む
+						// （詳細は insertMigratedConditions() を参照）。
+						// 差し込むグループが無ければ conditions は書き換えない
+						// Insert the migrated conditions into the groups that do not hold
+						// them yet (see insertMigratedConditions() for the details). The
+						// conditions are left untouched when no group needed them.
+						const newConditions = insertMigratedConditions(
+							conditions,
+							migratedConditions
 						);
+						if ( newConditions ) {
+							attributesToUpdate.conditions = newConditions;
+						}
 					}
 
 					// 既にクリア済みの属性は書き換えない
@@ -537,15 +513,15 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					} );
 
 					// 実際に変わる値が無ければ更新しない（投稿が変更済みになるのを防ぐ）
-					// Do not update when no value actually changes, so that the post is not
-					// marked as modified.
+					// Do not update when no value actually changes, so that the post is
+					// not marked as modified.
 					if ( Object.keys( attributesToUpdate ).length > 0 ) {
 						setAttributes( attributesToUpdate );
 					}
 				}
 			}
 			// eslint-disable-next-line react-hooks/exhaustive-deps
-		}, [ hasMigrated, conditions ] );
+		}, [ hasMigrated, conditions, exclusion ] );
 
 		const conditionTypes = Object.entries( CONDITION_TYPE_LABELS ).map(
 			( [ value, label ] ) => ( {
@@ -1629,10 +1605,21 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 								);
 							}
 
+							// A block that has never been configured keeps the default
+							// single group with no condition inside, so that state is
+							// treated as empty as well. addCondition() adds the
+							// condition into the existing group.
+							// 一度も設定されていないブロックは、条件を持たない既定の
+							// グループが1つだけある状態になるため、これも未設定として扱う。
+							// addCondition() は既存のグループへ条件を追加する
+							const hasNoConditionRow =
+								Array.isArray( conditions ) &&
+								conditions.length === 1 &&
+								! conditions[ 0 ]?.conditions?.length;
 							if (
 								conditions &&
 								Array.isArray( conditions ) &&
-								conditions.length === 0
+								( conditions.length === 0 || hasNoConditionRow )
 							) {
 								return (
 									<div>
