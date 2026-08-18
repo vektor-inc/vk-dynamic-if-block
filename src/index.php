@@ -74,9 +74,10 @@ function vk_dynamic_if_block_render($attributes, $content)
                 }
             } elseif (is_bool($value)) {
                 // A value saved by the legacy toggle is treated as an old attribute only when it is true.
-                // false means "not specified", so it is not treated as an old attribute.
+                // false (as well as an unset value or an empty string) means "no restriction",
+                // so it is not treated as an old attribute.
                 // 旧トグル（真偽値）で保存された値は true のときだけ旧属性とみなす。
-                // false は「指定なし」なので旧属性扱いにしない
+                // false（および未設定・空文字）は「指定なし」なので旧属性扱いにしない
                 if (true === $value) {
                     $has_old_attributes = true;
                     break;
