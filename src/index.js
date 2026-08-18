@@ -493,6 +493,56 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 
 				if ( hasOldAttributes ) {
 					const attributesToUpdate = {};
+
+					// Clearing an old attribute without creating the equivalent condition
+					// would silently drop the restriction it holds, so the missing
+					// conditions are created from the values that are still set.
+					// 対応する条件を作らずに旧属性を消すと、その属性が持っていた制限が
+					// 失われてしまうため、値が残っている旧属性から不足している条件を先に作成する
+					const existingConditionTypes = new Set();
+					conditions.forEach( ( group ) => {
+						( group?.conditions || [] ).forEach( ( condition ) => {
+							if ( condition?.type ) {
+								existingConditionTypes.add( condition.type );
+							}
+						} );
+					} );
+
+					const migratedGroups = [];
+					createMigrationRules( attributes ).forEach( ( rule ) => {
+						const value = attributes[ rule.attr ];
+
+						// 値が残っていない旧属性は移行するものが無い
+						// Nothing to migrate when no value is left in the old attribute.
+						if ( ! rule.condition( value ) ) {
+							return;
+						}
+
+						// 同じ種類の条件が既にある場合は移行済みとみなして二重に作らない
+						// The condition type already exists, so it is treated as migrated.
+						if ( existingConditionTypes.has( rule.type ) ) {
+							return;
+						}
+
+						const values = rule.customValues
+							? rule.customValues()
+							: {
+									[ rule.key ]: Array.isArray( value )
+										? value[ 0 ] || ''
+										: value,
+							  };
+						migratedGroups.push(
+							createConditionGroup( rule.type, values )
+						);
+					} );
+
+					if ( migratedGroups.length > 0 ) {
+						attributesToUpdate.conditions = [
+							...conditions,
+							...migratedGroups,
+						];
+					}
+
 					oldAttributesToClear.forEach( ( attr ) => {
 						let defaultValue = 'none';
 						if ( attr === 'userRole' ) {
