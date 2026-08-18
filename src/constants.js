@@ -314,7 +314,9 @@ export const createMigrationRules = ( attributes ) => [
 		attr: 'showOnlyMobileDevice',
 		type: 'mobileDevice',
 		key: 'showOnlyMobileDevice',
-		condition: ( val ) => val,
+		// 'none'（指定なし）は制限しないため移行対象にしない
+		// 'none' means "no restriction", so it is not migrated.
+		condition: ( val ) => val && val !== 'none',
 	},
 ];
 
@@ -455,15 +457,21 @@ const isConditionRestricting = ( condition, migrated ) => {
 		return !! rule.condition( value );
 	}
 
-	// key を持たないルール（複数の値をまとめて移行するもの）は代表のキーで判定する
+	// key を持たないルール（複数の値をまとめて移行するもの）は代表のキーで判定する。
+	// 未知の種類は「制限していない」として扱い、差し込む側（安全側）に倒す
 	// The rules without a key migrate several values at once, so the representative
-	// key is used instead.
+	// key is used instead. An unknown type is treated as not restricting, which
+	// keeps the migrated condition inserted ( the safe side ).
 	if ( migrated.type === 'customField' ) {
 		return !! values.customFieldName && values.customFieldName !== 'none';
 	}
-	return (
-		!! values.periodDisplaySetting && values.periodDisplaySetting !== 'none'
-	);
+	if ( migrated.type === 'period' ) {
+		return (
+			!! values.periodDisplaySetting &&
+			values.periodDisplaySetting !== 'none'
+		);
+	}
+	return false;
 };
 
 /**
