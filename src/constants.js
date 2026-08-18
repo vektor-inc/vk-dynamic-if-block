@@ -318,6 +318,106 @@ export const createMigrationRules = ( attributes ) => [
 	},
 ];
 
+/**
+ * Build the condition values for a migration rule.
+ * Array values (such as userRole) are passed through as they are, because both the
+ * PHP evaluation and the editor UI accept an array of values.
+ *
+ * 移行ルールから条件の値を組み立てる。
+ * userRole のような配列の値は、PHP の判定もエディタの UI も配列を受け付けるため、
+ * 先頭要素へ切り詰めずそのまま渡す。
+ *
+ * @param {Object} rule       Migration rule created by createMigrationRules(). / createMigrationRules() が返す移行ルール。
+ * @param {Object} attributes Block attributes. / ブロックの属性。
+ * @return {Object} Values for the migrated condition. / 移行後の条件に設定する値。
+ */
+export const buildMigrationValues = ( rule, attributes ) => {
+	if ( rule.customValues ) {
+		return rule.customValues();
+	}
+	return { [ rule.key ]: attributes[ rule.attr ] };
+};
+
+/**
+ * Default value used when an old attribute is cleared.
+ * 旧属性をクリアするときの既定値。
+ */
+export const OLD_ATTRIBUTE_CLEARED_VALUES = {
+	ifPageType: 'none',
+	ifPostType: 'none',
+	ifLanguage: 'none',
+	userRole: [],
+	postAuthor: 0,
+	customFieldName: 'none',
+	customFieldRule: 'valueExists',
+	customFieldValue: 'none',
+	periodDisplaySetting: 'none',
+	periodSpecificationMethod: 'direct',
+	periodDisplayValue: 'none',
+	periodReferCustomField: 'none',
+	showOnlyLoginUser: false,
+	showOnlyMobileDevice: false,
+};
+
+/**
+ * Whether the old attribute actually holds a value that has to be migrated.
+ * Attributes that only hold their own default value are not treated as set, so that
+ * simply opening a block does not mark the post as modified.
+ *
+ * 旧属性に移行すべき値が実際に入っているかを判定する。
+ * 既定値のままの属性は「設定されていない」として扱い、ブロックを開いただけで
+ * 投稿が変更済みになることを防ぐ。
+ *
+ * @param {string} attr  Attribute name. / 属性名。
+ * @param {*}      value Attribute value. / 属性の値。
+ * @return {boolean} True when the attribute holds a value to migrate. / 移行すべき値が入っている場合は true。
+ */
+export const isOldAttributeSet = ( attr, value ) => {
+	if ( attr === 'userRole' ) {
+		return Array.isArray( value ) && value.length > 0;
+	}
+	if ( attr === 'postAuthor' ) {
+		return !! value && value !== 0;
+	}
+	if ( attr === 'showOnlyLoginUser' || attr === 'showOnlyMobileDevice' ) {
+		return value === true;
+	}
+	// これらの属性は既定値が 'none' や空文字ではないため、既定値と異なる場合のみ設定済みとみなす
+	// These attributes do not default to 'none' or an empty string, so they are only
+	// treated as set when they differ from their own default value.
+	if ( attr === 'customFieldRule' ) {
+		return !! value && value !== 'valueExists' && value !== 'none';
+	}
+	if ( attr === 'periodSpecificationMethod' ) {
+		return !! value && value !== 'direct' && value !== 'none';
+	}
+	return !! value && value !== 'none' && value !== '';
+};
+
+/**
+ * Whether the attribute value already equals the value used when it is cleared.
+ * 属性の値が、クリア時に設定する値と既に同じかどうか。
+ *
+ * @param {string} attr  Attribute name. / 属性名。
+ * @param {*}      value Attribute value. / 属性の値。
+ * @return {boolean} True when the attribute does not need to be cleared. / クリアが不要な場合は true。
+ */
+export const isOldAttributeCleared = ( attr, value ) => {
+	const clearedValue = OLD_ATTRIBUTE_CLEARED_VALUES[ attr ];
+	if ( Array.isArray( clearedValue ) ) {
+		return Array.isArray( value ) && value.length === 0;
+	}
+	// 空値・未設定は「指定なし」なのでクリア済みとして扱う
+	// An empty or unset value means "not specified", so it is already cleared.
+	if ( ! value ) {
+		return true;
+	}
+	if ( clearedValue === false ) {
+		return value !== true;
+	}
+	return value === clearedValue || value === 'none';
+};
+
 // ユーティリティ関数
 export const generateId = () => {
 	return (

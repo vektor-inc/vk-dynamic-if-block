@@ -39,6 +39,7 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 * [ Bug Fix ] Exclude display conditions that depend on the request (device type, login state, user role, display period and language) from the display judgement cache.
 * [ Bug Fix ] Include boolean values in the detection of legacy display condition settings.
 * [ Bug Fix ] Create the equivalent condition before clearing legacy display condition settings in the editor.
+* [ Bug Fix ] Restore the block attribute declaration for the legacy device type setting in the editor.
 
 = 1.6.1 =
 [ Other ] Fix an issue where blocks become locked and cannot be edited when inserting patterns in WordPress 7.0.

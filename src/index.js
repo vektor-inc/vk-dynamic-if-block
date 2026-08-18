@@ -27,6 +27,10 @@ import {
 	CONDITION_OPERATORS,
 	BLOCK_CONFIG,
 	createMigrationRules,
+	buildMigrationValues,
+	isOldAttributeSet,
+	isOldAttributeCleared,
+	OLD_ATTRIBUTE_CLEARED_VALUES,
 	generateId,
 	createConditionGroup,
 	sortLanguages,
@@ -112,6 +116,15 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 			default: '',
 		},
 		showOnlyLoginUser: {
+			type: 'boolean',
+			default: false,
+		},
+		// Legacy attribute published in 1.3.0. It has to stay declared, because an
+		// undeclared attribute is dropped when the block is parsed and would be lost
+		// on the next save before it can be migrated into a condition.
+		// 1.3.0 で公開された旧属性。宣言が無いとブロックのパース時に捨てられ、
+		// 条件へ移行される前に次回保存で失われるため、互換用に宣言を残す
+		showOnlyMobileDevice: {
 			type: 'boolean',
 			default: false,
 		},
@@ -320,35 +333,9 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 				'showOnlyMobileDevice',
 			];
 
-			const hasOldAttributes = oldAttributes.some( ( attr ) => {
-				const value = attributes[ attr ];
-				if ( attr === 'userRole' ) {
-					return Array.isArray( value ) && value.length > 0;
-				}
-				if ( attr === 'postAuthor' ) {
-					return value !== 0;
-				}
-				if (
-					attr === 'showOnlyLoginUser' ||
-					attr === 'showOnlyMobileDevice'
-				) {
-					return value === true;
-				}
-				// カスタムフィールド関連の属性は、実際に有効な値が設定されている場合のみ移行対象とする
-				if ( attr === 'customFieldName' ) {
-					return value && value !== '' && value !== 'none';
-				}
-				if ( attr === 'customFieldValue' ) {
-					return value && value !== '' && value !== 'none';
-				}
-				if ( attr === 'periodDisplayValue' ) {
-					return value && value !== '' && value !== 'none';
-				}
-				if ( attr === 'periodReferCustomField' ) {
-					return value && value !== '' && value !== 'none';
-				}
-				return value && value !== 'none' && value !== '';
-			} );
+			const hasOldAttributes = oldAttributes.some( ( attr ) =>
+				isOldAttributeSet( attr, attributes[ attr ] )
+			);
 
 			if ( ! hasOldAttributes ) {
 				setHasMigrated( true );
@@ -374,15 +361,11 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						const isValidValue = true;
 
 						if ( isValidValue ) {
-							const values = rule.customValues
-								? rule.customValues()
-								: {
-										[ rule.key ]: Array.isArray( value )
-											? value[ 0 ] || ''
-											: value,
-								  };
 							newConditions.push(
-								createConditionGroup( rule.type, values )
+								createConditionGroup(
+									rule.type,
+									buildMigrationValues( rule, attributes )
+								)
 							);
 						}
 					}
@@ -398,41 +381,19 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					);
 				}
 
-				// 新しいconditionsを設定し、古い属性をクリア
+				// 新しいconditionsを設定し、古い属性をクリアする。
+				// 既にクリア済みの属性は書き換えない（無用な変更で投稿が変更済みになるのを防ぐ）
+				// Set the new conditions and clear the old attributes. Attributes that are
+				// already cleared are left untouched, so that no needless change marks the
+				// post as modified.
 				const attributesToUpdate = { conditions: newConditions };
 
-				// 古い属性をクリア
 				oldAttributes.forEach( ( attr ) => {
-					let defaultValue = 'none';
-					if ( attr === 'userRole' ) {
-						defaultValue = [];
-					} else if ( attr === 'postAuthor' ) {
-						defaultValue = 0;
-					} else if ( attr === 'showOnlyLoginUser' ) {
-						defaultValue = false;
-					} else if ( attr === 'customFieldRule' ) {
-						defaultValue = 'valueExists';
-					} else if ( attr === 'periodSpecificationMethod' ) {
-						defaultValue = 'direct';
+					if ( isOldAttributeCleared( attr, attributes[ attr ] ) ) {
+						return;
 					}
-					attributesToUpdate[ attr ] = defaultValue;
-				} );
-
-				// その他の古い属性もクリア
-				const additionalOldAttributes = [
-					'customFieldName',
-					'customFieldValue',
-					'periodDisplayValue',
-					'periodReferCustomField',
-					'showOnlyMobileDevice',
-				];
-
-				additionalOldAttributes.forEach( ( attr ) => {
-					let defaultValue = 'none';
-					if ( attr === 'showOnlyMobileDevice' ) {
-						defaultValue = false;
-					}
-					attributesToUpdate[ attr ] = defaultValue;
+					attributesToUpdate[ attr ] =
+						OLD_ATTRIBUTE_CLEARED_VALUES[ attr ];
 				} );
 
 				setAttributes( attributesToUpdate );
@@ -475,25 +436,11 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 					'showOnlyMobileDevice',
 				];
 
-				const hasOldAttributes = oldAttributesToClear.some(
-					( attr ) => {
-						const value = attributes[ attr ];
-						if ( attr === 'userRole' ) {
-							return Array.isArray( value ) && value.length > 0;
-						}
-						if ( attr === 'postAuthor' ) {
-							return value !== 0;
-						}
-						if ( attr === 'showOnlyLoginUser' ) {
-							return value === true;
-						}
-						return value && value !== 'none' && value !== '';
-					}
+				const hasOldAttributes = oldAttributesToClear.some( ( attr ) =>
+					isOldAttributeSet( attr, attributes[ attr ] )
 				);
 
 				if ( hasOldAttributes ) {
-					const attributesToUpdate = {};
-
 					// Clearing an old attribute without creating the equivalent condition
 					// would silently drop the restriction it holds, so the missing
 					// conditions are created from the values that are still set.
@@ -508,57 +455,93 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						} );
 					} );
 
-					const migratedGroups = [];
+					const migratedConditions = [];
 					createMigrationRules( attributes ).forEach( ( rule ) => {
-						const value = attributes[ rule.attr ];
-
 						// 値が残っていない旧属性は移行するものが無い
 						// Nothing to migrate when no value is left in the old attribute.
-						if ( ! rule.condition( value ) ) {
+						if ( ! rule.condition( attributes[ rule.attr ] ) ) {
 							return;
 						}
 
-						// 同じ種類の条件が既にある場合は移行済みとみなして二重に作らない
-						// The condition type already exists, so it is treated as migrated.
+						// The same type of condition already exists, so it is treated as
+						// migrated even when its value differs. This is a deliberate
+						// trade-off: creating a duplicated condition of the same type
+						// would restrict the display more than the visible setting does.
+						// 同じ種類の条件が既にある場合は、値が違っても移行済みとみなす。
+						// 同種の条件を重複して作ると画面上の設定より表示が絞られてしまうため、
+						// 旧属性側の値を捨てる意図的な割り切り
 						if ( existingConditionTypes.has( rule.type ) ) {
 							return;
 						}
 
-						const values = rule.customValues
-							? rule.customValues()
-							: {
-									[ rule.key ]: Array.isArray( value )
-										? value[ 0 ] || ''
-										: value,
-							  };
-						migratedGroups.push(
-							createConditionGroup( rule.type, values )
-						);
+						migratedConditions.push( {
+							id: generateId(),
+							type: rule.type,
+							values: buildMigrationValues( rule, attributes ),
+						} );
 					} );
 
-					if ( migratedGroups.length > 0 ) {
-						attributesToUpdate.conditions = [
-							...conditions,
-							...migratedGroups,
-						];
+					// A migrated condition has to keep restricting the display on its own.
+					// Groups are combined with conditionOperator and the whole result is
+					// inverted by exclusion or by an inverted group, so adding a group would
+					// widen the display instead of restricting it. Conditions inside a group
+					// are always combined with AND, hence the migrated conditions are pushed
+					// into every group ( (A∧L)∨(B∧L) = (A∨B)∧L ). When the result is inverted
+					// that equality does not hold, so nothing is migrated nor cleared and the
+					// block keeps being evaluated with its old attributes.
+					// 移行した条件は単体で表示を絞り続ける必要がある。グループ同士は
+					// conditionOperator で結合され、exclusion や inverted で結果全体が反転する
+					// ため、グループを足すと逆に表示が広がってしまう。グループ内は常に AND 結合
+					// なので、移行した条件は各グループの中へ差し込む（ (A∧L)∨(B∧L) = (A∨B)∧L ）。
+					// 反転がある場合はこの等式が成り立たないため、移行もクリアも行わず、
+					// 旧属性のままの判定を維持する
+					const hasInvertedGroup = conditions.some(
+						( group ) => group?.inverted
+					);
+					if (
+						migratedConditions.length > 0 &&
+						( exclusion || hasInvertedGroup )
+					) {
+						return;
 					}
 
+					const attributesToUpdate = {};
+
+					if ( migratedConditions.length > 0 ) {
+						attributesToUpdate.conditions = conditions.map(
+							( group ) => ( {
+								...group,
+								conditions: [
+									...( group?.conditions || [] ),
+									...migratedConditions.map(
+										( condition ) => ( {
+											...condition,
+											id: generateId(),
+										} )
+									),
+								],
+							} )
+						);
+					}
+
+					// 既にクリア済みの属性は書き換えない
+					// Attributes that are already cleared are left untouched.
 					oldAttributesToClear.forEach( ( attr ) => {
-						let defaultValue = 'none';
-						if ( attr === 'userRole' ) {
-							defaultValue = [];
-						} else if ( attr === 'postAuthor' ) {
-							defaultValue = 0;
-						} else if ( attr === 'showOnlyLoginUser' ) {
-							defaultValue = false;
-						} else if ( attr === 'customFieldRule' ) {
-							defaultValue = 'valueExists';
-						} else if ( attr === 'periodSpecificationMethod' ) {
-							defaultValue = 'direct';
+						if (
+							isOldAttributeCleared( attr, attributes[ attr ] )
+						) {
+							return;
 						}
-						attributesToUpdate[ attr ] = defaultValue;
+						attributesToUpdate[ attr ] =
+							OLD_ATTRIBUTE_CLEARED_VALUES[ attr ];
 					} );
-					setAttributes( attributesToUpdate );
+
+					// 実際に変わる値が無ければ更新しない（投稿が変更済みになるのを防ぐ）
+					// Do not update when no value actually changes, so that the post is not
+					// marked as modified.
+					if ( Object.keys( attributesToUpdate ).length > 0 ) {
+						setAttributes( attributesToUpdate );
+					}
 				}
 			}
 			// eslint-disable-next-line react-hooks/exhaustive-deps
