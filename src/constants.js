@@ -422,24 +422,75 @@ export const isOldAttributeCleared = ( attr, value ) => {
 };
 
 /**
- * Insert the migrated conditions into the groups that do not hold them yet.
+ * Whether an existing condition actually restricts the display for the migrated one.
+ * A condition row that was just added holds no value yet ( for example
+ * { type: 'pageType', values: {} } ) and is evaluated as "no restriction" by PHP, so
+ * only a condition of the same type that really restricts the display counts as the
+ * destination of the migration.
+ *
+ * 既存の条件が、移行しようとしている条件に対して実際に表示を制限しているかを判定する。
+ * 追加した直後の条件行は値を持たず（例: { type: 'pageType', values: {} } ）、PHP では
+ * 「指定なし」として評価されるため、同じ種類で実際に表示を制限している条件だけを
+ * 移行先とみなす。
+ *
+ * @param {Object} condition Existing condition. / 既存の条件。
+ * @param {Object} migrated  Condition to migrate, with its migration rule. / 移行しようとしている条件（移行ルール付き）。
+ * @return {boolean} True when the existing condition restricts the display. / 実際に表示を制限している場合は true。
+ */
+const isConditionRestricting = ( condition, migrated ) => {
+	if ( condition?.type !== migrated.type ) {
+		return false;
+	}
+
+	const values = condition?.values || {};
+	const rule = migrated.rule;
+
+	if ( rule?.key ) {
+		const value = values[ rule.key ];
+		// 'none' は「指定なし」なので制限していない
+		// 'none' means "no restriction".
+		if ( value === 'none' ) {
+			return false;
+		}
+		return !! rule.condition( value );
+	}
+
+	// key を持たないルール（複数の値をまとめて移行するもの）は代表のキーで判定する
+	// The rules without a key migrate several values at once, so the representative
+	// key is used instead.
+	if ( migrated.type === 'customField' ) {
+		return !! values.customFieldName && values.customFieldName !== 'none';
+	}
+	return (
+		!! values.periodDisplaySetting && values.periodDisplaySetting !== 'none'
+	);
+};
+
+/**
+ * Insert the migrated conditions into the groups that do not restrict the display
+ * with them yet.
  * Conditions inside a group are combined with AND while groups are combined with
  * conditionOperator, so inserting into every group keeps the restriction for both
  * operators ( (A and L) or (B and L) = (A or B) and L ). A group that already holds
- * the same type of condition is left untouched even when its value differs, because
- * a duplicated condition of the same type would restrict the display more than the
- * visible setting does. The check is made per group, since a type held by another
+ * a restricting condition of the same type is left untouched even when its value
+ * differs, because a duplicated condition of the same type would restrict the display
+ * more than the visible setting does. That trade-off only holds while the existing
+ * condition really restricts the display: inserting into a condition row that
+ * restricts nothing evaluates as ( true and L ) = L, so it never narrows the display
+ * more than intended. The check is made per group, since a condition held by another
  * group does not restrict this group at all.
  *
- * 移行した条件を、まだ持っていないグループへ差し込む。
+ * 移行した条件を、まだその条件で表示を制限していないグループへ差し込む。
  * グループ内は AND 結合、グループ同士は conditionOperator で結合されるため、各グループへ
  * 差し込めばどちらの演算子でも制限が保たれる（ (A∧L)∨(B∧L) = (A∨B)∧L ）。
- * 同じ種類の条件を既に持つグループは、値が違ってもそのままにする。グループ内は AND 結合の
- * ため、同種の条件を重複させると画面上の設定より表示が絞られてしまうからで、判定は
- * グループ単位で行う。別のグループが持つ条件は、このグループを何ら制限しないため。
+ * 同じ種類で実際に制限している条件を既に持つグループは、値が違ってもそのままにする。
+ * グループ内は AND 結合のため、同種の条件を重複させると画面上の設定より表示が絞られて
+ * しまうからで、この割り切りは既存の条件が実際に制限を掛けている場合にだけ成り立つ。
+ * 制限していない条件行へ差し込んだ場合は (true ∧ L) = L となり、絞りすぎにはならない。
+ * 判定はグループ単位で行う。別のグループが持つ条件は、このグループを何ら制限しないため。
  *
  * @param {Array} conditions         Condition groups. / 条件グループ。
- * @param {Array} migratedConditions Conditions to insert. / 差し込む条件。
+ * @param {Array} migratedConditions Conditions to insert, with their migration rules. / 差し込む条件（移行ルール付き）。
  * @return {Array|null} New condition groups, or null when nothing was inserted. / 新しい条件グループ。差し込みが無い場合は null。
  */
 export const insertMigratedConditions = ( conditions, migratedConditions ) => {
@@ -449,8 +500,8 @@ export const insertMigratedConditions = ( conditions, migratedConditions ) => {
 		const groupConditions = group?.conditions || [];
 		const added = migratedConditions.filter(
 			( migrated ) =>
-				! groupConditions.some(
-					( condition ) => condition?.type === migrated.type
+				! groupConditions.some( ( condition ) =>
+					isConditionRestricting( condition, migrated )
 				)
 		);
 

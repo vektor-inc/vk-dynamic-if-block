@@ -479,6 +479,7 @@ registerBlockType( 'vk-blocks/dynamic-if', {
 						migratedConditions.push( {
 							type: rule.type,
 							values: buildMigrationValues( rule, attributes ),
+							rule,
 						} );
 					} );
 
