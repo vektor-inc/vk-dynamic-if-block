@@ -37,6 +37,7 @@ However, by nesting Dynamic If Blocks, various conditional branching can be hand
 
 * [ Spec Change ] Change the "Mobile Device Only" condition to a "Device Type" selector with No restriction, Mobile Devices Only, and PC Only options.
 * [ Bug Fix ] Exclude display conditions that depend on the request (device type, login state, user role, display period and language) from the display judgement cache.
+* [ Bug Fix ] Include boolean values in the detection of legacy display condition settings.
 
 = 1.6.1 =
 [ Other ] Fix an issue where blocks become locked and cannot be edited when inserting patterns in WordPress 7.0.

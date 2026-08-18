@@ -3190,4 +3190,124 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
         remove_all_filters('wp_is_mobile');
     }
 
+    /**
+     * 旧属性が真偽値で保存されている場合のレンダーテスト
+     *
+     * 旧仕様のトグル（ログインユーザーのみ表示・モバイル端末のみ表示）は真偽値で保存されるため、
+     * public なレンダー関数から旧属性として認識され、旧構造の判定が行われることを確認する。
+     * あわせて、真偽値以外の旧属性が従来どおり旧構造の判定へ流れることも確認する。
+     */
+    public function test_vk_dynamic_if_block_render_with_old_boolean_attributes()
+    {
+        // 他のテストとキャッシュキーが重ならないよう、このテスト専用のコンテンツを使う
+        $content     = '<p>main-old-bool</p><div class="vk-dynamic-if-else-block__content">else</div>';
+        $main_output = '<p>main-old-bool</p>';
+        $else_output = '<div class="vk-dynamic-if-else-block__content">else</div>';
+
+        // 常に true になる新構造の条件。
+        // 旧属性が認識されないと新構造の判定へ流れて必ず main が返るため、
+        // 旧構造の判定が行われたかどうかを見分けられる
+        $always_true_condition = array(
+            'type'   => 'pageType',
+            'values' => array( 'ifPageType' => 'none' ),
+        );
+
+        // テストの配列
+        // is_login   : ログイン状態（指定がある場合のみ切り替える）
+        // is_mobile  : wp_is_mobile() の返り値（指定がある場合のみ固定する）
+        $test_cases = array(
+            array(
+                'test_condition_name' => '旧属性でログインユーザーのみ表示（真偽値）を指定し、未ログインの場合 => else が返る',
+                'attributes'          => array(
+                    'showOnlyLoginUser' => true,
+                    'conditions'        => array( $always_true_condition ),
+                    'exclusion'         => false,
+                ),
+                'is_login'            => false,
+                'expected'            => $else_output,
+            ),
+            array(
+                'test_condition_name' => '旧属性でログインユーザーのみ表示（真偽値）を指定し、ログイン中の場合 => main が返る',
+                'attributes'          => array(
+                    'showOnlyLoginUser' => true,
+                    'conditions'        => array( $always_true_condition ),
+                    'exclusion'         => false,
+                ),
+                'is_login'            => true,
+                'expected'            => $main_output,
+            ),
+            array(
+                'test_condition_name' => '旧属性でモバイル端末のみ表示（真偽値）を指定し、モバイル端末の場合 => main が返る',
+                'attributes'          => array(
+                    'showOnlyMobileDevice' => true,
+                    'conditions'           => array( $always_true_condition ),
+                    'exclusion'            => false,
+                ),
+                'is_mobile'           => true,
+                'expected'            => $main_output,
+            ),
+            array(
+                'test_condition_name' => '旧属性でモバイル端末のみ表示（真偽値）を指定し、PC の場合 => else が返る',
+                'attributes'          => array(
+                    'showOnlyMobileDevice' => true,
+                    'conditions'           => array( $always_true_condition ),
+                    'exclusion'            => false,
+                ),
+                'is_mobile'           => false,
+                'expected'            => $else_output,
+            ),
+            array(
+                'test_condition_name' => '旧属性でログインユーザーのみ表示が false（旧トグルOFF）の場合 => 旧属性扱いにせず新構造の判定で main が返る',
+                'attributes'          => array(
+                    'showOnlyLoginUser' => false,
+                    'conditions'        => array( $always_true_condition ),
+                    'exclusion'         => false,
+                ),
+                'is_login'            => false,
+                'expected'            => $main_output,
+            ),
+            array(
+                'test_condition_name' => '旧属性でページ種別（文字列）に固定ページを指定し、フロントページを表示中の場合 => 旧構造の判定で else が返る',
+                'attributes'          => array(
+                    'ifPageType' => 'is_page',
+                    'conditions' => array( $always_true_condition ),
+                    'exclusion'  => false,
+                ),
+                'expected'            => $else_output,
+            ),
+            array(
+                'test_condition_name' => '旧属性でページ種別（文字列）にフロントページを指定し、フロントページを表示中の場合 => 旧構造の判定で main が返る',
+                'attributes'          => array(
+                    'ifPageType' => 'is_front_page',
+                    'conditions' => array( $always_true_condition ),
+                    'exclusion'  => false,
+                ),
+                'expected'            => $main_output,
+            ),
+        );
+
+        // ページ種別のケースがフロントページ表示であることを前提にしているため、明示的に移動する
+        $this->go_to(home_url());
+
+        foreach ( $test_cases as $case ) {
+            // ログイン状態を固定する（指定がないケースは未ログインとして扱う）
+            wp_set_current_user(! empty($case['is_login']) ? 1 : 0);
+
+            // 端末種別を固定する
+            if (array_key_exists('is_mobile', $case) ) {
+                add_filter('wp_is_mobile', $case['is_mobile'] ? '__return_true' : '__return_false');
+            }
+
+            // テスト関数実行（public なレンダー経路を通す）
+            $actual = vk_dynamic_if_block_render($case['attributes'], $content);
+
+            // 後始末
+            remove_all_filters('wp_is_mobile');
+            wp_set_current_user(0);
+
+            // 期待値テスト
+            $this->assertSame($case['expected'], $actual, $case['test_condition_name']);
+        }
+    }
+
 }
