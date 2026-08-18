@@ -344,6 +344,14 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
         $test_posts = self::$test_posts;
         $test_users = self::$test_users;
 
+        // User used by the 'is_login' cases. Creating it here guarantees that the user exists,
+        // because a missing user id would silently fall back to the logged out state and turn a
+        // failing case into a passing one.
+        // 'is_login' のケースで使うユーザー。ここで作成して実在を保証する。
+        // 存在しないユーザーIDを指定すると未ログイン状態に化けてしまい、
+        // 本来失敗するべきケースが誤って成功するため
+        $login_user_id = self::factory()->user->create();
+
         $tests = array(
         /******************************************
          * Front Page 
@@ -2608,6 +2616,133 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
         'content'   => 'Single post content<div class="wp-block-vk-blocks-dynamic-if-else"><div class="wp-block-vk-blocks-dynamic-if-else__content"></div></div>',
         'expected'  => '<div class="wp-block-vk-blocks-dynamic-if-else"><div class="wp-block-vk-blocks-dynamic-if-else__content"></div></div>',
         ),
+        /******************************************
+         * Legacy attributes saved as boolean values
+         * 真偽値で保存された旧属性
+*/
+        // The legacy toggles are saved as boolean values, so they have to be detected as old attributes.
+        // Every case below also carries an always true 'conditions' entry: when the old attributes are
+        // not detected, the evaluation falls through to the new structure and the main content is always
+        // returned, so the expected value tells which structure was actually evaluated.
+        // The cases that expect an empty string are the ones that detect the regression.
+        // 旧仕様のトグルは真偽値で保存されるため、旧属性として検出される必要がある。
+        // 以下の各ケースには常に true になる 'conditions' も併せて指定しており、旧属性が検出されないと
+        // 新構造の判定へ流れて必ずメインコンテンツが返るため、期待値でどちらの構造が評価されたか判別できる。
+        // 回帰を検出できるのは、期待値が空文字のケース。
+        array(
+        'name'      => 'Legacy showOnlyLoginUser (boolean true) / not logged in',
+        'go_to'     => get_permalink($test_posts['parent_page_id']),
+        'attribute' => array(
+                    'showOnlyLoginUser' => true,
+                    'conditions'        => array(
+                        array(
+                            'type'   => 'pageType',
+                            'values' => array( 'ifPageType' => 'none' ),
+                        ),
+        ),
+        ),
+        'is_login'  => false,
+        'content'   => 'Legacy showOnlyLoginUser (boolean true) / not logged in',
+        'expected'  => '',
+        ),
+        array(
+        'name'      => 'Legacy showOnlyLoginUser (boolean true) / logged in',
+        'go_to'     => get_permalink($test_posts['parent_page_id']),
+        'attribute' => array(
+                    'showOnlyLoginUser' => true,
+                    'conditions'        => array(
+                        array(
+                            'type'   => 'pageType',
+                            'values' => array( 'ifPageType' => 'none' ),
+                        ),
+        ),
+        ),
+        'is_login'  => true,
+        'content'   => 'Legacy showOnlyLoginUser (boolean true) / logged in',
+        'expected'  => 'Legacy showOnlyLoginUser (boolean true) / logged in',
+        ),
+        array(
+        'name'      => 'Legacy showOnlyMobileDevice (boolean true) / mobile',
+        'go_to'     => get_permalink($test_posts['parent_page_id']),
+        'attribute' => array(
+                    'showOnlyMobileDevice' => true,
+                    'conditions'           => array(
+                        array(
+                            'type'   => 'pageType',
+                            'values' => array( 'ifPageType' => 'none' ),
+                        ),
+        ),
+        ),
+        'is_mobile' => true,
+        'content'   => 'Legacy showOnlyMobileDevice (boolean true) / mobile',
+        'expected'  => 'Legacy showOnlyMobileDevice (boolean true) / mobile',
+        ),
+        array(
+        'name'      => 'Legacy showOnlyMobileDevice (boolean true) / non-mobile',
+        'go_to'     => get_permalink($test_posts['parent_page_id']),
+        'attribute' => array(
+                    'showOnlyMobileDevice' => true,
+                    'conditions'           => array(
+                        array(
+                            'type'   => 'pageType',
+                            'values' => array( 'ifPageType' => 'none' ),
+                        ),
+        ),
+        ),
+        'is_mobile' => false,
+        'content'   => 'Legacy showOnlyMobileDevice (boolean true) / non-mobile',
+        'expected'  => '',
+        ),
+        // A boolean false means "not specified", so it must not be detected as an old attribute.
+        // 真偽値の false は「指定なし」なので、旧属性として検出してはいけない
+        array(
+        'name'      => 'Legacy showOnlyLoginUser (boolean false) / not logged in',
+        'go_to'     => get_permalink($test_posts['parent_page_id']),
+        'attribute' => array(
+                    'showOnlyLoginUser' => false,
+                    'conditions'        => array(
+                        array(
+                            'type'   => 'pageType',
+                            'values' => array( 'ifPageType' => 'none' ),
+                        ),
+        ),
+        ),
+        'is_login'  => false,
+        'content'   => 'Legacy showOnlyLoginUser (boolean false) / not logged in',
+        'expected'  => 'Legacy showOnlyLoginUser (boolean false) / not logged in',
+        ),
+        // Non boolean old attributes must keep flowing into the legacy structure as before.
+        // 真偽値以外の旧属性は、従来どおり旧構造の判定へ流れる必要がある
+        array(
+        'name'      => 'Legacy ifPageType (string) is_single / page',
+        'go_to'     => get_permalink($test_posts['parent_page_id']),
+        'attribute' => array(
+                    'ifPageType' => 'is_single',
+                    'conditions' => array(
+                        array(
+                            'type'   => 'pageType',
+                            'values' => array( 'ifPageType' => 'none' ),
+                        ),
+        ),
+        ),
+        'content'   => 'Legacy ifPageType (string) is_single / page',
+        'expected'  => '',
+        ),
+        array(
+        'name'      => 'Legacy ifPageType (string) is_page / page',
+        'go_to'     => get_permalink($test_posts['parent_page_id']),
+        'attribute' => array(
+                    'ifPageType' => 'is_page',
+                    'conditions' => array(
+                        array(
+                            'type'   => 'pageType',
+                            'values' => array( 'ifPageType' => 'none' ),
+                        ),
+        ),
+        ),
+        'content'   => 'Legacy ifPageType (string) is_page / page',
+        'expected'  => 'Legacy ifPageType (string) is_page / page',
+        ),
         );
 
         foreach ( $tests as $test ) {
@@ -2659,7 +2794,7 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
                 // ユーザーをリセット.
                 wp_set_current_user(0);
             } elseif (isset($test['is_login']) ) {
-                wp_set_current_user($test['is_login'] ? 1 : 0);
+                wp_set_current_user($test['is_login'] ? $login_user_id : 0);
                 $actual = vk_dynamic_if_block_render($test['attribute'], $test['content']);
                 wp_set_current_user(0);
             } elseif (isset($test['is_mobile'])) {
@@ -2689,6 +2824,541 @@ class VkDynamicIfBlockRenderTest extends WP_UnitTestCase
 
         wp_delete_post($test_posts['front_page_id'], true);
         wp_delete_post($test_posts['home_page_id'], true);
+    }
+
+    /**
+     * Test for the detection of conditions that depend on the request state.
+     * リクエスト状態に依存する条件が含まれるかの判定テスト
+     *
+     * Returns true when the block contains a condition that depends on the device type, login state,
+     * user capability, current time or language, because the display judgement result must not be
+     * cached across requests.
+     * 端末種別・ログイン状態・ユーザー権限・時刻・言語に依存する条件を含む場合、
+     * 表示判定の結果をリクエストをまたいでキャッシュしてはいけないため true を返す。
+     */
+    public function test_vk_dynamic_if_block_has_request_state_condition()
+    {
+        // Test cases.
+        // テストの配列
+        $test_cases = array(
+            array(
+                'test_condition_name' => '条件が空の配列の場合 => false',
+                'attributes'          => array(),
+                'expected'            => false,
+            ),
+            array(
+                'test_condition_name' => '属性が配列でない場合 => false',
+                'attributes'          => 'not-an-array',
+                'expected'            => false,
+            ),
+            array(
+                'test_condition_name' => 'conditions が配列でない場合 => false',
+                'attributes'          => array( 'conditions' => 'not-an-array' ),
+                'expected'            => false,
+            ),
+            array(
+                'test_condition_name' => 'conditions がページタイプのみの場合 => false',
+                'attributes'          => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'pageType',
+                            'values' => array( 'ifPageType' => 'is_single' ),
+                        ),
+                    ),
+                ),
+                'expected'            => false,
+            ),
+            array(
+                'test_condition_name' => 'conditions に端末種別が含まれる場合 => true',
+                'attributes'          => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'mobileDevice',
+                            'values' => array( 'showOnlyMobileDevice' => 'mobileOnly' ),
+                        ),
+                    ),
+                ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => 'conditions にログイン状態が含まれる場合 => true',
+                'attributes'          => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'loginUser',
+                            'values' => array( 'showOnlyLoginUser' => true ),
+                        ),
+                    ),
+                ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => 'conditions にユーザー権限が含まれる場合 => true',
+                'attributes'          => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'userRole',
+                            'values' => array( 'userRole' => array( 'editor' ) ),
+                        ),
+                    ),
+                ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => 'conditions に期間指定が含まれる場合 => true',
+                'attributes'          => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'period',
+                            'values' => array( 'periodDisplaySetting' => 'deadline' ),
+                        ),
+                    ),
+                ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => 'conditions に言語が含まれる場合 => true',
+                'attributes'          => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'language',
+                            'values' => array( 'ifLanguage' => 'en_US' ),
+                        ),
+                    ),
+                ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => 'ネストされた条件の中だけに端末種別がある場合 => true',
+                'attributes'          => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'pageType',
+                            'values' => array( 'ifPageType' => 'is_single' ),
+                        ),
+                        array(
+                            'conditions' => array(
+                                array(
+                                    'type'   => 'mobileDevice',
+                                    'values' => array( 'showOnlyMobileDevice' => 'pcOnly' ),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => '2階層ネストされた条件の中だけにログイン状態がある場合 => true',
+                'attributes'          => array(
+                    'conditions' => array(
+                        array(
+                            'conditions' => array(
+                                array(
+                                    'conditions' => array(
+                                        array(
+                                            'type'   => 'loginUser',
+                                            'values' => array( 'showOnlyLoginUser' => true ),
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => 'ネストされた条件がリクエスト状態に依存しない場合 => false',
+                'attributes'          => array(
+                    'conditions' => array(
+                        array(
+                            'conditions' => array(
+                                array(
+                                    'type'   => 'postType',
+                                    'values' => array( 'ifPostType' => 'post' ),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+                'expected'            => false,
+            ),
+            array(
+                'test_condition_name' => 'groups の中だけにユーザー権限がある場合 => true',
+                'attributes'          => array(
+                    'groups' => array(
+                        array(
+                            'conditions' => array(
+                                array(
+                                    'type'   => 'userRole',
+                                    'values' => array( 'userRole' => array( 'administrator' ) ),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => '旧属性でユーザー権限が指定されている場合 => true',
+                'attributes'          => array( 'userRole' => array( 'editor' ) ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => '旧属性でユーザー権限が空配列の場合 => false',
+                'attributes'          => array( 'userRole' => array() ),
+                'expected'            => false,
+            ),
+            array(
+                'test_condition_name' => '旧属性でログインユーザーのみ表示が指定されている場合 => true',
+                'attributes'          => array( 'showOnlyLoginUser' => true ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => '旧属性でログインユーザーのみ表示が空文字の場合 => false',
+                'attributes'          => array( 'showOnlyLoginUser' => '' ),
+                'expected'            => false,
+            ),
+            array(
+                'test_condition_name' => '旧属性で言語が指定されている場合 => true',
+                'attributes'          => array( 'ifLanguage' => 'en_US' ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => '旧属性で言語が none の場合 => false',
+                'attributes'          => array( 'ifLanguage' => 'none' ),
+                'expected'            => false,
+            ),
+            array(
+                'test_condition_name' => '旧属性で期間指定（公開終了日時）が指定されている場合 => true',
+                'attributes'          => array( 'periodDisplaySetting' => 'deadline' ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => '旧属性で期間指定が none の場合 => false',
+                'attributes'          => array( 'periodDisplaySetting' => 'none' ),
+                'expected'            => false,
+            ),
+            array(
+                'test_condition_name' => '旧属性で端末種別がモバイル端末のみ（旧トグルON）の場合 => true',
+                'attributes'          => array( 'showOnlyMobileDevice' => true ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => '旧属性で端末種別が mobileOnly の場合 => true',
+                'attributes'          => array( 'showOnlyMobileDevice' => 'mobileOnly' ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => '旧属性で端末種別が pcOnly の場合 => true',
+                'attributes'          => array( 'showOnlyMobileDevice' => 'pcOnly' ),
+                'expected'            => true,
+            ),
+            array(
+                'test_condition_name' => '旧属性で端末種別が none（指定なし）の場合 => false',
+                'attributes'          => array( 'showOnlyMobileDevice' => 'none' ),
+                'expected'            => false,
+            ),
+            array(
+                'test_condition_name' => '旧属性で端末種別が false（旧トグルOFF）の場合 => false',
+                'attributes'          => array( 'showOnlyMobileDevice' => false ),
+                'expected'            => false,
+            ),
+            array(
+                'test_condition_name' => '旧属性でリクエスト状態に依存しない条件のみの場合 => false',
+                'attributes'          => array(
+                    'ifPageType'      => 'is_single',
+                    'ifPostType'      => 'post',
+                    'customFieldName' => 'test_field',
+                ),
+                'expected'            => false,
+            ),
+        );
+
+        foreach ( $test_cases as $case ) {
+            // Run the function under test.
+            // テスト関数実行
+            $actual = vk_dynamic_if_block_has_request_state_condition($case['attributes']);
+
+            // Check the expected value.
+            // 期待値テスト
+            $this->assertSame($case['expected'], $actual, $case['test_condition_name']);
+        }
+    }
+
+    /**
+     * Test whether the cache is used with the new attribute structure.
+     * 新しい属性構造でのキャッシュ利用有無のテスト
+     *
+     * The cache is neither read nor written when the block contains a condition that depends on the
+     * request state, and is used as before when it does not.
+     * リクエスト状態に依存する条件を含む場合はキャッシュの読み書きを行わず、
+     * 含まない場合は従来どおりキャッシュを利用することを確認する。
+     */
+    public function test_vk_dynamic_if_block_render_conditions()
+    {
+        // Content that contains an else block, and the output expected when the condition is met / not met.
+        // else ブロックを含むコンテンツと、条件成立時・不成立時それぞれの出力
+        $content     = '<p>main</p><div class="vk-dynamic-if-else-block__content">else</div>';
+        $main_output = '<p>main</p>';
+        $else_output = '<div class="vk-dynamic-if-else-block__content">else</div>';
+
+        // Condition that is always true (page type not specified).
+        // 常に true になる条件（ページ種別の指定なし）
+        $not_request_state_condition = array(
+            'type'   => 'pageType',
+            'values' => array( 'ifPageType' => 'none' ),
+        );
+
+        // Test cases.
+        // テストの配列
+        // seed           : value stored into the cache before rendering (not stored when null)
+        // expected       : expected result of the rendering
+        // expected_cache : expected value stored in the cache after rendering (not checked when the key is absent)
+        // seed         : レンダー前にキャッシュへ仕込む値（null なら仕込まない）
+        // expected     : レンダー結果の期待値
+        // expected_cache : レンダー後にキャッシュへ保存されている値の期待値（キーが無い場合は検証しない）
+        $test_cases = array(
+            array(
+                'test_condition_name' => 'リクエスト状態に依存しない条件で、逆の値をキャッシュに仕込んだ場合 => キャッシュが使われて else が返る',
+                'attributes'          => array(
+                    'conditions' => array( $not_request_state_condition ),
+                    'exclusion'  => false,
+                ),
+                'seed'                => 'false',
+                'expected'            => $else_output,
+            ),
+            array(
+                'test_condition_name' => 'リクエスト状態に依存しない条件で、キャッシュが空の場合 => 判定結果がキャッシュへ保存される',
+                'attributes'          => array(
+                    'conditions' => array( $not_request_state_condition ),
+                    'exclusion'  => false,
+                ),
+                'seed'                => null,
+                'expected'            => $main_output,
+                'expected_cache'      => 'true',
+            ),
+            array(
+                'test_condition_name' => 'ログイン状態の条件を含み、逆の値をキャッシュに仕込んだ場合 => 仕込み値は使われず main が返る',
+                'attributes'          => array(
+                    'conditions' => array(
+                        $not_request_state_condition,
+                        array(
+                            'type'   => 'loginUser',
+                            'values' => array( 'showOnlyLoginUser' => false ),
+                        ),
+                    ),
+                    'exclusion'  => false,
+                ),
+                'seed'                => 'false',
+                'expected'            => $main_output,
+            ),
+            array(
+                'test_condition_name' => 'ログイン状態の条件を含み、キャッシュが空の場合 => キャッシュへ保存されない',
+                'attributes'          => array(
+                    'conditions' => array(
+                        $not_request_state_condition,
+                        array(
+                            'type'   => 'loginUser',
+                            'values' => array( 'showOnlyLoginUser' => false ),
+                        ),
+                    ),
+                    'exclusion'  => false,
+                ),
+                'seed'                => null,
+                'expected'            => $main_output,
+                'expected_cache'      => false,
+            ),
+            array(
+                'test_condition_name' => 'ネストされた条件の中だけに端末種別があり、逆の値をキャッシュに仕込んだ場合 => 仕込み値は使われず main が返る',
+                'attributes'          => array(
+                    'conditions' => array(
+                        array(
+                            'conditions' => array(
+                                array(
+                                    'type'   => 'mobileDevice',
+                                    'values' => array( 'showOnlyMobileDevice' => 'pcOnly' ),
+                                ),
+                            ),
+                        ),
+                    ),
+                    'exclusion'  => false,
+                ),
+                'seed'                => 'false',
+                'expected'            => $main_output,
+            ),
+            array(
+                'test_condition_name' => '言語の条件を含み、逆の値をキャッシュに仕込んだ場合 => 仕込み値は使われず main が返る',
+                'attributes'          => array(
+                    'conditions' => array(
+                        array(
+                            'type'   => 'language',
+                            'values' => array( 'ifLanguage' => get_locale() ),
+                        ),
+                    ),
+                    'exclusion'  => false,
+                ),
+                'seed'                => 'false',
+                'expected'            => $main_output,
+            ),
+        );
+
+        // The cases that contain a device type condition assume a PC environment, so fix it explicitly.
+        // 端末種別の条件を含むケースが PC 環境であることを前提にしているため、明示的に固定する
+        add_filter('wp_is_mobile', '__return_false');
+
+        foreach ( $test_cases as $case ) {
+            // Build the cache key with the same helper as the render function.
+            // レンダー関数と同じヘルパーでキャッシュキーを組み立てる
+            $cache_key = vk_dynamic_if_block_get_cache_key($case['attributes'], $content, 'vk_dynamic_if_block_');
+
+            // Delete the leftover of the previous case before storing the value.
+            // 前のケースの残りを消してから仕込む
+            wp_cache_delete($cache_key, 'vk_dynamic_if_block');
+            if ($case['seed'] !== null ) {
+                wp_cache_set($cache_key, $case['seed'], 'vk_dynamic_if_block', 60);
+            }
+
+            // Run the function under test.
+            // テスト関数実行
+            $actual = vk_dynamic_if_block_render_conditions($case['attributes'], $content);
+
+            // Check the expected value.
+            // 期待値テスト
+            $this->assertSame($case['expected'], $actual, $case['test_condition_name']);
+
+            // Check whether the value was written into the cache.
+            // キャッシュへの書き込み有無テスト
+            if (array_key_exists('expected_cache', $case) ) {
+                $this->assertSame(
+                    $case['expected_cache'],
+                    wp_cache_get($cache_key, 'vk_dynamic_if_block'),
+                    $case['test_condition_name']
+                );
+            }
+
+            // Clean up.
+            // 後始末
+            wp_cache_delete($cache_key, 'vk_dynamic_if_block');
+        }
+
+        remove_all_filters('wp_is_mobile');
+    }
+
+    /**
+     * Test whether the cache is used with the legacy attribute structure.
+     * 旧属性構造でのキャッシュ利用有無のテスト
+     *
+     * The cache is neither read nor written when the block contains a condition that depends on the
+     * request state, and is used as before when it does not.
+     * リクエスト状態に依存する条件を含む場合はキャッシュの読み書きを行わず、
+     * 含まない場合は従来どおりキャッシュを利用することを確認する。
+     */
+    public function test_vk_dynamic_if_block_render_old_attributes()
+    {
+        // Content that contains an else block, and the output expected when the condition is met / not met.
+        // else ブロックを含むコンテンツと、条件成立時・不成立時それぞれの出力
+        $content     = '<p>main</p><div class="vk-dynamic-if-else-block__content">else</div>';
+        $main_output = '<p>main</p>';
+        $else_output = '<div class="vk-dynamic-if-else-block__content">else</div>';
+
+        // Test cases.
+        // テストの配列
+        $test_cases = array(
+            array(
+                'test_condition_name' => '旧属性でリクエスト状態に依存しない条件のみ、逆の値をキャッシュに仕込んだ場合 => キャッシュが使われて else が返る',
+                'attributes'          => array(
+                    'ifPageType' => 'none',
+                    'exclusion'  => false,
+                ),
+                'seed'                => 'false',
+                'expected'            => $else_output,
+            ),
+            array(
+                'test_condition_name' => '旧属性でリクエスト状態に依存しない条件のみ、キャッシュが空の場合 => 判定結果がキャッシュへ保存される',
+                'attributes'          => array(
+                    'ifPageType' => 'none',
+                    'exclusion'  => false,
+                ),
+                'seed'                => null,
+                'expected'            => $main_output,
+                'expected_cache'      => 'true',
+            ),
+            array(
+                'test_condition_name' => '旧属性で言語を指定し、逆の値をキャッシュに仕込んだ場合 => 仕込み値は使われず main が返る',
+                'attributes'          => array(
+                    'ifLanguage' => get_locale(),
+                    'exclusion'  => false,
+                ),
+                'seed'                => 'false',
+                'expected'            => $main_output,
+            ),
+            array(
+                'test_condition_name' => '旧属性でログインユーザーのみ表示を指定し（未ログイン）、逆の値をキャッシュに仕込んだ場合 => 仕込み値は使われず else が返る',
+                'attributes'          => array(
+                    'showOnlyLoginUser' => true,
+                    'exclusion'         => false,
+                ),
+                'seed'                => 'true',
+                'expected'            => $else_output,
+            ),
+            array(
+                'test_condition_name' => '旧属性で端末種別に PC 表示のみを指定し、キャッシュが空の場合 => キャッシュへ保存されない',
+                'attributes'          => array(
+                    'showOnlyMobileDevice' => 'pcOnly',
+                    'exclusion'            => false,
+                ),
+                'seed'                => null,
+                'expected'            => $main_output,
+                'expected_cache'      => false,
+            ),
+        );
+
+        // Make sure that nobody is logged in (premise of the login user condition cases).
+        // 未ログイン状態であることを保証する（ログインユーザー条件のケースの前提）
+        wp_set_current_user(0);
+
+        // The cases that contain a device type condition assume a PC environment, so fix it explicitly.
+        // 端末種別の条件を含むケースが PC 環境であることを前提にしているため、明示的に固定する
+        add_filter('wp_is_mobile', '__return_false');
+
+        foreach ( $test_cases as $case ) {
+            // Build the cache key with the same helper as the render function.
+            // レンダー関数と同じヘルパーでキャッシュキーを組み立てる
+            $cache_key = vk_dynamic_if_block_get_cache_key($case['attributes'], $content, 'vk_dynamic_if_block_old_');
+
+            // Delete the leftover of the previous case before storing the value.
+            // 前のケースの残りを消してから仕込む
+            wp_cache_delete($cache_key, 'vk_dynamic_if_block');
+            if ($case['seed'] !== null ) {
+                wp_cache_set($cache_key, $case['seed'], 'vk_dynamic_if_block', 60);
+            }
+
+            // Run the function under test.
+            // テスト関数実行
+            $actual = vk_dynamic_if_block_render_old_attributes($case['attributes'], $content);
+
+            // Check the expected value.
+            // 期待値テスト
+            $this->assertSame($case['expected'], $actual, $case['test_condition_name']);
+
+            // Check whether the value was written into the cache.
+            // キャッシュへの書き込み有無テスト
+            if (array_key_exists('expected_cache', $case) ) {
+                $this->assertSame(
+                    $case['expected_cache'],
+                    wp_cache_get($cache_key, 'vk_dynamic_if_block'),
+                    $case['test_condition_name']
+                );
+            }
+
+            // Clean up.
+            // 後始末
+            wp_cache_delete($cache_key, 'vk_dynamic_if_block');
+        }
+
+        remove_all_filters('wp_is_mobile');
     }
 
 }
