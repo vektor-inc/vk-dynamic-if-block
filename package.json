@@ -37,9 +37,5 @@
 		"postcss-cli": "^11.0.0",
 		"postcss-minify": "^1.1.0",
 		"rimraf": "^6.0.1"
-	},
-	"volta": {
-		"node": "24.22.1",
-		"npm": "11.19.1"
 	}
 }
